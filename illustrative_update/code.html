@@ -1,0 +1,419 @@
+<html class="light" lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-container": "#5c3f50",
+              "surface-tint": "#546346",
+              "on-secondary-fixed-variant": "#5c4300",
+              "outline-variant": "#c5c8bd",
+              "primary": "#3E4C31", // Moss Green
+              "on-background": "#1b1c1a",
+              "surface-bright": "#fbf9f5",
+              "outline": "#75786f",
+              "primary-fixed": "#d8e8c4",
+              "on-tertiary-container": "#d2acc0",
+              "on-error-container": "#93000a",
+              "tertiary": "#442939",
+              "surface": "#FBF9F5", // Soft Cream
+              "surface-container-highest": "#e4e2de",
+              "on-tertiary-fixed-variant": "#5b3e4f",
+              "secondary": "#795900", // Ochre
+              "background": "#FBF9F5", // Soft Cream
+              "surface-variant": "#e4e2de",
+              "surface-container-lowest": "#ffffff",
+              "on-surface-variant": "#454840",
+              "on-primary": "#ffffff",
+              "on-primary-container": "#acbc9a",
+              "on-primary-fixed": "#131f08",
+              "surface-container-high": "#eae8e4",
+              "on-error": "#ffffff",
+              "tertiary-fixed": "#ffd8ec",
+              "secondary-fixed-dim": "#f6be39",
+              "primary-fixed-dim": "#bccca9",
+              "on-secondary-container": "#715300",
+              "on-surface": "#1b1c1a",
+              "on-primary-fixed-variant": "#3d4b30",
+              "surface-container-low": "#f5f3ef",
+              "on-secondary-fixed": "#261a00",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed": "#ffdfa0",
+              "on-tertiary-fixed": "#2b1423",
+              "inverse-surface": "#30312e",
+              "inverse-primary": "#bccca9",
+              "surface-dim": "#dbdad6",
+              "error-container": "#ffdad6",
+              "secondary-container": "#ffc641",
+              "primary-container": "#3e4c31",
+              "error": "#ba1a1a",
+              "tertiary-fixed-dim": "#e3bcd0",
+              "on-secondary": "#ffffff",
+              "surface-container": "#efeeea",
+              "inverse-on-surface": "#f2f0ed"
+            },
+            fontFamily: {
+              "headline": ["Noto Serif TC", "serif"],
+              "body": ["Manrope", "sans-serif"],
+              "label": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem", 
+              "lg": "0.5rem", 
+              "xl": "0.75rem", 
+              "content": "16px",
+              "full": "9999px"
+            },
+            animation: {
+              'pulse-slow': 'pulse-custom 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'mist': 'mist 20s linear infinite',
+            },
+            keyframes: {
+              'pulse-custom': {
+                '0%, 100%': { opacity: 1, transform: 'scaleX(1)' },
+                '50%': { opacity: 0.4, transform: 'scaleX(0.95)' },
+              },
+              'float': {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              'mist': {
+                '0%': { transform: 'translateX(-50%)' },
+                '100%': { transform: 'translateX(0%)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-glass {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .infographic-line {
+            background: linear-gradient(90deg, transparent, #795900, transparent);
+            background-size: 200% 100%;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+            scroll-behavior: smooth;
+            background-color: #FBF9F5;
+        }
+        .card-expand-enter {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-out;
+        }
+        .card-expand-active {
+            max-height: 300px;
+            opacity: 1;
+            margin-top: 1rem;
+        }
+
+        /* 3D Diorama Styles */
+        .diorama-container {
+            perspective: 1200px;
+        }
+        .cliff-god-side {
+            background: linear-gradient(135deg, #FFDFA0 0%, #795900 100%);
+            box-shadow: 10px 10px 40px rgba(0,0,0,0.1), inset -2px -2px 10px rgba(255,255,255,0.4);
+            clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 0% 100%);
+        }
+        .cliff-man-side {
+            background: linear-gradient(225deg, #3E4C31 0%, #1b1c1a 100%);
+            box-shadow: -10px 10px 40px rgba(0,0,0,0.3);
+            clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+        .chasm-deep {
+            background: radial-gradient(circle at center, #1b1c1a 0%, #000000 100%);
+        }
+        .mist-layer {
+            background: repeat-x url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            opacity: 0.15;
+        }
+        .luminous-text {
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+        }
+        .distressed-text {
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+            letter-spacing: -0.05em;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-container/30">
+<!-- Modal Overlay for Genesis Quote -->
+<div class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="genesis-modal">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-content p-8 md:p-12 shadow-2xl relative border border-outline-variant/30 transform transition-transform duration-300 scale-95">
+<button class="absolute top-6 right-6 text-outline hover:text-primary transition-colors" onclick="toggleModal(false)">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<div class="space-y-6">
+<div class="w-12 h-1 bg-secondary rounded-full"></div>
+<h4 class="font-headline text-secondary font-bold tracking-widest text-xs uppercase">聖經引錄</h4>
+<p class="font-headline text-xl md:text-2xl text-primary leading-relaxed font-medium">
+                「神說：『我們要照著我們的形像、按著我們的樣式造人，使他們管理海裡的魚、空中的鳥、地上的牲畜，和全地，並地上所爬的一切昆蟲。』神就照著自己的形像造人，乃是照著他的形像造男造女。」
+            </p>
+<p class="font-label text-sm font-bold text-secondary uppercase tracking-widest">創世記 1:26-27</p>
+</div>
+</div>
+</div>
+<!-- TopAppBar Navigation -->
+<header class="fixed top-0 left-0 w-full z-50 bg-[#FBF9F5]/80 backdrop-blur-md">
+<div class="flex items-center justify-between px-8 h-16 w-full max-w-none">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#28351C] cursor-pointer active:scale-95 transition-transform" data-icon="arrow_back">arrow_back</span>
+<h1 class="font-headline text-[#28351C] text-xl font-semibold tracking-tight">神的創造</h1>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider text-[#795900]">旅程</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider text-[#28351C]/60">媒體庫</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider text-[#28351C]/60">個人檔案</span>
+</div>
+</div>
+<div class="bg-[#F5F3EF] h-[1px] w-full"></div>
+</header>
+<main class="pt-24 pb-32 px-6 md:px-12 max-w-4xl mx-auto space-y-16">
+<!-- Section: God's Word -->
+<section class="animate-in fade-in duration-700">
+<div class="bg-surface-container-low p-8 md:p-10 rounded-content border border-secondary/10 shadow-sm space-y-6">
+<div class="flex items-center gap-3 text-secondary">
+<span class="material-symbols-outlined text-xl" data-icon="menu_book">menu_book</span>
+<h2 class="font-headline font-bold text-sm tracking-widest uppercase">神的話語</h2>
+</div>
+<div class="space-y-4">
+<p class="font-headline text-lg md:text-xl text-primary leading-relaxed">
+                    「<span class="font-black text-secondary">26</span> 神 說 ： 我 們 要 照 著 我 們 的 形 像 、 按 著 我 們 的 樣 式 造 人 ， 使 他 們 管 理 海 裡 的 魚 、 空 中 的 鳥 、 地 上 的 牲 畜 ， 和 全 地 ， 並 地 上 所 爬 的 一 切 昆 蟲 。 <span class="font-black text-secondary">27</span> 神 就 照 著 自 己 的 形 像 造 人 ， 乃 是 照 著 他 的 形 像 造 男 造 女 。」
+                </p>
+<div class="flex items-center gap-2">
+<div class="h-[1px] w-8 bg-secondary/30"></div>
+<p class="font-label text-xs font-bold text-secondary uppercase tracking-[0.2em]">創世記 1:26-27</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Hero Section -->
+<section class="relative py-12">
+<div class="flex flex-col items-center justify-center space-y-12">
+<div class="flex items-center justify-between w-full max-w-md relative">
+<!-- God Side -->
+<div class="flex flex-col items-center z-10">
+<div class="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container shadow-xl">
+<span class="font-headline font-black text-2xl">神</span>
+</div>
+<span class="mt-4 font-label text-xs tracking-widest uppercase opacity-60">Creator</span>
+</div>
+<!-- Connection Line with Pulse Animation -->
+<div class="absolute left-1/2 top-10 -translate-x-1/2 w-48 h-[2px] bg-surface-container-highest overflow-hidden cursor-pointer" onclick="toggleModal(true)">
+<div class="animate-pulse-slow infographic-line h-full w-full"></div>
+</div>
+<!-- Info Icon -->
+<div class="absolute left-1/2 top-10 -translate-x-1/2 -translate-y-1/2 z-20 group cursor-pointer" onclick="toggleModal(true)">
+<div class="bg-secondary rounded-full p-2 shadow-lg hover:scale-110 active:scale-90 transition-transform ring-4 ring-surface">
+<span class="material-symbols-outlined text-white text-base" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+</div>
+<!-- Man Side -->
+<div class="flex flex-col items-center z-10">
+<div class="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center text-primary shadow-lg">
+<span class="font-headline font-black text-2xl">人</span>
+</div>
+<span class="mt-4 font-label text-xs tracking-widest uppercase opacity-60">Creation</span>
+</div>
+</div>
+<div class="text-center max-w-lg space-y-6">
+<h2 class="font-headline text-3xl md:text-4xl text-primary font-black leading-tight">起初，萬物和諧</h2>
+<p class="font-body text-on-surface-variant leading-relaxed">
+                    在世界的起源，創造主與受造物之間存在著一個完美的連結。
+                </p>
+</div>
+</div>
+</section>
+<!-- Content Layout: Interactive Cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- 1. Creation -->
+<div class="group bg-surface-container-low p-8 rounded-content flex flex-col justify-between space-y-6 md:col-span-2 border border-transparent hover:border-primary/10 transition-all hover:shadow-xl">
+<div class="flex flex-col md:flex-row items-start justify-between gap-8">
+<div class="space-y-4 flex-1">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" data-icon="public">public</span>
+<span class="font-label font-bold text-sm uppercase tracking-widest">Creation</span>
+</div>
+<h3 class="font-headline text-2xl text-primary font-bold">萬物的源頭</h3>
+<p class="font-body text-lg text-on-surface-variant leading-relaxed">
+                        聖經記載人和世界萬物都是神所創造的。這世界並非巧合，而是出於一位偉大藝術家的精心設計。
+                    </p>
+<div class="mt-4 p-4 border-l-2 border-secondary/30 bg-surface/50 rounded-r-lg">
+<p class="text-sm text-on-surface-variant/80 italic">
+                            「諸天述說神的榮耀，穹蒼傳揚他的手段。」(詩篇 19:1) 萬物都見證著創造的宏偉與秩序。
+                        </p>
+</div>
+</div>
+<div class="w-full md:w-64 h-48 md:h-auto aspect-video md:aspect-square rounded-content overflow-hidden shadow-2xl transition-transform group-hover:scale-[1.02]">
+<img alt="Lush natural landscape with a globe representation" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYSZp-V_c5qDpv7eGxhuO-f_6XCLY-oUqQ_Yf96StKyEIHXN-JGpaYX3YBJ65ite-mI23GidXvC-EzOO024wG464-S_qGm1qesaY8AZT6-AQJBEelmuBBdrMirIkEtng7KQ10eFmgv2557mEAp99ZZVCviSn69J7j4fiBNAZuNhfJBaCxr7DwwfLLszYnhaj0Xu-5K6zRTfVzBsPTtbn-sV1juz51sLoHcigcV3yr1j4elY5g1AvjSGo7yBbFxPHMzG8FDcVWitA"/>
+</div>
+</div>
+</div>
+<!-- 2. Free Will -->
+<div class="group bg-surface-container-lowest p-8 rounded-content space-y-6 shadow-sm border border-surface-container hover:border-secondary/20 transition-all hover:shadow-lg">
+<div class="flex flex-col h-full">
+<div class="space-y-6 flex-1">
+<div class="w-12 h-12 bg-secondary/10 rounded-content flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<div class="space-y-4">
+<h3 class="font-headline text-xl text-primary font-bold">自由意志</h3>
+<p class="font-body text-on-surface-variant leading-relaxed text-sm">
+                        神不是把我們造成機械人一般來操控我們；而是賜給我們自由意志，有良知、智慧、感情等。這份自由是愛的基礎。沒有選擇的愛不是真愛。
+                    </p>
+</div>
+</div>
+<div class="mt-6 w-full h-40 rounded-content overflow-hidden grayscale-[0.2] group-hover:grayscale-0 transition-all">
+<img alt="Abstract representation of human mind and heart light" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_Xuuud5NSq_uNxP8GJDgdnqr1PmqzU-2XdeZZMmjnaa8eXY4Oc4ZTA0CqCoOckfUMXcJLim0M2iEGSch1TBo13S0ZURGUOkUQy_CEddclejEZAlFeLmv7s8VuZ4__l-CE9_Wa65egkoi9qLMsGom_O6OB_rwPOtI1gwyY2lYNV3mKRmweo8P1ZjBowDMFVTvm3DpxAwcbjN4caVlKsI21h4gIA22255dBgDZOytzOd3u8XfnLoxQlnnRDfup2g9cfzHpbB3MDOg"/>
+</div>
+</div>
+</div>
+<!-- 3. Relationship -->
+<div class="group bg-surface-container-lowest p-8 rounded-content space-y-6 shadow-sm border border-surface-container hover:border-primary/20 transition-all hover:shadow-lg">
+<div class="flex flex-col h-full">
+<div class="space-y-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-content flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="family_history" style="font-variation-settings: 'FILL' 1;">family_history</span>
+</div>
+<div class="space-y-4">
+<h3 class="font-headline text-xl text-primary font-bold">情同父子</h3>
+<p class="font-body text-on-surface-variant leading-relaxed text-sm">
+                        神是聖潔、公義的。祂愛我們，原本與我們有情同父子(女)的關係，享受純粹的團契。起初，人與神在園中同行，沒有隔閡、沒有恐懼。
+                    </p>
+</div>
+</div>
+<div class="mt-6 w-full h-40 rounded-content overflow-hidden brightness-95 group-hover:brightness-105 transition-all">
+<img alt="Warm silhouette of a father holding a child at sunset" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvgIrIX2AQWLIwvkMxHDKuI8x0nhIHiiHXCjYrugDntr4fH3aJ24ehqvh6mo04YEH0wxTqmRBYB03ov2qpWYnwrD6PiE_aurCJ8GHROXG-x6sbHajBK6gh86xKkqk2HxbFZqbLsOROLtgYcSh751jwavVYwdRZpZPOpol27BWrwl8N06OG3lb3qq94TmmMsmk26maha9WSBrgUnyjooss93qOl9ag4wj1F_fjqpJXU9qd8AOetYVK3Fz_EwDFyyLm5duXFKArIUQ"/>
+</div>
+</div>
+</div>
+</section>
+<!-- UPDATED VISUAL CHASM SECTION BASED ON IMAGE_10 -->
+<section class="mt-24 mb-12">
+<div class="chasm-deep rounded-[2.5rem] relative overflow-hidden h-[600px] shadow-2xl border-4 border-primary/20">
+<!-- Background Image Reference Style -->
+<div class="absolute inset-0 opacity-40 mix-blend-overlay">
+<img alt="The Chasm" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0ujxKL4SnmXbcbjdd2YdAzA6mL2dEh0gP4eXk3teuLwkxmTp-yDApXPPB2I157-LsHQp32KCCjHx5pKuhKDr7lXct1vKLtFvrD33klo-kqdXAIpJjkKPA-aCCAp4dadz0vT6r7XdAkDOXIoKhblibviY6HV0TbtYS1dmsmRRi64VEbP-2GV9zJGrAc5VT_l-iljcD3EK-0kV-k6yi97YqTWtZ_YW9EM4--T6gC_p5eGE_gDrUV6mF6X8y_V0fbgr5Q5GOBjL9G8"/>
+</div>
+<!-- Mist Layers -->
+<div class="absolute inset-0 z-10 pointer-events-none overflow-hidden opacity-30">
+<div class="absolute inset-0 animate-mist mist-layer scale-150"></div>
+<div class="absolute inset-0 animate-mist mist-layer scale-110 opacity-50" style="animation-direction: reverse; animation-duration: 25s;"></div>
+</div>
+<!-- Radiant God's Cliff (Left) -->
+<div class="absolute top-0 left-0 w-2/5 h-full z-20 cliff-god-side flex flex-col items-center justify-center p-8">
+<div class="animate-float space-y-6 flex flex-col items-center">
+<div class="w-24 h-24 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center shadow-inner border border-white/40">
+<span class="font-headline font-black text-5xl text-white luminous-text">神</span>
+</div>
+<div class="text-center">
+<span class="font-label text-[10px] tracking-[0.3em] uppercase text-white font-bold block mb-1">聖潔 HOLY</span>
+<div class="h-1 w-8 bg-white mx-auto rounded-full opacity-60"></div>
+</div>
+</div>
+</div>
+<!-- Desolate Human's Cliff (Right) -->
+<div class="absolute top-0 right-0 w-2/5 h-full z-20 cliff-man-side flex flex-col items-center justify-center p-8">
+<div class="space-y-6 flex flex-col items-center relative z-10">
+<div class="w-24 h-24 rounded-full bg-black/40 flex items-center justify-center border border-primary/30">
+<span class="font-headline font-black text-5xl text-primary-fixed-dim distressed-text">人</span>
+</div>
+<div class="text-center">
+<span class="font-label text-[10px] tracking-[0.3em] uppercase text-primary-fixed-dim opacity-80 font-bold block mb-1">罪人 SINNER</span>
+<div class="h-1 w-8 bg-primary mx-auto rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Deep Dark Chasm Overlay (Center) -->
+<div class="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
+<div class="max-w-xs space-y-8 pointer-events-auto">
+<h2 class="font-headline text-2xl md:text-3xl text-white font-bold leading-relaxed drop-shadow-lg">
+                    可惜人選擇了犯罪離開神，<br/>
+                    像與神分隔在<br/>
+<span class="text-secondary-fixed">懸崖的兩邊。</span>
+</h2>
+<button class="mt-8 group px-10 py-5 bg-secondary text-white rounded-full font-label font-bold text-sm hover:brightness-110 active:scale-95 transition-all shadow-[0_10px_30px_rgba(121,89,0,0.5)] border border-white/10">
+<span class="flex items-center gap-3">
+                        Next: 人的問題
+                        <span class="material-symbols-outlined transition-transform group-hover:translate-x-2" data-icon="arrow_forward">arrow_forward</span>
+</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Navigation -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-[#FBF9F5]/80 backdrop-blur-xl z-50 rounded-t-[2rem] shadow-[0_-4px_24px_0_rgba(40,53,28,0.06)]">
+<a class="flex flex-col items-center justify-center text-[#28351C]/60 hover:text-[#795900] transition-colors active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="home">home</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider mt-0.5">首頁</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#795900] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#795900] after:rounded-full active:scale-90 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="map" style="font-variation-settings: 'FILL' 1;">map</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider mt-0.5">旅程</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#28351C]/60 hover:text-[#795900] transition-colors active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="menu_book">menu_book</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider mt-0.5">媒體庫</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#28351C]/60 hover:text-[#795900] transition-colors active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="person">person</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider mt-0.5">個人檔案</span>
+</a>
+</nav>
+<script>
+    function toggleModal(show) {
+        const modal = document.getElementById('genesis-modal');
+        const content = modal.querySelector('div');
+        if (show) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        } else {
+            modal.classList.remove('opacity-100');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+    }
+
+    function toggleExpand(id) {
+        // Function remains for backwards compatibility if needed, though interaction was removed from cards
+        const content = document.getElementById(id + '-content');
+        if (!content) return;
+        const icon = content.parentElement.querySelector('[data-icon="expand_more"], [data-icon="chevron_right"]');
+        
+        if (content.classList.contains('card-expand-active')) {
+            content.classList.remove('card-expand-active');
+            if (icon) icon.style.transform = 'rotate(0deg)';
+        } else {
+            content.classList.add('card-expand-active');
+            if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+    }
+</script>
+</body></html>

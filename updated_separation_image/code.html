@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&amp;family=Manrope:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#efeeea",
+              "primary-fixed-dim": "#bccca9",
+              "on-surface": "#1b1c1a",
+              "surface-container-highest": "#e4e2de",
+              "surface-container-high": "#eae8e4",
+              "surface": "#fbf9f5",
+              "surface-bright": "#fbf9f5",
+              "tertiary-fixed-dim": "#e3bcd0",
+              "surface-container-low": "#f5f3ef",
+              "tertiary-container": "#5c3f50",
+              "inverse-primary": "#bccca9",
+              "error-container": "#ffdad6",
+              "surface-tint": "#546346",
+              "outline-variant": "#c5c8bd",
+              "on-secondary-container": "#715300",
+              "background": "#fbf9f5",
+              "on-primary-container": "#acbc9a",
+              "primary-fixed": "#d8e8c4",
+              "secondary-fixed-dim": "#f6be39",
+              "on-secondary": "#ffffff",
+              "secondary": "#795900",
+              "primary-container": "#3e4c31",
+              "on-error-container": "#93000a",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#d2acc0",
+              "on-tertiary-fixed-variant": "#5b3e4f",
+              "on-secondary-fixed": "#261a00",
+              "on-tertiary-fixed": "#2b1423",
+              "secondary-fixed": "#ffdfa0",
+              "primary": "#28351c",
+              "inverse-on-surface": "#f2f0ed",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#ffc641",
+              "on-primary-fixed": "#131f08",
+              "surface-variant": "#e4e2de",
+              "on-primary": "#ffffff",
+              "on-background": "#1b1c1a",
+              "error": "#ba1a1a",
+              "tertiary-fixed": "#ffd8ec",
+              "on-primary-fixed-variant": "#3d4b30",
+              "on-surface-variant": "#454840",
+              "inverse-surface": "#30312e",
+              "on-secondary-fixed-variant": "#5c4300",
+              "outline": "#75786f",
+              "surface-dim": "#dbdad6",
+              "tertiary": "#442939"
+            },
+            fontFamily: {
+              "headline": ["Noto Serif TC", "serif"],
+              "body": ["Manrope", "sans-serif"],
+              "label": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .gradient-descent {
+        background: linear-gradient(180deg, #FBF9F5 0%, #DBDAD6 40%, #30312E 80%, #1B1C1A 100%);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(12px);
+      }
+      .dark-glass-card {
+        background: rgba(48, 49, 46, 0.4);
+        backdrop-filter: blur(12px);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-secondary/30">
+<!-- Standardized TopAppBar from components_48 -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 h-16 bg-[#FBF9F5]/80 dark:bg-stone-900/80 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#28351C] dark:text-[#E3E3DC] cursor-pointer active:scale-95 transition-transform hover:opacity-80 transition-opacity" data-icon="arrow_back">arrow_back</span>
+<h1 class="font-['Noto_Serif_TC'] text-xl font-semibold tracking-tight text-[#28351C] dark:text-[#E3E3DC]">人的問題</h1>
+</div>
+</header>
+<main class="gradient-descent min-h-screen pt-16 pb-32 overflow-hidden">
+<!-- Hero Section: The Cliff -->
+<section class="relative h-[707px] flex flex-col items-center justify-start pt-20 px-8 text-center">
+<div class="z-10">
+<span class="material-symbols-outlined text-primary text-6xl mb-6 opacity-80" data-icon="person">person</span>
+<h2 class="font-headline text-4xl font-bold text-primary tracking-tight mb-4">失落的光輝</h2>
+<p class="font-body text-lg text-on-surface-variant max-w-xs mx-auto leading-relaxed">
+                    在造物主最初的計畫中，人本是尊貴的，直到黑暗遮蔽了視線。
+                </p>
+</div>
+<!-- Cliff Visual -->
+<div class="absolute bottom-0 w-full h-1/2 flex justify-center">
+<div class="relative w-full max-w-lg">
+<!-- The Cliff Edge -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary/10 rounded-full blur-sm"></div>
+<!-- Abyss Label -->
+<div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
+<span class="font-headline text-7xl font-bold text-on-surface opacity-10 tracking-[1rem]">罪</span>
+<div class="mt-4 flex justify-center">
+<span class="material-symbols-outlined text-primary/40 animate-bounce" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Block 1: The Definition -->
+<section class="px-8 py-20 flex flex-col items-center">
+<div class="glass-card p-10 rounded-[2rem] w-full max-w-md shadow-sm border border-white/40">
+<div class="mb-6 inline-flex items-center justify-center w-12 h-12 bg-primary/5 rounded-full">
+<span class="material-symbols-outlined text-primary" data-icon="auto_stories">auto_stories</span>
+</div>
+<h3 class="font-headline text-2xl font-bold text-primary mb-4">世人都犯了罪</h3>
+<p class="font-body text-on-surface-variant mb-8 leading-relaxed">
+                    聖經指出人人都犯了罪—就是在思想和行為上違背神，偏離了祂良善的標準。
+                </p>
+<div class="bg-surface-container-low p-6 rounded-2xl border-l-4 border-secondary/50">
+<p class="font-headline text-lg italic text-on-surface">
+                        「因為世人都犯了罪，虧缺了神的榮耀。」
+                    </p>
+<span class="block mt-3 text-xs font-bold text-secondary tracking-widest uppercase font-label">羅馬書 3:23</span>
+</div>
+</div>
+</section>
+<!-- Block 2: The Separation -->
+<section class="px-8 py-24 relative overflow-hidden">
+<div class="max-w-md mx-auto text-center space-y-12">
+<div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl mb-12 border border-white/10">
+<img alt="Sin separating God and Man" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uh16TD9ejfIpT8lzENv3BkI_pfyDRitP3JbBdVVnr8Rc0X1_ttREvaaVdl7uqyAawUshpFgeSxtA6_jjpCJtnjJ-8cRz_XNc8cJ4dxdjaTJvbHvDacLOJBnsQHTBl9bUWJy-_E7miQ-fO7F_jeYynIM6FgyXkvJVQjIyw3t9ObYlCCDXYQJSBwwURO0c5pq6Vc6ZgFwF0piGm8yFI0thanwiTY-IyV_e5uVH8QgTZth6ExZVOM_r9j479QzgP_OO_n1CP3dFz4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="bg-black/20 backdrop-blur-md px-6 py-2 rounded-full border border-white/20">
+<span class="font-headline text-3xl font-bold text-white tracking-[0.5rem] opacity-90">罪</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h3 class="font-headline text-2xl font-bold text-primary">人的罪使人與神分隔</h3>
+<p class="font-body text-on-surface-variant leading-relaxed">
+                        罪惡就像一道無法逾越的鴻溝，攔阻了我們尋求神，也掩蓋了祂對我們的祝福。
+                    </p>
+</div>
+<div class="p-8 bg-white/50 rounded-[2rem] border border-white/20 backdrop-blur-sm">
+<p class="font-headline text-lg text-primary leading-relaxed">
+                        「但你們的罪孽使你們與神隔絕；你們的罪惡使他掩面不聽你們。」
+                    </p>
+<span class="block mt-4 text-xs font-bold text-secondary tracking-widest uppercase font-label">以賽亞書 59:2</span>
+</div>
+</div>
+</section>
+<!-- Block 3: The Consequence (Dark Shift) -->
+<section class="px-8 py-24 bg-primary/90 text-surface rounded-t-[3rem] -mt-8">
+<div class="max-w-md mx-auto">
+<div class="mb-10 text-center">
+<div class="inline-block p-4 rounded-full bg-secondary/20 mb-6">
+<span class="material-symbols-outlined text-secondary-fixed-dim text-4xl" data-icon="gavel">gavel</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-4">罪的工價就是死</h3>
+<p class="font-body text-surface/70 leading-relaxed">
+                        罪不僅破壞了現世的生命，更帶來了終極的結局。死後，每個人都必須面對造物主公義的審判。
+                    </p>
+</div>
+<div class="grid gap-6">
+<div class="dark-glass-card p-6 rounded-2xl border border-white/10">
+<p class="font-headline text-lg leading-relaxed mb-4">
+                            「因為罪的工價乃是死；惟有神的恩賜，在我們的主基督耶穌裡，乃是永生。」
+                        </p>
+<span class="text-[10px] font-bold tracking-widest text-secondary-container">羅馬書 6:23</span>
+</div>
+<div class="dark-glass-card p-6 rounded-2xl border border-white/10">
+<p class="font-headline text-lg leading-relaxed mb-4">
+                            「按著定命，人人都有一死，死後且有審判。」
+                        </p>
+<span class="text-[10px] font-bold tracking-widest text-secondary-container">希伯來書 9:27</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Block 4: The Dead End -->
+<section class="px-8 py-32 bg-[#1B1C1A] text-surface flex flex-col items-center text-center">
+<div class="w-full max-w-sm">
+<div class="relative mb-12 py-8">
+<!-- Abyss Visual -->
+<div class="absolute inset-0 flex justify-center items-center opacity-30">
+<div class="w-48 h-48 bg-error blur-[60px] rounded-full"></div>
+</div>
+<span class="material-symbols-outlined text-8xl text-error opacity-50 block mb-4" data-icon="arrow_downward">arrow_downward</span>
+<h4 class="font-headline text-4xl font-extrabold tracking-widest">永遠沉淪</h4>
+</div><div class="dark-glass-card p-6 rounded-2xl border border-white/10 mb-8 max-w-sm mx-auto text-left">
+<p class="font-headline text-lg leading-relaxed text-surface/90 mb-4">
+    「要報應那不認識神和那不聽從我主耶穌福音的人。他們要受刑罰，就是永遠沉淪，離開主的面和祂權能的榮光。」
+  </p>
+<span class="text-[10px] font-bold tracking-widest text-secondary-container uppercase font-label">帖撒羅尼迦後書 1:8-9</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-6">無法自救的絕路</h3>
+<p class="font-body text-surface/60 mb-10 leading-relaxed">
+                    無論人如何努力，行善、道德或宗教，都無法洗淨靈魂的污點，脫離這必然的結局。
+                </p>
+</div>
+</section>
+<!-- The Hope Hook (Footer) -->
+<section class="px-8 py-24 bg-gradient-to-b from-[#1B1C1A] to-surface text-center">
+<div class="max-w-md mx-auto">
+<div class="mb-12">
+<span class="material-symbols-outlined text-secondary text-5xl mb-6" data-icon="flare">flare</span>
+<p class="font-headline text-2xl font-bold text-primary mb-6 leading-snug">
+                        「縱然人違背了神，<br/>神仍是愛人的。」
+                    </p>
+<p class="font-body text-on-surface-variant leading-relaxed">
+                        在黑暗的盡頭，祂為我們預備了一條出路。祂不願一人沉淪，乃願萬人悔改，重新回到祂的懷抱。
+                    </p>
+</div>
+<!-- Primary Button -->
+<button class="w-full group relative overflow-hidden bg-secondary text-white rounded-full py-5 px-8 flex items-center justify-center gap-3 shadow-lg hover:shadow-secondary/20 transition-all active:scale-95 duration-200">
+<span class="relative z-10 font-label font-bold tracking-wide">NEXT: 神的拯救 (GOD’S RESCUE)</span>
+<span class="material-symbols-outlined relative z-10 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+<div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+</button>
+<p class="mt-8 text-xs font-label text-on-surface-variant/40 tracking-widest">STEP 2 / 4</p>
+</div>
+</section>
+</main>
+<!-- Standardized BottomNavBar from components_48 -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-[#FBF9F5]/80 dark:bg-stone-900/80 backdrop-blur-xl z-50 rounded-t-[2rem] shadow-[0_-4px_24px_0_rgba(40,53,28,0.06)]">
+<!-- Home (Inactive) -->
+<div class="flex flex-col items-center justify-center text-[#28351C]/60 dark:text-[#E3E3DC]/60 active:scale-90 transition-all duration-300 ease-out hover:text-[#795900] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider">首頁</span>
+</div>
+<!-- Journey (Active) -->
+<div class="flex flex-col items-center justify-center text-[#795900] dark:text-[#C5A059] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#795900] after:rounded-full active:scale-90 transition-all duration-300 ease-out cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="map">map</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider">旅程</span>
+</div>
+<!-- Library (Inactive) -->
+<div class="flex flex-col items-center justify-center text-[#28351C]/60 dark:text-[#E3E3DC]/60 active:scale-90 transition-all duration-300 ease-out hover:text-[#795900] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="menu_book">menu_book</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider">媒體庫</span>
+</div>
+<!-- Profile (Inactive) -->
+<div class="flex flex-col items-center justify-center text-[#28351C]/60 dark:text-[#E3E3DC]/60 active:scale-90 transition-all duration-300 ease-out hover:text-[#795900] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-['Manrope'] text-[11px] font-bold uppercase tracking-wider">個人檔案</span>
+</div>
+</nav>
+<!-- Decoration Layer -->
+<div class="fixed inset-0 pointer-events-none z-[-1] opacity-5">
+<div class="absolute top-[20%] left-[-10%] w-[60%] aspect-square bg-secondary rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[10%] right-[-10%] w-[50%] aspect-square bg-primary rounded-full blur-[100px]"></div>
+</div>
+</body></html>
