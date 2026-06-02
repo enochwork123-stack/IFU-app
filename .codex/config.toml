@@ -1,0 +1,22 @@
+model = "gpt-5.5"
+reasoning_effort = "medium"
+
+[features]
+web_search = true
+apply_patch = true
+agent_delegation = true
+project_plans = true
+
+[workspace]
+project_type = "react-web-application"
+package_manager = "npm"
+framework = "vite"
+language_direction = "typescript"
+
+[engineering]
+plan_file = "plans.md"
+root_guidance = "AGENTS.md"
+require_review_before_application_source = true
+prefer_explicit_types = true
+prefer_modular_components = true
+css_standard = "tailwindcss-v4"

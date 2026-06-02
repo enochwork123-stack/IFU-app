@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { homeCards } from '../data/appContent';
 import { Icon } from '../components/Icon';
+import { ROUTE_REGISTRY } from '../app/routes';
 
 function accentClass(accent) {
   if (accent === 'secondary') {
@@ -80,7 +81,7 @@ export function HomeScreen() {
 
         <section className="relative z-10 mt-14 text-center">
           <Link
-            to="/journey/creation"
+            to={ROUTE_REGISTRY.JOURNEY}
             className="inline-flex items-center rounded-full bg-secondary px-8 py-4 font-body text-sm font-extrabold tracking-[0.16em] text-white shadow-[0_18px_40px_rgba(121,89,0,0.24)] transition-all duration-300 hover:brightness-105 active:scale-95"
           >
             開啟你的旅程

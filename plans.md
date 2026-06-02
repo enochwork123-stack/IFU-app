@@ -1,0 +1,198 @@
+# IFU Engineering Specification
+
+This is the living project-local plan for the IFU React application. It tracks discoveries, architectural decisions, and the checkable implementation sequence. Application source code should not be written until this plan is reviewed.
+
+## Current Status
+
+- [x] Reviewed repository layout and baseline tooling.
+- [x] Reviewed nearby React files under `src/`.
+- [x] Reviewed baseline reference layouts in root prototype folders.
+- [x] Added root-level engineering guidance in `AGENTS.md`.
+- [x] Added project-scoped Codex configuration under `.codex/config.toml`.
+- [x] Initialized this markdown specification.
+- [ ] Await review before writing application source code.
+
+## Baseline Snapshot
+
+- Framework: Vite-powered React application.
+- Runtime UI libraries: React 19, React DOM 19, React Router 7.
+- Styling: Tailwind CSS 4 through the Vite plugin, with theme tokens currently in `src/index.css`.
+- Current source language: JavaScript/JSX.
+- Current app shape:
+  - `src/main.jsx` mounts the app.
+  - `src/App.jsx` owns route declarations.
+  - `src/components/` contains shell, navigation, icon, pager, header, section title, and scripture card components.
+  - `src/screens/` contains route-level lesson and app screens.
+  - `src/data/appContent.js` contains untyped content arrays and objects.
+- Reference material:
+  - `lumina_path/DESIGN.md` defines the reverent editorial visual language and lesson interaction patterns.
+  - `standardized_nav/code.html` shows the app-level navigation shell and home card stack.
+  - `dashboard_standardized_nav/code.html` shows the vertical discipleship path with active/open/locked states.
+  - `illustrative_update/code.html`, `updated_separation_image/code.html`, and `3d_step_of_faith_enhanced/code.html` show interactive lesson visuals for creation, separation, and step-of-faith layouts.
+
+## Architectural Direction
+
+The application should move toward a typed, route-led React architecture:
+
+```text
+main.tsx
+└── App
+    └── AppRouter
+        └── AppShell
+            ├── ShellFrame
+            ├── RouteViewport
+            │   └── Screen components
+            └── BottomNav
+```
+
+Target source organization:
+
+```text
+src/
+├── app/
+│   ├── App.tsx
+│   ├── AppRouter.tsx
+│   └── routes.tsx
+├── components/
+│   ├── layout/
+│   ├── content/
+│   └── primitives/
+├── data/
+├── screens/
+├── styles/
+└── types/
+```
+
+Ownership boundaries:
+
+- `app/` owns framework wiring, routes, providers, and route metadata.
+- `components/layout/` owns persistent chrome: shell, page header, bottom navigation, and viewport frame.
+- `components/content/` owns lesson blocks: scripture panels, reflection cards, progress path cards, extension cards, and guided-study modules.
+- `components/primitives/` owns small generic pieces such as icons, buttons, badges, and disclosure controls.
+- `data/` owns structured content only.
+- `types/` owns reusable domain models.
+- `screens/` owns route-level composition and learner workflow sequencing.
+
+## Type-Safe Data Model Plan
+
+Goal: replace implicit content shapes with explicit TypeScript models before expanding interaction behavior.
+
+- [ ] Inventory all exported content in `src/data/appContent.js`.
+- [ ] Identify every consumer of `homeCards`, `discipleshipSteps`, `creationCards`, `faithDefinitions`, `assuranceGospelSections`, and `quietTimeStudyItems`.
+- [ ] Define stable ID conventions for content entities.
+- [ ] Define `RoutePath` as a constrained string type or route metadata lookup.
+- [ ] Define `IconName` around the current Material Symbols usage.
+- [ ] Define `AccentTone` for card and CTA variants.
+- [ ] Define `JourneyStatus` as `active | available | locked | complete`.
+- [ ] Define `HomeCard` with title, description, icon, route, and accent.
+- [ ] Define `JourneyStep` with id, title, subtitle, description, icon, status, route, order, and optional prerequisite IDs.
+- [ ] Define `ScriptureReference` with book, reference, optional chinese text, optional english text, and source/version metadata when available.
+- [ ] Define `TruthPoint` or `LessonPoint` for reusable lesson statements.
+- [ ] Define `GospelSection` with id, title, icon, scriptures, truths, note, and display order.
+- [ ] Define `ReflectionPrompt` with id, prompt text, optional scripture references, local storage key, and response mode.
+- [ ] Define `StudyModule` as a discriminated union for scripture reveal, reflection prompt, summary card, appendix, extension card, and interactive illustration.
+- [ ] Define `LessonRoute` with id, parent journey step, route, title, subtitle, modules, previous route, and next route.
+- [ ] Define extension lesson metadata separately from core lesson metadata.
+- [ ] Convert content file naming from `appContent.js` to `appContent.ts` only after the types are approved.
+- [ ] Use `satisfies` checks for content arrays so literal values stay narrow.
+- [ ] Add compile-time checks for missing route paths, duplicate IDs, and invalid status values.
+- [ ] Keep all learner-entered saved-answer data outside static content definitions.
+
+## Interactive Step-by-Step Layout View Plan
+
+Goal: build a type-driven guided layout for the discipleship journey and lesson steps, preserving the reference feel while using production components.
+
+- [ ] Confirm the primary layout target: mobile-first app shell with responsive desktop support.
+- [ ] Preserve the current narrow app-frame metaphor unless review changes that direction.
+- [ ] Model the journey overview as a vertical path of typed `JourneyStep` entities.
+- [ ] Render each step through a reusable `JourneyStepCard`.
+- [ ] Represent active steps with ochre emphasis, filled icon, elevated surface, and clear action.
+- [ ] Represent available steps with primary emphasis and route access.
+- [ ] Represent locked steps with muted surface, lock icon, and no route action.
+- [ ] Represent completed steps with a future-safe status distinct from active/open.
+- [ ] Derive card labels from status instead of hard-coded conditionals inside the screen.
+- [ ] Derive route links from typed route metadata.
+- [ ] Preserve dotted or path-line continuity between journey cards.
+- [ ] Add a typed progress summary model before changing the visual progress block.
+- [ ] Avoid introducing visual dividers where spacing or tonal surfaces can do the work.
+- [ ] Keep bottom navigation and top page header consistent with existing reference layouts.
+- [ ] Ensure the step card hit target is clear and accessible.
+- [ ] Define empty, locked, and unavailable states before adding more lessons.
+- [ ] Verify that Chinese and English labels fit in the card at mobile width.
+
+## Guided Lesson Interaction Plan
+
+The lesson screens should become step-by-step guided experiences instead of loose page markup.
+
+- [ ] Model scripture reveal panels as typed modules.
+- [ ] Model saved answer blocks with stable storage keys.
+- [ ] Keep localStorage persistence behind a reusable typed hook after review.
+- [ ] Preserve click-to-expand scripture panels.
+- [ ] Preserve textarea response blocks under every reflection prompt.
+- [ ] Preserve expandable appendices for short reference material.
+- [ ] Preserve modal-style expansion for long review material.
+- [ ] Keep extension lessons as route cards rather than embedding long articles in core lessons.
+- [ ] Support interactive visual modules for creation, separation, and step-of-faith scenes.
+- [ ] Ensure interactive modules degrade gracefully if animation or 3D effects are reduced.
+
+## Visual Standards From References
+
+- [ ] Use the existing moss, ochre, warm surface, and tonal surface tokens.
+- [ ] Preserve Noto Serif TC for headings and Manrope for body/labels.
+- [ ] Use glass navigation surfaces where appropriate.
+- [ ] Prefer tonal shifts and whitespace over divider-heavy layouts.
+- [ ] Use rounded, soft surfaces consistent with the current product language.
+- [ ] Keep CTAs visually distinct with secondary/ochre emphasis.
+- [ ] Avoid importing prototype HTML directly into React.
+- [ ] Translate reference layouts into reusable components and typed data.
+
+## Implementation Sequence After Review
+
+- [ ] Add TypeScript compiler configuration and dependency updates if missing.
+- [ ] Add `src/types/content.ts` with approved domain types.
+- [ ] Convert static content into typed content modules.
+- [ ] Move route metadata into a typed route registry.
+- [ ] Convert low-risk primitives first.
+- [ ] Convert layout components next.
+- [ ] Convert journey overview and step cards.
+- [ ] Convert core lesson screens module-by-module.
+- [ ] Add focused tests or compile checks for content validity.
+- [ ] Run build verification.
+- [ ] Update this plan with any deviations.
+
+## Discoveries And Surprises
+
+- The repository already uses modern React, Vite, React Router, and Tailwind, but the source is still JSX.
+- `src/data/appContent.js` is the main pressure point for type safety because it contains multiple implicit content shapes.
+- The journey overview already implements active and available states, but locked is currently inferred from missing status/route.
+- Reference folders are valuable for layout direction but are standalone HTML prototypes, not production source.
+- `BUILD_PROCESS.md` is currently untracked and was not touched.
+
+## Legacy Screen File Log
+
+- Home / introduction landing page: `src/screens/HomeScreen.jsx`
+  - Export format: named export `HomeScreen`.
+  - Imports: `Link` from `react-router-dom`, `homeCards` from `src/data/appContent`, and `Icon` from `src/components/Icon.jsx`.
+  - Route intent: original root/introduction screen with `認識福音`, `初信栽培`, and `查經學習` cards.
+- Gospel creation lesson: `src/screens/CreationScreen.jsx`
+  - Export format: named export `CreationScreen`.
+  - Imports: `useState`, `Link`, `Icon`, `JourneyPager`, `PageHeader`, `ScriptureCard`, and `creationCards`.
+  - Route intent: `/journey/creation`; includes scripture card, modal quote behavior, creation relationship visual, and pager to `/journey/problem`.
+- Human problem lesson: `src/screens/ProblemScreen.jsx`
+  - Export format: named export `ProblemScreen`.
+  - Imports: `Link`, `Icon`, `JourneyPager`, `PageHeader`, and `ScriptureCard`.
+  - Route intent: `/journey/problem`; includes separation/chasm visual, dark consequence sections, and pager links to creation/bridge.
+- Bridge / response lesson: `src/screens/BridgeScreen.jsx`
+  - Export format: named export `BridgeScreen`.
+  - Imports: `Link`, `Icon`, `JourneyPager`, `PageHeader`, `ScriptureCard`, and `faithDefinitions`.
+  - Route intent: `/journey/bridge`; includes `/assets/bridge-infographic.png`, bridge overlay labels, faith definitions, decision CTA, and pager back to problem.
+- Shared legacy components required by those screens:
+  - `src/components/Icon.jsx`: named export `Icon`.
+  - `src/components/PageHeader.jsx`: named export `PageHeader`.
+  - `src/components/JourneyPager.jsx`: named export `JourneyPager`.
+  - `src/components/ScriptureCard.jsx`: named export `ScriptureCard`.
+- Integration note: these are JSX named exports and can be imported into `src/app/AppRouter.tsx` directly while `allowJs` remains enabled. They already expect a React Router context and should run inside the new `ShellFrame`/`Outlet` layout without their old `AppShell`.
+
+## Review Gate
+
+No application source code has been changed for this specification pass. Review this plan before implementation begins.
