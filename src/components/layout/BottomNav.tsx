@@ -1,27 +1,76 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ROUTE_REGISTRY } from '../../app/routes';
+import { ROUTE_REGISTRY, type AppRoutePath } from '../../app/routes';
+
+interface BottomNavItem {
+  label: string;
+  icon: string;
+  path: AppRoutePath;
+  activeExactPaths: readonly AppRoutePath[];
+  activeSectionPaths?: readonly AppRoutePath[];
+}
 
 export const BottomNav: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navItems = [
-    { label: '首頁', icon: 'home', path: ROUTE_REGISTRY.JOURNEY },
-    { label: '自修學習', icon: 'menu_book', path: ROUTE_REGISTRY.LIBRARY },
-  ] as const;
+  const navItems: readonly BottomNavItem[] = [
+    {
+      label: '首頁',
+      icon: 'home',
+      path: ROUTE_REGISTRY.HOME,
+      activeExactPaths: [ROUTE_REGISTRY.HOME],
+    },
+    {
+      label: '認識福音',
+      icon: 'auto_stories',
+      path: ROUTE_REGISTRY.CREATION,
+      activeExactPaths: [
+        ROUTE_REGISTRY.CREATION,
+        ROUTE_REGISTRY.PROBLEM,
+        ROUTE_REGISTRY.BRIDGE,
+      ],
+    },
+    {
+      label: '初信栽培',
+      icon: 'signpost',
+      path: ROUTE_REGISTRY.JOURNEY,
+      activeExactPaths: [
+        ROUTE_REGISTRY.JOURNEY,
+        ROUTE_REGISTRY.SALVATION_ASSURANCE,
+        ROUTE_REGISTRY.QUIET_TIME,
+        ROUTE_REGISTRY.PRAYER_ASSURANCE,
+      ],
+      activeSectionPaths: [
+        ROUTE_REGISTRY.SALVATION_ASSURANCE,
+        ROUTE_REGISTRY.QUIET_TIME,
+        ROUTE_REGISTRY.PRAYER_ASSURANCE,
+      ],
+    },
+    {
+      label: '自修學習',
+      icon: 'menu_book',
+      path: ROUTE_REGISTRY.LIBRARY,
+      activeExactPaths: [ROUTE_REGISTRY.LIBRARY],
+    },
+  ];
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-[#efe9dd] bg-[#fbf9f5]/80 px-4 backdrop-blur-md">
+    <nav className="z-50 flex h-16 shrink-0 items-center justify-around border-t border-[#efe9dd] bg-[#fbf9f5]/80 px-2 backdrop-blur-md">
       {navItems.map((item) => {
-        const isActive = location.pathname === item.path;
+        const isActive =
+          item.activeExactPaths.some((path) => location.pathname === path) ||
+          item.activeSectionPaths?.some((path) =>
+            location.pathname.startsWith(`${path}/`)
+          ) === true;
 
         return (
           <button
             key={item.path}
             type="button"
             onClick={() => navigate(item.path)}
-            className={`flex h-12 w-12 flex-col items-center justify-center transition-colors ${
+            aria-current={isActive ? 'page' : undefined}
+            className={`flex h-12 min-w-16 flex-col items-center justify-center rounded-2xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c68a4c] ${
               isActive ? 'text-[#c68a4c]' : 'text-[#3e4c31]/60'
             }`}
           >

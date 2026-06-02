@@ -1,23 +1,53 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTE_REGISTRY } from '../../app/routes';
+import type { AppRoutePath } from '../../app/routes';
+
+interface AppTab {
+  label: string;
+  path: AppRoutePath;
+  activeExactPaths: readonly AppRoutePath[];
+  activeSectionPaths?: readonly AppRoutePath[];
+}
 
 export const AppTabs: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const tabs = [
-    { label: '認識福音', path: ROUTE_REGISTRY.CREATION },
-    { label: '初信栽培', path: ROUTE_REGISTRY.JOURNEY },
-  ] as const;
+  const tabs: readonly AppTab[] = [
+    {
+      label: '認識福音',
+      path: ROUTE_REGISTRY.CREATION,
+      activeExactPaths: [
+        ROUTE_REGISTRY.HOME,
+        ROUTE_REGISTRY.CREATION,
+        ROUTE_REGISTRY.PROBLEM,
+        ROUTE_REGISTRY.BRIDGE,
+      ],
+    },
+    {
+      label: '初信栽培',
+      path: ROUTE_REGISTRY.JOURNEY,
+      activeExactPaths: [
+        ROUTE_REGISTRY.JOURNEY,
+        ROUTE_REGISTRY.SALVATION_ASSURANCE,
+        ROUTE_REGISTRY.QUIET_TIME,
+      ],
+      activeSectionPaths: [
+        ROUTE_REGISTRY.SALVATION_ASSURANCE,
+        ROUTE_REGISTRY.QUIET_TIME,
+      ],
+    },
+  ];
 
   return (
-    <div className="sticky top-0 z-40 flex w-full space-x-6 border-b border-[#efe9dd] bg-[#fbf9f5] px-4 pt-3">
+    <div className="z-40 flex w-full shrink-0 space-x-6 border-b border-[#efe9dd] bg-[#fbf9f5] px-4 pt-3">
       {tabs.map((tab) => {
         const isActive =
-          location.pathname.startsWith(tab.path) ||
-          (tab.path === ROUTE_REGISTRY.CREATION &&
-            location.pathname === ROUTE_REGISTRY.HOME);
+          tab.activeExactPaths.some((path) => location.pathname === path) ||
+          tab.activeSectionPaths?.some((path) =>
+            location.pathname.startsWith(`${path}/`)
+          ) === true;
 
         return (
           <button

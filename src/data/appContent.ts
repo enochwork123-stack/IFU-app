@@ -86,8 +86,14 @@ export const discipleshipSteps = [
     subtitle: 'Assurance of Prayer',
     description: '確信上帝垂聽並回應屬祂兒女的呼求。',
     icon: 'prayer_times',
-    status: 'locked',
+    status: 'available',
+    route: '/journey/prayer-assurance',
     prerequisiteIds: ['quiet-time'],
+    visual: {
+      tone: 'reflection',
+      accent: 'primary',
+      surface: 'elevated',
+    },
   },
   {
     id: 'forgiveness-assurance',
@@ -187,6 +193,7 @@ export const creationCards = [
     eyebrow: 'Creation',
     title: '萬物的源頭',
     text: '聖經記載人和世界萬物都是神所創造。這世界並非巧合，而是出於一位偉大藝術家的精心設計。',
+    imageSrc: '/assets/creation-source.png',
     imageStyle:
       'bg-[radial-gradient(circle_at_30%_30%,_rgba(255,223,160,0.95),_transparent_32%),radial-gradient(circle_at_72%_30%,_rgba(62,76,49,0.35),_transparent_24%),linear-gradient(135deg,_#eef2e6_0%,_#d8e8c4_52%,_#f8f4ea_100%)]',
   },
@@ -195,6 +202,7 @@ export const creationCards = [
     eyebrow: 'Freedom',
     title: '自由意志',
     text: '神不是把我們造成機械人一般來操控我們；祂賜給我們自由意志、良知、智慧與感情。沒有選擇的愛不是真愛。',
+    imageSrc: '/assets/creation-free-will.png',
     imageStyle:
       'bg-[radial-gradient(circle_at_30%_28%,_rgba(121,89,0,0.4),_transparent_24%),radial-gradient(circle_at_60%_60%,_rgba(62,76,49,0.55),_transparent_26%),linear-gradient(135deg,_#fbf9f5_0%,_#efe9dd_100%)]',
   },
@@ -203,6 +211,7 @@ export const creationCards = [
     eyebrow: 'Relationship',
     title: '情同父子',
     text: '神是聖潔、公義的。祂愛我們，原本與我們有情同父子(女)的關係，享受純粹的團契。',
+    imageSrc: '/assets/creation-relationship.png',
     imageStyle:
       'bg-[radial-gradient(circle_at_50%_22%,_rgba(255,223,160,0.62),_transparent_22%),linear-gradient(135deg,_#f4ebd8_0%,_#dfe8d3_55%,_#fbf9f5_100%)]',
   },

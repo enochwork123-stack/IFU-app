@@ -332,7 +332,7 @@ export function QuietTimeScreen() {
         <section className="mt-8">
           <JourneyPager
             previous={{ to: '/journey/salvation-assurance', label: '得救的確據' }}
-            next={{ to: '/journey', label: '返回目錄' }}
+            next={{ to: '/journey/prayer-assurance', label: '禱告的確據' }}
           />
         </section>
       </main>

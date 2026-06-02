@@ -108,7 +108,12 @@ export function CreationScreen() {
                     </div>
                   ) : null}
                 </div>
-                <div className={`h-44 rounded-[1.4rem] ${card.imageStyle}`} />
+                <img
+                  src={card.imageSrc}
+                  alt=""
+                  className={`h-44 w-full rounded-[1.4rem] object-cover ${card.imageStyle}`}
+                  loading="lazy"
+                />
               </div>
             </article>
           ))}

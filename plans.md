@@ -10,7 +10,22 @@ This is the living project-local plan for the IFU React application. It tracks d
 - [x] Added root-level engineering guidance in `AGENTS.md`.
 - [x] Added project-scoped Codex configuration under `.codex/config.toml`.
 - [x] Initialized this markdown specification.
-- [ ] Await review before writing application source code.
+- [x] Review gate passed for the typed app-shell direction.
+- [x] Added TypeScript compiler setup and Vite environment typing.
+- [x] Converted static app content into `src/data/appContent.ts` with explicit domain models.
+- [x] Added typed content models in `src/types/content.ts`.
+- [x] Added typed route registry in `src/app/routes.tsx`.
+- [x] Replaced the entry route engine with `src/app/AppRouter.tsx`.
+- [x] Added persistent typed shell chrome through `ShellFrame`, `AppTabs`, and `BottomNav`.
+- [x] Added typed journey dashboard composition through `JourneyScreen` and `JourneyStepCard`.
+- [x] Kept legacy JSX lesson screens running through `allowJs: true` while new work moves TypeScript-first.
+- [x] Hooked discovered extension lesson routes into the typed router.
+- [x] Refined shell layout so app tabs and bottom navigation are fixed frame chrome while the route viewport scrolls.
+- [x] Moved top-level section navigation into bottom chrome and restored `首頁` to the home route.
+- [x] Generated project-owned lesson imagery for creation cards and the bridge hero.
+- [x] Refined the bridge lesson hero so scripture appears as a separate full-text Chinese section below the image.
+- [x] Added Step 3 `禱告的確據 / Assurance of Prayer` with matching Step 1/2 layout patterns and extension routes.
+- [ ] Continue Lesson Engine phase: gradually render typed `StudyModule` content instead of duplicating lesson markup in legacy JSX.
 
 ## Baseline Snapshot
 
@@ -148,13 +163,15 @@ The lesson screens should become step-by-step guided experiences instead of loos
 
 ## Implementation Sequence After Review
 
-- [ ] Add TypeScript compiler configuration and dependency updates if missing.
-- [ ] Add `src/types/content.ts` with approved domain types.
-- [ ] Convert static content into typed content modules.
-- [ ] Move route metadata into a typed route registry.
+- [x] Add TypeScript compiler configuration and dependency updates if missing.
+- [x] Add `src/types/content.ts` with approved domain types.
+- [x] Convert static content into typed content modules.
+- [x] Move route metadata into a typed route registry.
 - [ ] Convert low-risk primitives first.
-- [ ] Convert layout components next.
-- [ ] Convert journey overview and step cards.
+- [x] Convert layout components next.
+- [x] Convert journey overview and step cards.
+- [x] Hook existing legacy extension routes through the typed route registry.
+- [x] Refine shell chrome so only route content scrolls.
 - [ ] Convert core lesson screens module-by-module.
 - [ ] Add focused tests or compile checks for content validity.
 - [ ] Run build verification.
@@ -167,6 +184,13 @@ The lesson screens should become step-by-step guided experiences instead of loos
 - The journey overview already implements active and available states, but locked is currently inferred from missing status/route.
 - Reference folders are valuable for layout direction but are standalone HTML prototypes, not production source.
 - `BUILD_PROCESS.md` is currently untracked and was not touched.
+- The committed app entry now bypasses legacy `src/App.jsx` and mounts `src/app/AppRouter.tsx` directly from `src/main.tsx`.
+- Legacy extension screens for salvation assurance and quiet time already exist and can be reached safely through the new typed router.
+- The previous shell had nested scroll behavior; the current layout makes tabs and bottom navigation fixed frame chrome with a single route viewport scroller.
+- The top tabs competed with the bottom app navigation, so the primary app sections now live together in `BottomNav`.
+- Generated bitmap lesson assets live under `public/assets` and should be referenced from project paths, not Codex's generated image cache.
+- The bridge hero reads better when the image carries only short concept labels while full Bible verses are rendered as separate content below.
+- Step 3 currently follows the legacy JSX lesson-screen pattern to remain visually consistent with Steps 1 and 2 while the typed Lesson Engine is still pending.
 
 ## Legacy Screen File Log
 
@@ -195,4 +219,4 @@ The lesson screens should become step-by-step guided experiences instead of loos
 
 ## Review Gate
 
-No application source code has been changed for this specification pass. Review this plan before implementation begins.
+The typed app-shell direction has been reviewed and implemented. Future architectural changes should still be recorded here before expanding the Lesson Engine.
