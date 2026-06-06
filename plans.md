@@ -25,6 +25,13 @@ This is the living project-local plan for the IFU React application. It tracks d
 - [x] Generated project-owned lesson imagery for creation cards and the bridge hero.
 - [x] Refined the bridge lesson hero so scripture appears as a separate full-text Chinese section below the image.
 - [x] Added Step 3 `禱告的確據 / Assurance of Prayer` with matching Step 1/2 layout patterns and extension routes.
+- [x] Added a project-local Notion Markdown transformation skill with a cleanup helper and mimic-engine guardrails.
+- [x] Imported Step 4 `赦罪的確據 / Assurance of Forgiveness` from Notion Markdown with two extension routes.
+- [x] Imported Step 5 `得勝的確據 / Assurance of Victory` from Notion Markdown with two extension routes.
+- [x] Imported Step 6 `聖經的權威 / Authority of the Bible` from Notion Markdown with two extension routes and supporting image/PDF assets.
+- [x] Imported Step 7 `持守神的話 / Intake of the Bible` from Notion Markdown with two extension routes and the Bible-hand image asset.
+- [x] Imported Step 8 `有效的祈禱 / Effective Prayer` from Notion Markdown with two extension routes.
+- [x] Imported Step 9 `團契互助 / Fellowship` from Notion Markdown with two extension routes.
 - [ ] Continue Lesson Engine phase: gradually render typed `StudyModule` content instead of duplicating lesson markup in legacy JSX.
 
 ## Baseline Snapshot
@@ -150,6 +157,17 @@ The lesson screens should become step-by-step guided experiences instead of loos
 - [ ] Support interactive visual modules for creation, separation, and step-of-faith scenes.
 - [ ] Ensure interactive modules degrade gracefully if animation or 3D effects are reduced.
 
+## Notion Markdown Transformation Plan
+
+Goal: turn raw Notion Markdown exports into IFU-shaped content without introducing one-off styling or bypassing the typed Lesson Engine direction.
+
+- [x] Define a project-local Codex skill at `.codex/skills/notion-markdown-transform/SKILL.md`.
+- [x] Add a dependency-free preparation script that strips predictable Notion artifacts and emits a typed intermediate document.
+- [x] Require every transformation pass to inspect `src/index.css`, `src/types/content.ts`, nearby `src/data` content, and reusable components before writing app source.
+- [x] Document mappings from Notion headings, paragraphs, lists, blockquotes, tables, checkboxes, and callouts into existing IFU content models and semantic UI primitives.
+- [x] Use the skill on the next real Notion export and record any missing content-model cases here.
+- [ ] Promote repeated mapping patterns into reusable `StudyModule` renderers instead of duplicating route-level JSX.
+
 ## Visual Standards From References
 
 - [ ] Use the existing moss, ochre, warm surface, and tonal surface tokens.
@@ -191,6 +209,15 @@ The lesson screens should become step-by-step guided experiences instead of loos
 - Generated bitmap lesson assets live under `public/assets` and should be referenced from project paths, not Codex's generated image cache.
 - The bridge hero reads better when the image carries only short concept labels while full Bible verses are rendered as separate content below.
 - Step 3 currently follows the legacy JSX lesson-screen pattern to remain visually consistent with Steps 1 and 2 while the typed Lesson Engine is still pending.
+- Notion imports should now start with `.codex/skills/notion-markdown-transform/scripts/prepare-notion-markdown.mjs`, then use the skill's mimic-engine prompt to map cleaned content into typed IFU structures.
+- The first real Notion import exposed repeated lesson helpers (`SavedAnswer`, scripture toggles, question cards, extension article sections) that should be promoted before adding many more lessons.
+- Step 4 is implemented as a legacy JSX route to match Steps 1-3 while preserving the planned typed `StudyModule` migration.
+- Step 5 also follows the legacy JSX route pattern, while extension article Markdown now renders through a shared `NotionMarkdownArticle` component to reduce repeated import plumbing.
+- The supplied Step 5 extension B Markdown appears to contain the Step 4-style redemption article and reflection prompts despite being titled `戰勝試探`; it was imported as provided.
+- Step 6 includes a project-owned image asset under `public/assets/study-6-bible-inspiration.jpg` and a PDF reference under `public/assets/bible-inspired-reference.pdf`.
+- Step 7 includes the project-owned Bible-hand asset under `public/assets/bible-hand.png`; the supplied extension A and B Markdown exports both carry substantially the same Navigators Word Hand article under different extension titles.
+- Step 8 follows the same legacy JSX route composition while preserving the raw extension exports through `NotionMarkdownArticle`; repeated helpers should be promoted before the next batch of lesson imports.
+- Step 9 continues the same route composition, with the main lesson rendered as guided scripture/reflection blocks and extension exports preserved through `NotionMarkdownArticle`.
 
 ## Legacy Screen File Log
 

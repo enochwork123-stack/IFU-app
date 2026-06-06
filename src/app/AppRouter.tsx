@@ -7,10 +7,35 @@ import {
 } from 'react-router-dom';
 import { AreYouSavedScreen } from '../screens/AreYouSavedScreen';
 import { AssuranceFaithVsSuperstitionScreen } from '../screens/AssuranceFaithVsSuperstitionScreen';
+import {
+  BibleAuthorityGodsWordScreen,
+  BibleAuthorityScreen,
+  BibleAuthorityTextReliableScreen,
+} from '../screens/BibleAuthorityScreen';
+import {
+  BibleIntakeGraspingGodsWordScreen,
+  BibleIntakeScreen,
+  BibleIntakeWordHandScreen,
+} from '../screens/BibleIntakeScreen';
+import {
+  EffectivePrayerAcceptablePrayerScreen,
+  EffectivePrayerFriendshipWithGodScreen,
+  EffectivePrayerScreen,
+} from '../screens/EffectivePrayerScreen';
+import {
+  FellowshipChurchFamilyScreen,
+  FellowshipDoNotWalkAloneScreen,
+  FellowshipScreen,
+} from '../screens/FellowshipScreen';
 import BottomNav from '../components/layout/BottomNav';
 import ShellFrame from '../components/layout/ShellFrame';
 import { BridgeScreen } from '../screens/BridgeScreen';
 import { CreationScreen } from '../screens/CreationScreen';
+import {
+  ForgivenessAssuranceScreen,
+  ForgivenessConfessionAndForgivenessScreen,
+  ForgivenessHowCanSinBeForgivenScreen,
+} from '../screens/ForgivenessAssuranceScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import JourneyScreen from '../screens/JourneyScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
@@ -24,6 +49,11 @@ import { QuietTimeScreen } from '../screens/QuietTimeScreen';
 import { QuietTimeNewToYouScreen } from '../screens/QuietTimeNewToYouScreen';
 import { SalvationAssuranceScreen } from '../screens/SalvationAssuranceScreen';
 import { SevenMinutesWithGodScreen } from '../screens/SevenMinutesWithGodScreen';
+import {
+  VictoryAssuranceScreen,
+  VictoryGrowingThroughTemptationScreen,
+  VictoryOvercomingTemptationScreen,
+} from '../screens/VictoryAssuranceScreen';
 import { ROUTE_REGISTRY } from './routes';
 
 const AppLayout: React.FC = () => (
@@ -98,6 +128,78 @@ const router = createBrowserRouter([
       {
         path: ROUTE_REGISTRY.PRAYER_ASSURANCE_HOW_DO_WE_PRAY,
         element: <PrayerHowDoWePrayScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FORGIVENESS_ASSURANCE,
+        element: <ForgivenessAssuranceScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FORGIVENESS_ASSURANCE_CONFESSION_AND_FORGIVENESS,
+        element: <ForgivenessConfessionAndForgivenessScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FORGIVENESS_ASSURANCE_HOW_CAN_SIN_BE_FORGIVEN,
+        element: <ForgivenessHowCanSinBeForgivenScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.VICTORY_ASSURANCE,
+        element: <VictoryAssuranceScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.VICTORY_ASSURANCE_GROWING_THROUGH_TEMPTATION,
+        element: <VictoryGrowingThroughTemptationScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.VICTORY_ASSURANCE_OVERCOMING_TEMPTATION,
+        element: <VictoryOvercomingTemptationScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_AUTHORITY,
+        element: <BibleAuthorityScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_AUTHORITY_IS_GODS_WORD,
+        element: <BibleAuthorityGodsWordScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_AUTHORITY_TEXT_RELIABLE,
+        element: <BibleAuthorityTextReliableScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_INTAKE,
+        element: <BibleIntakeScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_INTAKE_WORD_HAND,
+        element: <BibleIntakeWordHandScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.BIBLE_INTAKE_GRASPING_GODS_WORD,
+        element: <BibleIntakeGraspingGodsWordScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.EFFECTIVE_PRAYER,
+        element: <EffectivePrayerScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.EFFECTIVE_PRAYER_ACCEPTABLE_PRAYER,
+        element: <EffectivePrayerAcceptablePrayerScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.EFFECTIVE_PRAYER_FRIENDSHIP_WITH_GOD,
+        element: <EffectivePrayerFriendshipWithGodScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FELLOWSHIP,
+        element: <FellowshipScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FELLOWSHIP_DO_NOT_WALK_ALONE,
+        element: <FellowshipDoNotWalkAloneScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.FELLOWSHIP_CHURCH_FAMILY,
+        element: <FellowshipChurchFamilyScreen />,
       },
     ],
   },

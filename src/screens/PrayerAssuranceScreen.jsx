@@ -417,7 +417,7 @@ export function PrayerAssuranceScreen() {
         <section className="mt-8">
           <JourneyPager
             previous={{ to: '/journey/quiet-time', label: '靈修' }}
-            next={{ to: '/journey', label: '返回目錄' }}
+            next={{ to: '/journey/forgiveness-assurance', label: '赦罪的確據' }}
           />
         </section>
       </main>
