@@ -48,6 +48,10 @@ export const ROUTE_REGISTRY = {
   FELLOWSHIP: '/journey/fellowship',
   FELLOWSHIP_DO_NOT_WALK_ALONE: '/journey/fellowship/do-not-walk-alone',
   FELLOWSHIP_CHURCH_FAMILY: '/journey/fellowship/church-family',
+  WITNESSING: '/journey/witnessing',
+  WITNESSING_PERSONAL_TESTIMONY: '/journey/witnessing/personal-testimony',
+  LIFE_GOAL: '/journey/life-goal',
+  SPIRITUAL_GROWTH: '/journey/spiritual-growth',
 } as const satisfies Record<string, RoutePath>;
 
 export type RouteRegistryKey = keyof typeof ROUTE_REGISTRY;

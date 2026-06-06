@@ -272,17 +272,22 @@ export function BibleIntakeScreen() {
     <>
       <PageHeader title="持守神的話" backTo="/journey" />
       <main className="px-6 pb-36 pt-8">
-        <section className="rounded-[2.35rem] bg-surface-container-low p-8 shadow-[0_22px_56px_rgba(40,53,28,0.1)]">
-          <div className="mb-7 inline-flex rounded-full bg-primary-container px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-white">
-            新生命栽培 : (7)
+        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
+          <div className="relative">
+            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
+              新生命栽培 : (7)
+            </div>
+            <h2 className="font-headline text-[2.4rem] leading-tight">
+              持守神的話
+            </h2>
+            <p className="mt-2 font-medium text-secondary-fixed font-body">Intake of the Bible</p>
+            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
+              建立恆常讀經、聆聽、查考、背記和默想神話語的習慣，將神的話藏在心裡，使我們的新生命有根有基，不斷成長。
+            </p>
           </div>
-          <h2 className="font-headline text-[2.45rem] leading-tight text-primary">
-            持守神的話
-          </h2>
-          <p className="mt-3 font-medium text-secondary">
-            Intake of the Bible
-          </p>
         </section>
+
 
         <section className="mt-8 grid gap-5">
           <section className="rounded-[2rem] bg-primary p-6 text-white shadow-[0_26px_68px_rgba(40,53,28,0.22)]">

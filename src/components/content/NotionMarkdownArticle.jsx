@@ -6,7 +6,7 @@ function cleanMarkdownText(value) {
     .replace(/\*\*/g, '')
     .replace(/\*/g, '')
     .replace(/`/g, '')
-    .replace(/\[(.+?)\]\((.+?)\)/g, '$1')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
     .trim();
 }
 
@@ -94,7 +94,7 @@ function parseMarkdownArticle(markdown) {
 
 function ArticleQuote({ children }) {
   return (
-    <blockquote className="rounded-[1.45rem] border-l-4 border-l-secondary bg-secondary-fixed/30 p-5 font-headline text-[1.08rem] leading-8 text-primary">
+    <blockquote className="rounded-[1.45rem] border-l-4 border-l-secondary bg-secondary-fixed/30 p-5 font-headline text-[1.08rem] leading-8 text-primary break-words">
       {children}
     </blockquote>
   );
@@ -104,7 +104,7 @@ export function NotionMarkdownArticle({ markdown }) {
   const blocks = parseMarkdownArticle(markdown);
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 w-full max-w-full overflow-x-hidden">
       {blocks.map((block, index) => {
         if (block.kind === 'heading') {
           const isTitle = block.depth === 1;
@@ -126,7 +126,7 @@ export function NotionMarkdownArticle({ markdown }) {
                 </div>
               ) : null}
               <h2
-                className={`font-headline leading-tight text-primary ${
+                className={`font-headline leading-tight text-primary break-words ${
                   isTitle ? 'text-[1.9rem]' : 'text-[1.55rem]'
                 }`}
               >
@@ -147,7 +147,7 @@ export function NotionMarkdownArticle({ markdown }) {
               key={`${block.kind}-${index}`}
               className="rounded-[2rem] bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]"
             >
-              <ListTag className="ml-5 space-y-3 text-[1.02rem] leading-8 text-on-surface-variant">
+              <ListTag className="ml-5 space-y-3 text-[1.02rem] leading-8 text-on-surface-variant break-words">
                 {block.items.map((item) => (
                   <li
                     key={item}
@@ -182,7 +182,7 @@ export function NotionMarkdownArticle({ markdown }) {
                         {row.map((cell) => (
                           <td
                             key={cell}
-                            className="border-t border-outline-variant/45 px-4 py-3 text-sm leading-7 text-on-surface-variant"
+                            className="border-t border-outline-variant/45 px-4 py-3 text-sm leading-7 text-on-surface-variant break-words"
                           >
                             {cell}
                           </td>
@@ -199,7 +199,7 @@ export function NotionMarkdownArticle({ markdown }) {
         return (
           <p
             key={`${block.kind}-${index}`}
-            className="rounded-[2rem] bg-surface-container-lowest p-6 text-[1.02rem] leading-8 text-on-surface-variant shadow-[0_18px_42px_rgba(40,53,28,0.08)]"
+            className="rounded-[2rem] bg-surface-container-lowest p-6 text-[1.02rem] leading-8 text-on-surface-variant shadow-[0_18px_42px_rgba(40,53,28,0.08)] break-words"
           >
             {block.text}
           </p>

@@ -54,11 +54,15 @@ import {
   VictoryGrowingThroughTemptationScreen,
   VictoryOvercomingTemptationScreen,
 } from '../screens/VictoryAssuranceScreen';
+import { WitnessingScreen } from '../screens/WitnessingScreen';
+import { PersonalTestimonyScreen } from '../screens/PersonalTestimonyScreen';
+import { LifeGoalScreen } from '../screens/LifeGoalScreen';
+import { SpiritualGrowthScreen } from '../screens/SpiritualGrowthScreen';
 import { ROUTE_REGISTRY } from './routes';
 
 const AppLayout: React.FC = () => (
   <ShellFrame>
-    <main className="scrollbar-none w-full flex-1 overflow-y-auto">
+    <main className="scrollbar-none w-full flex-1 overflow-y-auto overflow-x-hidden">
       <Outlet />
     </main>
     <BottomNav />
@@ -200,6 +204,22 @@ const router = createBrowserRouter([
       {
         path: ROUTE_REGISTRY.FELLOWSHIP_CHURCH_FAMILY,
         element: <FellowshipChurchFamilyScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.WITNESSING,
+        element: <WitnessingScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.WITNESSING_PERSONAL_TESTIMONY,
+        element: <PersonalTestimonyScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.LIFE_GOAL,
+        element: <LifeGoalScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.SPIRITUAL_GROWTH,
+        element: <SpiritualGrowthScreen />,
       },
     ],
   },

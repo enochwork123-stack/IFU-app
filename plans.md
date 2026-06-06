@@ -32,6 +32,9 @@ This is the living project-local plan for the IFU React application. It tracks d
 - [x] Imported Step 7 `持守神的話 / Intake of the Bible` from Notion Markdown with two extension routes and the Bible-hand image asset.
 - [x] Imported Step 8 `有效的祈禱 / Effective Prayer` from Notion Markdown with two extension routes.
 - [x] Imported Step 9 `團契互助 / Fellowship` from Notion Markdown with two extension routes.
+- [x] Implemented Step 10 `見證主 / Witnessing` screen in TypeScript with personal testimony worksheets.
+- [x] Implemented Step 11 `人生目的 / Life Goal` screen in TypeScript with guided reflection questions.
+- [x] Implemented Step 12 `屬靈生命的成長 / Spiritual Growth` screen in TypeScript, featuring an interactive SVG Life Wheel component.
 - [ ] Continue Lesson Engine phase: gradually render typed `StudyModule` content instead of duplicating lesson markup in legacy JSX.
 
 ## Baseline Snapshot
@@ -218,6 +221,9 @@ Goal: turn raw Notion Markdown exports into IFU-shaped content without introduci
 - Step 7 includes the project-owned Bible-hand asset under `public/assets/bible-hand.png`; the supplied extension A and B Markdown exports both carry substantially the same Navigators Word Hand article under different extension titles.
 - Step 8 follows the same legacy JSX route composition while preserving the raw extension exports through `NotionMarkdownArticle`; repeated helpers should be promoted before the next batch of lesson imports.
 - Step 9 continues the same route composition, with the main lesson rendered as guided scripture/reflection blocks and extension exports preserved through `NotionMarkdownArticle`.
+- Steps 10, 11, and 12 were implemented as TypeScript screens. They do not have extension sub-pages, but are complete with all lesson questions.
+- Step 12 features a fully interactive SVG Wheel Diagram for the Navigators Life Wheel illustration, displaying description cards and scripture references reactively when parts of the wheel are tapped.
+- Standardized all step headers (Steps 2–12) to match Step 1's dark green theme and added detailed introductory paragraphs, resolving layout inconsistencies across the main screens.
 
 ## Legacy Screen File Log
 
