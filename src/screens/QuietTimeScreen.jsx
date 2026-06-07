@@ -187,14 +187,21 @@ export function QuietTimeScreen() {
     <>
       <PageHeader title="靈修" backTo="/journey" />
       <main className="px-6 pb-36 pt-8">
-        <section className="rounded-[2.35rem] bg-surface-container-low p-8 shadow-[0_22px_56px_rgba(40,53,28,0.1)]">
-          <div className="mb-7 inline-flex rounded-full bg-primary-container px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-white">
-            新生命栽培 : (2)
+        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
+          <div className="relative">
+            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
+              新生命栽培 : (2)
+            </div>
+            <h2 className="font-headline text-[2.4rem] leading-tight">
+              靈修
+            </h2>
+            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
+              「靈修」是指基督徒透過讀聖經和禱告親近神，與神溝通。有規律的靈修能幫助你與神建立更親密的關係，促進新生命成長。
+            </p>
           </div>
-          <h2 className="font-headline text-[2.45rem] leading-tight text-primary">
-            靈修
-          </h2>
         </section>
+
 
         <section className="mt-8 grid gap-5">
           <QuestionCard
@@ -216,17 +223,6 @@ export function QuietTimeScreen() {
             <SavedAnswer storageKey="quiet-time-q1" />
           </QuestionCard>
 
-          <section className="overflow-hidden rounded-[2rem] bg-primary text-white shadow-[0_26px_68px_rgba(40,53,28,0.22)]">
-            <div className="p-7">
-              <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-secondary-fixed text-on-secondary-fixed">
-                <Icon name="auto_stories" className="text-[24px]" />
-              </div>
-              <h3 className="font-headline text-[1.8rem]">甚麼是「靈修」？</h3>
-              <p className="mt-5 text-[1.05rem] leading-8 text-on-primary-container">
-                「靈修」是指基督徒透過讀聖經和禱告親近神，與神溝通。有規律的靈修能幫助你與神建立更親密的關係，促進新生命成長。
-              </p>
-            </div>
-          </section>
 
           <QuestionCard number="2" title="你可以透過讀聖經和禱告來親近神：">
             <div className="rounded-[1.55rem] bg-surface-container-low p-5">
@@ -267,28 +263,34 @@ export function QuietTimeScreen() {
           </QuestionCard>
 
           <QuestionCard number="4" title="聖經書卷目錄與縮寫見 附件A">
-            <button
-              type="button"
-              onClick={() => setShowAppendix((current) => !current)}
-              className="inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-            >
-              附件A : 聖經書卷目錄與縮寫
-              <Icon name={showAppendix ? 'expand_less' : 'expand_more'} className="text-[18px]" />
-            </button>
-            {showAppendix ? (
-              <div className="mt-5 grid gap-4">
-                <BookTable
-                  title="舊約聖經書卷 (共39)"
-                  rows={oldTestamentRows}
-                />
-                <BookTable
-                  title="新約聖經書卷 (共27)"
-                  rows={newTestamentRows}
-                />
-              </div>
-            ) : null}
+            <p className="text-[1.05rem] leading-8 text-on-surface-variant">
+              請查看 附件A 的聖經書卷目錄與縮寫，並在下方寫下你翻閱聖經或默想經文的感受。
+            </p>
             <SavedAnswer storageKey="quiet-time-q4" />
           </QuestionCard>
+
+          <section className="mt-12 rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+            <div className="flex items-center gap-3 text-secondary">
+              <Icon name="article" className="text-[22px]" />
+              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                附件A
+              </p>
+            </div>
+            <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
+              附件A : 聖經書卷目錄與縮寫
+            </h2>
+            <p className="mt-4 leading-7 text-on-surface-variant">
+              請查閱 附件A 了解聖經舊約和新約書卷的目錄與縮寫對照表。
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowAppendix(true)}
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
+            >
+              查看附件
+              <Icon name="open_in_full" className="text-[18px]" />
+            </button>
+          </section>
 
           <section className="rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
             <div className="flex items-center gap-3 text-secondary">
@@ -336,6 +338,43 @@ export function QuietTimeScreen() {
           />
         </section>
       </main>
+
+      {showAppendix ? (
+        <div className="fixed inset-0 z-50 bg-black/45 px-4 py-6 backdrop-blur-sm">
+          <div className="mx-auto flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_28px_80px_rgba(20,25,18,0.32)]">
+            <div className="flex items-start justify-between gap-4 border-b border-outline-variant/50 bg-surface-container-lowest p-5">
+              <div>
+                <p className="font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
+                  附件A
+                </p>
+                <h2 className="mt-1 font-headline text-[1.55rem] leading-tight text-primary">
+                  聖經書卷目錄與縮寫
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAppendix(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-primary transition-all active:scale-95"
+                aria-label="關閉附件"
+              >
+                <Icon name="close" className="text-[22px]" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-5">
+              <div className="grid gap-6">
+                <BookTable
+                  title="舊約聖經書卷 (共39)"
+                  rows={oldTestamentRows}
+                />
+                <BookTable
+                  title="新約聖經書卷 (共27)"
+                  rows={newTestamentRows}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

@@ -243,17 +243,22 @@ export function VictoryAssuranceScreen() {
     <>
       <PageHeader title="得勝的確據" backTo="/journey" />
       <main className="px-6 pb-36 pt-8">
-        <section className="rounded-[2.35rem] bg-surface-container-low p-8 shadow-[0_22px_56px_rgba(40,53,28,0.1)]">
-          <div className="mb-7 inline-flex rounded-full bg-primary-container px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-white">
-            新生命栽培 : (5)
+        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
+          <div className="relative">
+            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
+              新生命栽培 : (5)
+            </div>
+            <h2 className="font-headline text-[2.4rem] leading-tight">
+              得勝的確據
+            </h2>
+            <p className="mt-2 font-medium text-secondary-fixed font-body">Assurance of Victory</p>
+            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
+              基督徒的生活是一場屬靈的爭戰。在面對試探與罪惡時，神應許必不叫我們受試探過於所能受的，並為我們開一條出路，使我們能站立得住。
+            </p>
           </div>
-          <h2 className="font-headline text-[2.45rem] leading-tight text-primary">
-            得勝的確據
-          </h2>
-          <p className="mt-3 font-medium text-secondary">
-            Assurance of Victory
-          </p>
         </section>
+
 
         <section className="mt-8 grid gap-5">
           <section className="rounded-[2rem] bg-primary p-6 text-white shadow-[0_26px_68px_rgba(40,53,28,0.22)]">

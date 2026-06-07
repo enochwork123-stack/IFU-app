@@ -198,8 +198,14 @@ export const discipleshipSteps = [
     subtitle: 'Witnessing',
     description: '活出基督的樣式，與人分享福音的好消息。',
     icon: 'record_voice_over',
-    status: 'locked',
+    status: 'available',
+    route: '/journey/witnessing',
     prerequisiteIds: ['fellowship'],
+    visual: {
+      tone: 'reflection',
+      accent: 'primary',
+      surface: 'elevated',
+    },
   },
   {
     id: 'life-goal',
@@ -208,8 +214,14 @@ export const discipleshipSteps = [
     subtitle: 'Life Goal',
     description: '發現神在你生命中的獨特呼召與計劃。',
     icon: 'explore',
-    status: 'locked',
+    status: 'available',
+    route: '/journey/life-goal',
     prerequisiteIds: ['witnessing'],
+    visual: {
+      tone: 'quiet-authority',
+      accent: 'primary',
+      surface: 'elevated',
+    },
   },
   {
     id: 'spiritual-growth',
@@ -218,8 +230,14 @@ export const discipleshipSteps = [
     subtitle: 'Spiritual Growth',
     description: '持續追求生命成熟，結出屬靈的果子。',
     icon: 'trending_up',
-    status: 'locked',
+    status: 'available',
+    route: '/journey/spiritual-growth',
     prerequisiteIds: ['life-goal'],
+    visual: {
+      tone: 'reflection',
+      accent: 'secondary',
+      surface: 'elevated',
+    },
   },
 ] satisfies JourneyStep[];
 

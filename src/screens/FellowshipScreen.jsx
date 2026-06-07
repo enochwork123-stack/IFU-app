@@ -237,16 +237,23 @@ export function FellowshipScreen() {
   return (
     <>
       <PageHeader title="團契互助" backTo="/journey" />
-      <main className="px-6 pb-36 pt-8">
-        <section className="rounded-[2.35rem] bg-surface-container-low p-8 shadow-[0_22px_56px_rgba(40,53,28,0.1)]">
-          <div className="mb-7 inline-flex rounded-full bg-primary-container px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-white">
-            新生命栽培 : (9)
+      <main className="px-6 pb-36 pt-8 overflow-x-hidden">
+        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
+          <div className="relative">
+            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
+              新生命栽培 : (9)
+            </div>
+            <h2 className="font-headline text-[2.4rem] leading-tight">
+              團契互助
+            </h2>
+            <p className="mt-2 font-medium text-secondary-fixed font-body">Fellowship</p>
+            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
+              基督徒的生活不是單打獨鬥。神召我們進入教會家庭，在信徒社群中彼此相愛、互相扶持，共同在基督裡成長。
+            </p>
           </div>
-          <h2 className="font-headline text-[2.45rem] leading-tight text-primary">
-            團契互助
-          </h2>
-          <p className="mt-3 font-medium text-secondary">Fellowship</p>
         </section>
+
 
         <section className="mt-8 grid gap-5">
           <section className="rounded-[2rem] bg-primary p-6 text-white shadow-[0_26px_68px_rgba(40,53,28,0.22)]">
@@ -329,7 +336,7 @@ export function FellowshipDoNotWalkAloneScreen() {
   return (
     <>
       <PageHeader title="不要獨行" backTo="/journey/fellowship" />
-      <main className="px-6 pb-36 pt-8">
+      <main className="px-6 pb-36 pt-8 overflow-x-hidden">
         <section className="rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
           <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
             《團契互助》延伸學習 (A)
@@ -364,7 +371,7 @@ export function FellowshipChurchFamilyScreen() {
   return (
     <>
       <PageHeader title="教會家庭" backTo="/journey/fellowship" />
-      <main className="px-6 pb-36 pt-8">
+      <main className="px-6 pb-36 pt-8 overflow-x-hidden">
         <section className="rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
           <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
             《團契互助》延伸學習 (B)
