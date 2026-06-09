@@ -30,17 +30,26 @@ This project uses a GitHub Project board to track features and coordinate contri
 
 **Project board:** https://github.com/orgs/IFU-Web-App/projects/1
 
+### On session start — always do this first
+At the beginning of every session, before anything else, ask the user:
+
+> "Would you like to see the open issues on this project so you can pick a feature to work on?"
+
+If they say yes (or anything affirmative), run:
+```
+gh issue list --repo enochwork123-stack/IFU-app --state open
+```
+Display the results clearly — issue number, title — and ask them to pick one.
+
+If they say no, proceed normally with whatever they ask for. But if at any point they seem unsure what to work on, proactively offer the issue list again.
+
 ### Prerequisites (one-time setup)
 - Install the GitHub CLI: https://cli.github.com
 - Authenticate: `gh auth login`
 - Clone the repo and set the upstream remote if working from a fork
 
-### Step 1 — See what needs to be done
-When the user asks what to work on, run:
-```
-gh issue list --repo enochwork123-stack/IFU-app --state open
-```
-Present the list clearly and ask the user to pick an issue number.
+### Step 1 — Pick an issue
+Run `gh issue list --repo enochwork123-stack/IFU-app --state open` and present the open issues. Ask the user which one they want to implement.
 
 ### Step 2 — Assign and branch
 Once an issue is chosen (e.g. issue #2):
