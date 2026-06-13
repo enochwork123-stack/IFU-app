@@ -34,16 +34,23 @@
 
   html {
     background: #efeae0;
+    min-height: 100%;
   }
 
   body {
     margin: 0;
     min-width: 320px;
+    min-height: 100%;
+    overflow: hidden;
     background: #efeae0;
     color: #1b1c1a;
     font-family: "Manrope", sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100%;
   }
 
   a {
@@ -73,6 +80,34 @@
     box-shadow: 0 -4px 24px rgba(40, 53, 28, 0.06);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+  }
+
+  .ifu-shell {
+    height: 100vh;
+    height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+
+  .ifu-app-canvas {
+    height: 100%;
+    min-height: 0;
+    isolation: isolate;
+  }
+
+  .ifu-route-viewport {
+    position: relative;
+    z-index: 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ifu-page-header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .ifu-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -8px 28px rgba(40, 53, 28, 0.08);
   }
 
   .organic-blur {
@@ -113,5 +148,54 @@
       radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.28), transparent 20%),
       radial-gradient(circle at 84% 20%, rgba(255, 255, 255, 0.18), transparent 18%);
     pointer-events: none;
+  }
+}
+
+@layer utilities {
+  [data-ui-mode='desktop'] {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(255, 223, 160, 0.18), transparent 30%),
+      radial-gradient(circle at 86% 18%, rgba(216, 232, 196, 0.28), transparent 28%),
+      linear-gradient(180deg, #f5f3ef 0%, #fbf9f5 42%, #efeeea 100%);
+  }
+
+  [data-ui-mode='desktop'] .ifu-app-canvas {
+    background: transparent;
+  }
+
+  [data-ui-mode='desktop'] .ifu-route-viewport {
+    padding: 0 clamp(1.5rem, 4vw, 4rem) 1.5rem;
+  }
+
+  [data-ui-mode='desktop'] .ifu-route-viewport > header {
+    margin-inline: auto;
+    max-width: 72rem;
+    border-bottom-left-radius: 1.5rem;
+    border-bottom-right-radius: 1.5rem;
+    overflow: hidden;
+  }
+
+  [data-ui-mode='desktop'] .ifu-route-viewport > main {
+    margin-inline: auto;
+    width: min(100%, 72rem);
+    padding-inline: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  [data-ui-mode='desktop'] .ifu-content-image {
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 32rem;
+    object-fit: cover;
+  }
+
+  [data-ui-mode='desktop'] .ifu-diagram-image {
+    height: auto;
+    max-height: min(68vh, 42rem);
+    object-fit: contain;
+  }
+
+  [data-ui-mode='desktop'] .ifu-hero-image {
+    object-fit: contain;
+    background: #1b1c1a;
   }
 }

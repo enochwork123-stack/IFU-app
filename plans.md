@@ -32,9 +32,15 @@ This is the living project-local plan for the IFU React application. It tracks d
 - [x] Imported Step 7 `持守神的話 / Intake of the Bible` from Notion Markdown with two extension routes and the Bible-hand image asset.
 - [x] Imported Step 8 `有效的祈禱 / Effective Prayer` from Notion Markdown with two extension routes.
 - [x] Imported Step 9 `團契互助 / Fellowship` from Notion Markdown with two extension routes.
+- [x] Split the gospel bridge flow into separate `神的拯救` and `人的回應` pages using the extended bridge annex as the content reference.
 - [x] Implemented Step 10 `見證主 / Witnessing` screen in TypeScript with personal testimony worksheets.
 - [x] Implemented Step 11 `人生目的 / Life Goal` screen in TypeScript with guided reflection questions.
 - [x] Implemented Step 12 `屬靈生命的成長 / Spiritual Growth` screen in TypeScript, featuring an interactive SVG Life Wheel component.
+- [x] Locked the master shell to `h-screen` and made the route viewport the only vertical scroller so bottom navigation remains visible across desktop/mobile layout modes.
+- [x] Reoriented the layout target toward a desktop-first web shell while preserving the mobile device-frame mode.
+- [x] Added desktop-only content canvas and image-ratio handling so web view photos render consistently without changing mobile layout behavior.
+- [x] Planned project-owned SVG replacements for the gospel separation, bridge, and out-of-death-into-life visuals so Chinese labels stay exact and image placement is deterministic.
+- [x] Planned route-level scroll reset against the single route viewport so pager navigation opens each lesson at the top.
 - [ ] Continue Lesson Engine phase: gradually render typed `StudyModule` content instead of duplicating lesson markup in legacy JSX.
 
 ## Baseline Snapshot
@@ -125,10 +131,11 @@ Goal: replace implicit content shapes with explicit TypeScript models before exp
 
 ## Interactive Step-by-Step Layout View Plan
 
-Goal: build a type-driven guided layout for the discipleship journey and lesson steps, preserving the reference feel while using production components.
+Goal: build a type-driven guided layout for the discipleship journey and lesson steps, preserving the reference feel while prioritizing the desktop web experience and keeping the mobile device-frame experience compatible.
 
-- [ ] Confirm the primary layout target: mobile-first app shell with responsive desktop support.
-- [ ] Preserve the current narrow app-frame metaphor unless review changes that direction.
+- [x] Confirm the primary layout target: desktop-first web shell with mobile compatibility.
+- [x] Preserve the current narrow app-frame metaphor only inside explicit mobile layout mode.
+- [ ] Continue evolving desktop screens toward wider, scan-friendly reading and study layouts without breaking mobile lesson flows.
 - [ ] Model the journey overview as a vertical path of typed `JourneyStep` entities.
 - [ ] Render each step through a reusable `JourneyStepCard`.
 - [ ] Represent active steps with ochre emphasis, filled icon, elevated surface, and clear action.
@@ -221,9 +228,14 @@ Goal: turn raw Notion Markdown exports into IFU-shaped content without introduci
 - Step 7 includes the project-owned Bible-hand asset under `public/assets/bible-hand.png`; the supplied extension A and B Markdown exports both carry substantially the same Navigators Word Hand article under different extension titles.
 - Step 8 follows the same legacy JSX route composition while preserving the raw extension exports through `NotionMarkdownArticle`; repeated helpers should be promoted before the next batch of lesson imports.
 - Step 9 continues the same route composition, with the main lesson rendered as guided scripture/reflection blocks and extension exports preserved through `NotionMarkdownArticle`.
+- The bridge annex separates `(3) 神的拯救` from `(4) 人的回應`; `/journey/bridge` now carries the God-salvation bridge content, while `/journey/response` carries faith, acceptance, assurance, and the decision prayer.
 - Steps 10, 11, and 12 were implemented as TypeScript screens. They do not have extension sub-pages, but are complete with all lesson questions.
 - Step 12 features a fully interactive SVG Wheel Diagram for the Navigators Life Wheel illustration, displaying description cards and scripture references reactively when parts of the wheel are tapped.
 - Standardized all step headers (Steps 2–12) to match Step 1's dark green theme and added detailed introductory paragraphs, resolving layout inconsistencies across the main screens.
+- Desktop mode now uses a centered web content canvas and desktop-only image sizing rules; mobile mode keeps the original 390px device-emulation frame and route behavior.
+- Public lesson assets should be referenced through `assetPath()` so images and PDFs resolve in both root-hosted and `/IFU-app`-prefixed deployments.
+- Text-heavy gospel diagrams should be maintained as project-owned SVG assets instead of generated bitmap screenshots, because SVG preserves exact Chinese labels, responsive scaling, and single-image composition.
+- React Router navigation preserves scroll state in the app's custom route viewport unless explicitly reset; page-to-page lesson navigation should scroll that viewport to top on pathname changes.
 
 ## Legacy Screen File Log
 
@@ -239,10 +251,10 @@ Goal: turn raw Notion Markdown exports into IFU-shaped content without introduci
   - Export format: named export `ProblemScreen`.
   - Imports: `Link`, `Icon`, `JourneyPager`, `PageHeader`, and `ScriptureCard`.
   - Route intent: `/journey/problem`; includes separation/chasm visual, dark consequence sections, and pager links to creation/bridge.
-- Bridge / response lesson: `src/screens/BridgeScreen.jsx`
-  - Export format: named export `BridgeScreen`.
-  - Imports: `Link`, `Icon`, `JourneyPager`, `PageHeader`, `ScriptureCard`, and `faithDefinitions`.
-  - Route intent: `/journey/bridge`; includes `/assets/bridge-infographic.png`, bridge overlay labels, faith definitions, decision CTA, and pager back to problem.
+- Bridge / response lessons: `src/screens/BridgeScreen.jsx`
+  - Export format: named exports `BridgeScreen` and `HumanResponseScreen`.
+  - Imports: `Icon`, `JourneyPager`, `PageHeader`, `ScriptureCard`, and `useAppContent`.
+  - Route intent: `/journey/bridge` carries `神的拯救`; `/journey/response` carries `人的回應`, faith definitions, assurance, and the decision prayer.
 - Shared legacy components required by those screens:
   - `src/components/Icon.jsx`: named export `Icon`.
   - `src/components/PageHeader.jsx`: named export `PageHeader`.

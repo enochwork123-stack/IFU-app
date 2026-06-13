@@ -4,6 +4,7 @@ import type {
   JourneyStep,
   LessonRoute,
 } from '../types/content';
+import { assetPath } from '../utils/assets';
 
 export const homeCards = [
   {
@@ -247,7 +248,7 @@ export const creationCards = [
     eyebrow: 'Creation',
     title: '萬物的源頭',
     text: '聖經記載人和世界萬物都是神所創造。這世界並非巧合，而是出於一位偉大藝術家的精心設計。',
-    imageSrc: '/assets/creation-source.png',
+    imageSrc: assetPath('assets/creation-source.png'),
     imageStyle:
       'bg-[radial-gradient(circle_at_30%_30%,_rgba(255,223,160,0.95),_transparent_32%),radial-gradient(circle_at_72%_30%,_rgba(62,76,49,0.35),_transparent_24%),linear-gradient(135deg,_#eef2e6_0%,_#d8e8c4_52%,_#f8f4ea_100%)]',
   },
@@ -256,7 +257,7 @@ export const creationCards = [
     eyebrow: 'Freedom',
     title: '自由意志',
     text: '神不是把我們造成機械人一般來操控我們；祂賜給我們自由意志、良知、智慧與感情。沒有選擇的愛不是真愛。',
-    imageSrc: '/assets/creation-free-will.png',
+    imageSrc: assetPath('assets/creation-free-will.png'),
     imageStyle:
       'bg-[radial-gradient(circle_at_30%_28%,_rgba(121,89,0,0.4),_transparent_24%),radial-gradient(circle_at_60%_60%,_rgba(62,76,49,0.55),_transparent_26%),linear-gradient(135deg,_#fbf9f5_0%,_#efe9dd_100%)]',
   },
@@ -265,7 +266,7 @@ export const creationCards = [
     eyebrow: 'Relationship',
     title: '情同父子',
     text: '神是聖潔、公義的。祂愛我們，原本與我們有情同父子(女)的關係，享受純粹的團契。',
-    imageSrc: '/assets/creation-relationship.png',
+    imageSrc: assetPath('assets/creation-relationship.png'),
     imageStyle:
       'bg-[radial-gradient(circle_at_50%_22%,_rgba(255,223,160,0.62),_transparent_22%),linear-gradient(135deg,_#f4ebd8_0%,_#dfe8d3_55%,_#fbf9f5_100%)]',
   },
@@ -432,6 +433,7 @@ export const quietTimeStudyItems = [
 
 const gospelProblemSection = assuranceGospelSections[1]!;
 const gospelSalvationSection = assuranceGospelSections[2]!;
+const gospelResponseSection = assuranceGospelSections[3]!;
 const scriptureStudyItem = quietTimeStudyItems[0]!;
 const prayerStudyItem = quietTimeStudyItems[1]!;
 
@@ -559,7 +561,7 @@ export const lessonRoutes = [
     title: '神的拯救',
     subtitle: 'The Bridge',
     previousRoute: '/journey/problem',
-    nextRoute: '/journey/salvation-assurance',
+    nextRoute: '/journey/response',
     visual: {
       tone: 'salvation',
       accent: 'secondary',
@@ -596,15 +598,56 @@ export const lessonRoutes = [
           surface: 'glass',
         },
       },
+    ],
+  },
+  {
+    id: 'lesson-response',
+    journeyStepId: 'salvation-assurance',
+    route: '/journey/response',
+    title: '人的回應',
+    subtitle: 'Human Response',
+    previousRoute: '/journey/bridge',
+    nextRoute: '/journey/salvation-assurance',
+    visual: {
+      tone: 'salvation',
+      accent: 'secondary',
+      surface: 'glass',
+      allowAmbientMotion: true,
+    },
+    modules: [
       {
-        id: 'faith-definitions',
+        id: 'response-scriptures',
+        kind: 'scripture-reveal',
+        title: '人的回應',
+        scriptures: gospelResponseSection.scriptures,
+        allowMultipleOpen: true,
+        visual: {
+          tone: 'salvation',
+          surface: 'glass',
+        },
+      },
+      {
+        id: 'response-faith-definitions',
         kind: 'content-section',
         title: '信包括相信與接受',
         points: faithDefinitions.map((definition) => definition.text),
+        note: gospelResponseSection.note,
         visual: {
           tone: 'quiet-authority',
           accent: 'secondary',
           surface: 'tonal',
+        },
+      },
+      {
+        id: 'response-summary',
+        kind: 'summary-card',
+        title: '出死入生',
+        body: '任何人若誠心相信並接受耶穌基督的拯救，就立刻得到這拯救，罪得赦免，已經出死入生，成為神的兒女。',
+        points: gospelResponseSection.truths,
+        visual: {
+          tone: 'salvation',
+          accent: 'secondary',
+          surface: 'elevated',
         },
       },
     ],
@@ -615,7 +658,7 @@ export const lessonRoutes = [
     route: '/journey/salvation-assurance',
     title: '得救的確據',
     subtitle: 'Assurance of Salvation',
-    previousRoute: '/journey/bridge',
+    previousRoute: '/journey/response',
     nextRoute: '/journey/quiet-time',
     visual: {
       tone: 'quiet-authority',

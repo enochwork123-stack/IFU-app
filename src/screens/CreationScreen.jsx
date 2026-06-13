@@ -112,7 +112,7 @@ export function CreationScreen() {
                 <img
                   src={card.imageSrc}
                   alt=""
-                  className={`h-44 w-full rounded-[1.4rem] object-cover ${card.imageStyle}`}
+                  className={`ifu-content-image h-44 w-full rounded-[1.4rem] object-cover ${card.imageStyle}`}
                   loading="lazy"
                 />
               </div>

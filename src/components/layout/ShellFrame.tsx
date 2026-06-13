@@ -35,7 +35,8 @@ export const ShellFrame: React.FC<ShellFrameProps> = ({ children }) => {
 
   return (
     <div
-      className={`flex min-h-screen w-full bg-surface font-sans text-primary antialiased ${
+      data-ui-mode={uiMode}
+      className={`ifu-shell flex w-full overflow-hidden bg-surface font-sans text-primary antialiased ${
         isDesktopMode
           ? 'items-stretch justify-stretch p-0'
           : 'items-center justify-center p-0 md:p-4'
@@ -54,10 +55,10 @@ export const ShellFrame: React.FC<ShellFrameProps> = ({ children }) => {
       </button>
 
       <div
-        className={`relative flex flex-col overflow-hidden bg-surface ${
+        className={`ifu-app-canvas relative flex flex-col overflow-hidden bg-surface ${
           isDesktopMode
-            ? 'min-h-screen w-full rounded-none border-none shadow-none'
-            : 'h-screen w-full md:h-[844px] md:w-[390px] md:rounded-[40px] md:border md:border-[#efe9dd] md:shadow-2xl'
+            ? 'h-full w-full rounded-none border-none shadow-none'
+            : 'h-full w-full md:h-[844px] md:max-h-[calc(100dvh-2rem)] md:w-[390px] md:rounded-[40px] md:border md:border-[#efe9dd] md:shadow-2xl'
         }`}
       >
         {children}

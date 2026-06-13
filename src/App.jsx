@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { AreYouSavedScreen } from './screens/AreYouSavedScreen';
 import { AssuranceFaithVsSuperstitionScreen } from './screens/AssuranceFaithVsSuperstitionScreen';
-import { BridgeScreen } from './screens/BridgeScreen';
+import { BridgeScreen, HumanResponseScreen } from './screens/BridgeScreen';
 import { CreationScreen } from './screens/CreationScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { JourneyOverviewScreen } from './screens/JourneyOverviewScreen';
@@ -44,6 +44,7 @@ export default function App() {
         <Route path="journey/creation" element={<CreationScreen />} />
         <Route path="journey/problem" element={<ProblemScreen />} />
         <Route path="journey/bridge" element={<BridgeScreen />} />
+        <Route path="journey/response" element={<HumanResponseScreen />} />
         <Route path="library" element={<LibraryScreen />} />
         <Route path="profile" element={<ProfileScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />

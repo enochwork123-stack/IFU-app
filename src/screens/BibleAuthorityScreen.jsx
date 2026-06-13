@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { NotionMarkdownArticle } from '../components/content/NotionMarkdownArticle';
 import { PageHeader } from '../components/PageHeader';
+import { assetPath } from '../utils/assets';
 import bibleAuthorityExtensionAMarkdown from '../content/notion/bible-authority-extension-a.md?raw';
 import bibleAuthorityExtensionBMarkdown from '../content/notion/bible-authority-extension-b.md?raw';
 
@@ -247,9 +248,9 @@ export function BibleAuthorityScreen() {
 
           <figure className="overflow-hidden rounded-[2rem] bg-surface-container-lowest shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
             <img
-              src="/assets/study-6-bible-inspiration.jpg"
+              src={assetPath('assets/study-6-bible-inspiration.jpg')}
               alt="聖經的啟示與信徒責任示意圖：神啟示作者記載聖經，信徒研讀並應用。"
-              className="w-full bg-white object-contain"
+              className="ifu-diagram-image w-full bg-white object-contain"
             />
             <figcaption className="px-5 py-4 text-sm leading-7 text-on-surface-variant">
               神藉作者記載聖經，也藉聖經裝備信徒研讀、應用，經歷祂的應許。
@@ -290,7 +291,7 @@ export function BibleAuthorityScreen() {
             </h3>
             <div className="mt-5 grid gap-3">
               <a
-                href="/assets/bible-inspired-reference.pdf"
+                href={assetPath('assets/bible-inspired-reference.pdf')}
                 className="inline-flex items-center justify-center gap-3 rounded-full bg-secondary px-5 py-3 text-sm font-extrabold tracking-[0.08em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
               >
                 <Icon name="picture_as_pdf" className="text-[18px]" />

@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { NotionMarkdownArticle } from '../components/content/NotionMarkdownArticle';
 import { PageHeader } from '../components/PageHeader';
+import { assetPath } from '../utils/assets';
 import bibleIntakeExtensionAMarkdown from '../content/notion/bible-intake-extension-a.md?raw';
 import bibleIntakeExtensionBMarkdown from '../content/notion/bible-intake-extension-b.md?raw';
 
@@ -331,9 +332,9 @@ export function BibleIntakeScreen() {
 
           <figure className="overflow-hidden rounded-[2rem] bg-surface-container-lowest shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
             <img
-              src="/assets/bible-hand.png"
+              src={assetPath('assets/bible-hand.png')}
               alt="聖經手圖解：聽、讀、查考、背誦、默想與遵行神的話。"
-              className="w-full bg-white object-contain p-4"
+              className="ifu-diagram-image w-full bg-white object-contain p-4"
             />
             <figcaption className="px-5 py-4 text-sm leading-7 text-on-surface-variant">
               五種掌握聖經的方法好比五隻手指；若加上掌心的實踐，神的話更穩妥地握在生命中。

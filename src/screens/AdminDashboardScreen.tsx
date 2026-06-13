@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, JourneyStep, HomeCard, ScriptureReference } from '../types/content';
+import { assetPath } from '../utils/assets';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media';
 
@@ -49,9 +50,9 @@ export const AdminDashboardScreen: React.FC = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [mediaList, setMediaList] = useState<Array<{ name: string; url: string }>>([
-    { name: 'creation-source.png', url: '/assets/creation-source.png' },
-    { name: 'creation-free-will.png', url: '/assets/creation-free-will.png' },
-    { name: 'creation-relationship.png', url: '/assets/creation-relationship.png' },
+    { name: 'creation-source.png', url: assetPath('assets/creation-source.png') },
+    { name: 'creation-free-will.png', url: assetPath('assets/creation-free-will.png') },
+    { name: 'creation-relationship.png', url: assetPath('assets/creation-relationship.png') },
   ]);
 
   const handleLogin = (e: React.FormEvent) => {
