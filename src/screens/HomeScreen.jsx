@@ -19,23 +19,23 @@ export function HomeScreen() {
   return (
     <>
       <header className="glass-topbar sticky top-0 z-30">
-        <div className="flex h-16 items-center justify-between px-8">
-          <div className="flex items-center gap-3">
-            <Icon name="menu_book" className="text-[22px] text-primary" />
-            <p className="font-headline text-xl font-bold tracking-tight text-primary">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-8">
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            <Icon name="menu_book" className="text-[18px] sm:text-[22px] text-primary" />
+            <p className="font-headline text-sm sm:text-base md:text-xl font-bold tracking-tight text-primary truncate max-w-[110px] sm:max-w-none">
               {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3.5 py-1.5 text-xs font-extrabold text-secondary hover:bg-surface-container-low transition active:scale-95"
+              className="inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold text-secondary hover:bg-surface-container-low transition active:scale-95"
             >
-              <Icon name="admin_panel_settings" className="text-sm" />
+              <Icon name="admin_panel_settings" className="text-[12px] sm:text-sm" />
               管理後台
             </Link>
-            <button className="inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95">
-              <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
+            <button className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-lowest px-2 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95">
+              <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary" />
               登錄
             </button>
           </div>
