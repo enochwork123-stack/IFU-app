@@ -29,6 +29,7 @@ export const BottomNav: React.FC = () => {
         ROUTE_REGISTRY.CREATION,
         ROUTE_REGISTRY.PROBLEM,
         ROUTE_REGISTRY.BRIDGE,
+        ROUTE_REGISTRY.RESPONSE,
       ],
     },
     {
@@ -56,7 +57,7 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="z-50 flex h-16 shrink-0 items-center justify-around border-t border-[#efe9dd] bg-[#fbf9f5]/80 px-2 backdrop-blur-md">
+    <nav className="ifu-bottom-nav z-[70] flex min-h-16 shrink-0 items-center justify-around border-t border-[#efe9dd] bg-[#fbf9f5]/88 px-2 backdrop-blur-md">
       {navItems.map((item) => {
         const isActive =
           item.activeExactPaths.some((path) => location.pathname === path) ||

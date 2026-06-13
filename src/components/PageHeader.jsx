@@ -9,7 +9,7 @@ export function PageHeader({
   compact = false,
 }) {
   return (
-    <header className="glass-topbar sticky top-0 z-30">
+    <header className="ifu-page-header glass-topbar sticky top-0 z-[60] shrink-0">
       <div
         className={`flex items-center justify-between px-8 ${
           compact ? 'h-16' : 'h-[4.35rem]'

@@ -4,6 +4,7 @@ import {
   Navigate,
   Outlet,
   RouterProvider,
+  useLocation,
 } from 'react-router-dom';
 import { AreYouSavedScreen } from '../screens/AreYouSavedScreen';
 import { AssuranceFaithVsSuperstitionScreen } from '../screens/AssuranceFaithVsSuperstitionScreen';
@@ -29,7 +30,7 @@ import {
 } from '../screens/FellowshipScreen';
 import BottomNav from '../components/layout/BottomNav';
 import ShellFrame from '../components/layout/ShellFrame';
-import { BridgeScreen } from '../screens/BridgeScreen';
+import { BridgeScreen, HumanResponseScreen } from '../screens/BridgeScreen';
 import { CreationScreen } from '../screens/CreationScreen';
 import {
   ForgivenessAssuranceScreen,
@@ -62,14 +63,26 @@ import { ROUTE_REGISTRY } from './routes';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 
-const AppLayout: React.FC = () => (
-  <ShellFrame>
-    <main className="scrollbar-none w-full flex-1 overflow-y-auto overflow-x-hidden">
-      <Outlet />
-    </main>
-    <BottomNav />
-  </ShellFrame>
-);
+const AppLayout: React.FC = () => {
+  const location = useLocation();
+  const routeViewportRef = React.useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    routeViewportRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
+
+  return (
+    <ShellFrame>
+      <main
+        ref={routeViewportRef}
+        className="ifu-route-viewport scrollbar-none min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden"
+      >
+        <Outlet />
+      </main>
+      <BottomNav />
+    </ShellFrame>
+  );
+};
 
 const router = createBrowserRouter([
   {
@@ -98,6 +111,10 @@ const router = createBrowserRouter([
       {
         path: ROUTE_REGISTRY.BRIDGE,
         element: <BridgeScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.RESPONSE,
+        element: <HumanResponseScreen />,
       },
       {
         path: ROUTE_REGISTRY.SALVATION_ASSURANCE,

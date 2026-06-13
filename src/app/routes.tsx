@@ -7,6 +7,7 @@ export const ROUTE_REGISTRY = {
   CREATION: '/journey/creation',
   PROBLEM: '/journey/problem',
   BRIDGE: '/journey/bridge',
+  RESPONSE: '/journey/response',
   SALVATION_ASSURANCE: '/journey/salvation-assurance',
   SALVATION_ASSURANCE_ARE_YOU_SAVED:
     '/journey/salvation-assurance/are-you-saved',

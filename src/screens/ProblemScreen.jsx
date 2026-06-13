@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { ScriptureCard } from '../components/ScriptureCard';
 
 import { useAppContent } from '../context/ContentContext';
+import { assetPath } from '../utils/assets';
 
 export function ProblemScreen() {
   const { customScreenTexts } = useAppContent();
@@ -56,30 +57,13 @@ export function ProblemScreen() {
 
         <section className="pb-14">
           <div className="space-y-8 text-center">
-            <div className="separation-stage rounded-[2rem] p-5 shadow-[0_28px_70px_rgba(20,20,18,0.22)]">
-              <div className="relative isolate overflow-hidden rounded-[1.6rem]">
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,_rgba(0,0,0,0.58),_transparent_45%)]" />
-                <div className="relative flex h-[15rem] items-center justify-center bg-[radial-gradient(circle_at_22%_40%,_rgba(255,223,160,0.38),_transparent_24%),radial-gradient(circle_at_78%_42%,_rgba(62,76,49,0.45),_transparent_24%),linear-gradient(180deg,_#ede8de_0%,_#767a70_45%,_#1b1c1a_100%)]">
-                  <div className="absolute left-7 top-1/2 flex -translate-y-1/2 flex-col items-center gap-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-white">
-                      <span className="font-headline text-3xl font-black">神</span>
-                    </div>
-                    <div className="h-28 w-16 rounded-[1.2rem] bg-[linear-gradient(135deg,_#ffdfa0,_#795900)]" />
-                  </div>
-                  <div className="absolute right-7 top-1/2 flex -translate-y-1/2 flex-col items-center gap-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/25 text-primary-fixed">
-                      <span className="font-headline text-3xl font-black">人</span>
-                    </div>
-                    <div className="h-28 w-16 rounded-[1.2rem] bg-[linear-gradient(225deg,_#3e4c31,_#11120f)]" />
-                  </div>
-                  <div className="rounded-full border border-white/20 bg-black/25 px-6 py-2 backdrop-blur-md">
-                    <span className="font-headline text-3xl tracking-[0.5rem] text-white">
-                      罪
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <figure className="overflow-hidden rounded-[2rem] bg-surface-container-lowest p-2 shadow-[0_28px_70px_rgba(20,20,18,0.18)]">
+              <img
+                src={assetPath('assets/人的問題.png')}
+                alt="人的罪使人與神分隔"
+                className="ifu-diagram-image h-auto w-full rounded-[1.65rem] object-cover"
+              />
+            </figure>
 
             <div>
               <h3 className="font-headline text-[1.9rem] text-primary">
@@ -179,7 +163,7 @@ export function ProblemScreen() {
 
         <JourneyPager
           previous={{ to: '/journey/creation', label: '神的創造' }}
-          next={{ to: '/journey/bridge', label: '人的回應' }}
+          next={{ to: '/journey/bridge', label: '神的拯救' }}
         />
       </main>
     </>

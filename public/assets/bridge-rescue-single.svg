@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1560" viewBox="0 0 1200 1560" role="img" aria-labelledby="title desc">
+  <title id="title">起死回生的橋梁</title>
+  <desc id="desc">A single labeled image of Jesus as the bridge from death to life.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbf9f5"/>
+      <stop offset="0.34" stop-color="#eae8e4"/>
+      <stop offset="1" stop-color="#1b1c1a"/>
+    </linearGradient>
+    <radialGradient id="rightGlow" cx="78%" cy="31%" r="58%">
+      <stop offset="0" stop-color="#fff4d6"/>
+      <stop offset="0.38" stop-color="#ffdfa0" stop-opacity="0.68"/>
+      <stop offset="1" stop-color="#ffdfa0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="leftLand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#546346"/>
+      <stop offset="0.52" stop-color="#28351c"/>
+      <stop offset="1" stop-color="#11120f"/>
+    </linearGradient>
+    <linearGradient id="rightLand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff4d6"/>
+      <stop offset="0.48" stop-color="#ffdfa0"/>
+      <stop offset="1" stop-color="#795900"/>
+    </linearGradient>
+    <linearGradient id="cross" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffedbf"/>
+      <stop offset="0.52" stop-color="#ffc641"/>
+      <stop offset="1" stop-color="#795900"/>
+    </linearGradient>
+    <radialGradient id="abyss" cx="50%" cy="56%" r="56%">
+      <stop offset="0" stop-color="#060605"/>
+      <stop offset="0.58" stop-color="#1b1c1a"/>
+      <stop offset="1" stop-color="#454840" stop-opacity="0.2"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="30" stdDeviation="28" flood-color="#11120f" flood-opacity="0.34"/>
+    </filter>
+    <filter id="smallShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#11120f" flood-opacity="0.28"/>
+    </filter>
+    <filter id="glowText" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ffdfa0" flood-opacity="0.62"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1560" rx="72" fill="url(#bg)"/>
+  <rect width="1200" height="1560" rx="72" fill="url(#rightGlow)"/>
+  <path d="M0 700C136 650 256 640 374 674C444 694 504 734 544 792L510 1560H0Z" fill="url(#leftLand)" filter="url(#shadow)"/>
+  <path d="M1200 626C1044 612 928 636 824 700C760 740 704 806 674 884L706 1560H1200Z" fill="url(#rightLand)" filter="url(#shadow)"/>
+  <path d="M510 684C574 744 612 826 626 974C638 1116 616 1326 600 1560H708C690 1322 704 1112 688 968C672 816 628 732 560 684C542 672 526 672 510 684Z" fill="url(#abyss)"/>
+
+  <g transform="translate(600 760)" filter="url(#shadow)">
+    <rect x="-320" y="-50" width="640" height="100" rx="18" fill="url(#cross)"/>
+    <rect x="-54" y="-250" width="108" height="500" rx="18" fill="url(#cross)"/>
+    <rect x="-320" y="-50" width="640" height="100" rx="18" fill="#ffffff" opacity="0.16"/>
+    <text x="0" y="22" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="62" font-weight="900" letter-spacing="18" fill="#3e2a00" filter="url(#glowText)">耶穌</text>
+  </g>
+
+  <g transform="translate(220 685)" filter="url(#smallShadow)">
+    <circle cx="0" cy="-94" r="42" fill="#fbf9f5" fill-opacity="0.18"/>
+    <path d="M-42 34C-24 -26 24 -26 42 34Z" fill="#fbf9f5" fill-opacity="0.16"/>
+    <text x="0" y="-78" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="50" font-weight="900" fill="#fbf9f5">人</text>
+    <text x="0" y="96" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="30" font-weight="900" fill="#fbf9f5">罪與死</text>
+  </g>
+
+  <g transform="translate(964 645)" filter="url(#smallShadow)">
+    <circle cx="0" cy="-100" r="54" fill="#ffffff" fill-opacity="0.36"/>
+    <text x="0" y="-82" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="58" font-weight="900" fill="#5c4300">神</text>
+    <text x="0" y="92" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="32" font-weight="900" fill="#5c4300">新生命</text>
+  </g>
+
+  <g transform="translate(448 604)" filter="url(#smallShadow)">
+    <rect x="-78" y="-30" width="156" height="60" rx="30" fill="#fbf9f5" stroke="#c5c8bd"/>
+    <text x="0" y="10" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="27" font-weight="900" fill="#28351c">悔改</text>
+    <path d="M0 36V92" stroke="#ffdfa0" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(754 916)" filter="url(#smallShadow)">
+    <rect x="-78" y="-30" width="156" height="60" rx="30" fill="#fbf9f5" stroke="#c5c8bd"/>
+    <text x="0" y="10" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="27" font-weight="900" fill="#28351c">信靠</text>
+    <path d="M-82 -12H-146" stroke="#ffdfa0" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(600 154)">
+    <text x="0" y="0" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="72" font-weight="900" fill="#28351c">起死回生的橋梁</text>
+    <text x="0" y="55" text-anchor="middle" font-family="Manrope, sans-serif" font-size="26" font-weight="800" letter-spacing="5" fill="#795900">THE BRIDGE FROM DEATH TO LIFE</text>
+  </g>
+
+  <g transform="translate(600 1294)">
+    <rect x="-368" y="-82" width="736" height="164" rx="42" fill="#fbf9f5" fill-opacity="0.84" stroke="#ffffff" stroke-opacity="0.66"/>
+    <text x="0" y="-18" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="34" font-weight="900" fill="#28351c">基督為罪受苦，為要引我們到神面前</text>
+    <text x="0" y="42" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="26" font-weight="700" fill="#795900">彼得前書 3:18</text>
+  </g>
+</svg>
