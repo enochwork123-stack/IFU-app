@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { homeCards } from '../data/appContent';
 import { Icon } from '../components/Icon';
 import { ROUTE_REGISTRY } from '../app/routes';
+import { useAppContent } from '../context/ContentContext';
 
 function accentClass(accent) {
   if (accent === 'secondary') {
@@ -14,6 +14,8 @@ function accentClass(accent) {
 }
 
 export function HomeScreen() {
+  const { homeCards, customScreenTexts } = useAppContent();
+
   return (
     <>
       <header className="glass-topbar sticky top-0 z-30">
@@ -21,13 +23,22 @@ export function HomeScreen() {
           <div className="flex items-center gap-3">
             <Icon name="menu_book" className="text-[22px] text-primary" />
             <p className="font-headline text-xl font-bold tracking-tight text-primary">
-              基督門徒訓練
+              {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95">
-            <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
-            登錄
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3.5 py-1.5 text-xs font-extrabold text-secondary hover:bg-surface-container-low transition active:scale-95"
+            >
+              <Icon name="admin_panel_settings" className="text-sm" />
+              管理後台
+            </Link>
+            <button className="inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95">
+              <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
+              登錄
+            </button>
+          </div>
         </div>
         <div className="h-px bg-[rgba(40,53,28,0.05)]" />
       </header>
@@ -39,17 +50,17 @@ export function HomeScreen() {
 
         <section className="relative z-10 mx-auto mb-14 mt-2 max-w-xl text-center">
           <h1 className="font-headline text-[3.2rem] leading-[1.06] tracking-tight text-primary">
-            基督門徒訓練
+            {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
           </h1>
           <p className="mx-auto mt-5 max-w-[18rem] text-lg leading-8 text-on-surface-variant">
-            在信仰中成長的旅程，一步一腳印。
+            {customScreenTexts['home:hero-subtitle'] || '在信仰中成長的旅程，一步一腳印。'}
           </p>
         </section>
 
         <section className="relative z-10 space-y-5">
           {homeCards.map((card) => (
             <Link
-              key={card.title}
+              key={card.id || card.title}
               to={card.route}
               className="group block overflow-hidden rounded-[1.7rem] bg-surface-container-lowest p-8 shadow-[0_20px_55px_rgba(40,53,28,0.08)] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_28px_62px_rgba(40,53,28,0.12)]"
             >
@@ -87,10 +98,11 @@ export function HomeScreen() {
             開啟你的旅程
           </Link>
           <p className="mt-4 font-body text-[11px] font-extrabold tracking-[0.22em] text-primary/40">
-            每週更新課程
+            {customScreenTexts['home:footer-text'] || '每週更新課程'}
           </p>
         </section>
       </main>
     </>
   );
 }
+

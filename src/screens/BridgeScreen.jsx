@@ -2,7 +2,7 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { ScriptureCard } from '../components/ScriptureCard';
-import { faithDefinitions } from '../data/appContent';
+import { useAppContent } from '../context/ContentContext';
 
 const bridgeVerses = [
   {
@@ -18,6 +18,8 @@ const bridgeVerses = [
 ];
 
 export function BridgeScreen() {
+  const { faithDefinitions, customScreenTexts } = useAppContent();
+
   return (
     <>
       <PageHeader title="人的回應" backTo="/journey/problem" />
@@ -35,10 +37,10 @@ export function BridgeScreen() {
             <div className="relative z-10 flex min-h-[38rem] flex-col justify-between px-5 pb-8 pt-9">
               <div className="text-center">
                 <h2 className="font-headline text-[2rem] leading-tight text-primary drop-shadow-[0_6px_24px_rgba(255,255,255,0.7)]">
-                  The Step of Faith
+                  {customScreenTexts['bridge:hero-title'] || 'The Step of Faith'}
                 </h2>
                 <p className="mt-2 text-xs font-extrabold tracking-[0.18em] text-primary/70 drop-shadow-[0_4px_16px_rgba(255,255,255,0.75)]">
-                  跨越鴻溝的生命抉擇
+                  {customScreenTexts['bridge:hero-desc'] || '跨越鴻溝的生命抉擇'}
                 </p>
               </div>
 
@@ -163,9 +165,11 @@ export function BridgeScreen() {
         </section>
 
         <section className="mt-10 rounded-[2.4rem] bg-surface-container-high p-8 text-center shadow-inner shadow-primary/5">
-          <h3 className="font-headline text-[2rem] text-primary">輪到你了</h3>
+          <h3 className="font-headline text-[2rem] text-primary">
+            {customScreenTexts['bridge:decision-title'] || '輪到你了'}
+          </h3>
           <p className="mx-auto mt-4 max-w-[18rem] leading-7 text-on-surface-variant">
-            若你願意相信並接受耶穌基督的救贖，歸回神的身邊，你要向神清楚表明你的決定。
+            {customScreenTexts['bridge:decision-desc'] || '若你願意相信並接受耶穌基督的救贖，歸回神的身邊，你要向神清楚表明你的決定。'}
           </p>
           <button
             type="button"

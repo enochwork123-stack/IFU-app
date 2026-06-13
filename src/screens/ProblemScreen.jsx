@@ -4,7 +4,11 @@ import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { ScriptureCard } from '../components/ScriptureCard';
 
+import { useAppContent } from '../context/ContentContext';
+
 export function ProblemScreen() {
+  const { customScreenTexts } = useAppContent();
+
   return (
     <>
       <PageHeader title="人的問題" backTo="/journey/creation" />
@@ -14,10 +18,10 @@ export function ProblemScreen() {
           <div>
             <Icon name="person" className="mb-6 text-6xl text-primary/80" />
             <h2 className="font-headline text-[2.55rem] tracking-tight text-primary">
-              失落的光輝
+              {customScreenTexts['problem:hero-title'] || '失落的光輝'}
             </h2>
             <p className="mx-auto mt-4 max-w-[18rem] text-lg leading-8 text-on-surface-variant">
-              在造物主最初的計畫中，人本是尊貴的，直到黑暗遮蔽了視線。
+              {customScreenTexts['problem:hero-desc'] || '在造物主最初的計畫中，人本是尊貴的，直到黑暗遮蔽了視線。'}
             </p>
           </div>
 
@@ -40,7 +44,7 @@ export function ProblemScreen() {
               世人都犯了罪
             </h3>
             <p className="mt-4 leading-7 text-on-surface-variant">
-              聖經指出人人都犯了罪，就是在思想和行為上違背神，偏離了祂良善的標準。
+              聖經指出人人人犯了罪，就是在思想和行為上違背神，偏離了祂良善的標準。
             </p>
             <ScriptureCard
               reference="羅馬書 3:23"
@@ -79,10 +83,10 @@ export function ProblemScreen() {
 
             <div>
               <h3 className="font-headline text-[1.9rem] text-primary">
-                人的罪使人與神分隔
+                {customScreenTexts['problem:chasm-title'] || '人的罪使人與神分隔'}
               </h3>
               <p className="mt-3 leading-7 text-on-surface-variant">
-                罪惡就像一道無法逾越的鴻溝，攔阻了我們尋求神，也掩蓋了祂對我們的祝福。
+                {customScreenTexts['problem:chasm-desc'] || '罪惡就像一道無法逾越的鴻溝，攔阻了我們尋求神，也掩蓋了祂對我們的祝福。'}
               </p>
             </div>
 
@@ -98,9 +102,11 @@ export function ProblemScreen() {
             <div className="mb-6 inline-flex rounded-full bg-secondary/20 p-4">
               <Icon name="gavel" className="text-4xl text-secondary-fixed-dim" />
             </div>
-            <h3 className="font-headline text-[1.9rem]">罪的工價就是死</h3>
+            <h3 className="font-headline text-[1.9rem]">
+              {customScreenTexts['problem:gavel-title'] || '罪的工價就是死'}
+            </h3>
             <p className="mt-4 leading-7 text-surface/72">
-              罪不僅破壞了現世的生命，更帶來了終極的結局。死後，每個人都必須面對造物主公義的審判。
+              {customScreenTexts['problem:gavel-desc'] || '罪不僅破壞了現世的生命，更帶來了終極的結局。死後，每個人都必須面對造物主公義的審判。'}
             </p>
           </div>
           <div className="mt-10 grid gap-5">
@@ -112,7 +118,7 @@ export function ProblemScreen() {
             />
             <ScriptureCard
               reference="希伯來書 9:27"
-              verse="按著定命，人人都有一死，死後且有審判。"
+              verse="按著定命，人人人有一死，死後且有審判。"
               tone="dark"
               accent="soft"
             />
@@ -130,7 +136,7 @@ export function ProblemScreen() {
                 className="mb-4 text-7xl text-[#ff7a7a]/50"
               />
               <h3 className="font-headline text-[2.2rem] tracking-[0.18em]">
-                永遠沉淪
+                {customScreenTexts['problem:chasm-death-title'] || '永遠沉淪'}
               </h3>
             </div>
           </div>
@@ -143,21 +149,21 @@ export function ProblemScreen() {
             className="mx-auto mt-10 max-w-md text-left"
           />
 
-          <h4 className="mt-10 font-headline text-[1.8rem]">無法自救的絕路</h4>
+          <h4 className="mt-10 font-headline text-[1.8rem]">
+            {customScreenTexts['problem:chasm-death-rescue'] || '無法自救的絕路'}
+          </h4>
           <p className="mt-4 leading-7 text-surface/62">
-            無論人如何努力，行善、道德或宗教，都無法洗淨靈魂的污點，脫離這必然的結局。
+            {customScreenTexts['problem:chasm-death-desc'] || '無論人如何努力，行善、道德或宗教，都無法洗淨靈魂的污點，脫離這必然的結局。'}
           </p>
         </section>
 
         <section className="bg-[linear-gradient(180deg,_#171815_0%,_#fbf9f5_100%)] px-2 py-14 text-center">
           <Icon name="flare" className="text-5xl text-secondary" />
           <p className="mt-6 font-headline text-[1.9rem] leading-tight text-primary">
-            縱然人違背了神，
-            <br />
-            神仍是愛人的。
+            {customScreenTexts['problem:footer-title'] || '縱然人違背了神，神仍是愛人的。'}
           </p>
           <p className="mt-5 leading-7 text-on-surface-variant">
-            在黑暗的盡頭，祂為我們預備了一條出路。祂不願一人沉淪，乃願萬人悔改，重新回到祂的懷抱。
+            {customScreenTexts['problem:footer-desc'] || '在黑暗的盡頭，祂為我們預備了一條出路。祂不願一人沉淪，乃願萬人悔改，重新回到祂的懷抱。'}
           </p>
           <Link
             to="/journey/bridge"
