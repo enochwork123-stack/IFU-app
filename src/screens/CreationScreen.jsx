@@ -4,10 +4,11 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { ScriptureCard } from '../components/ScriptureCard';
-import { creationCards } from '../data/appContent';
+import { useAppContent } from '../context/ContentContext';
 
 export function CreationScreen() {
   const [showQuote, setShowQuote] = useState(false);
+  const { creationCards, customScreenTexts } = useAppContent();
 
   return (
     <>
@@ -71,10 +72,10 @@ export function CreationScreen() {
 
             <div className="max-w-[20rem]">
               <h2 className="font-headline text-[2.2rem] leading-tight text-primary">
-                起初，萬物和諧
+                {customScreenTexts['creation:hero-title'] || '起初，萬物和諧'}
               </h2>
               <p className="mt-4 leading-7 text-on-surface-variant">
-                在世界的起源，創造主與受造物之間存在著一個完美的連結。
+                {customScreenTexts['creation:hero-desc'] || '在世界的起源，創造主與受造物之間存在著一個完美的連結。'}
               </p>
             </div>
           </div>

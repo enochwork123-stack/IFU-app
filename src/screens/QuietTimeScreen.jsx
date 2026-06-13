@@ -3,36 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
-
-const scriptureMap = {
-  john112: {
-    book: '約翰福音',
-    reference: 'John 1:12',
-    chinese: '凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。',
-  },
-  james48: {
-    book: '雅各書',
-    reference: 'Jam 4:8',
-    chinese: '你們親近神，神就必親近你們。',
-    english: 'Draw near to God, and he will draw near to you.',
-  },
-  isa4031: {
-    book: '以賽亞',
-    reference: 'Isa 40:31',
-    chinese: '但那等候耶和華的 , 必從新得力，他們必如鷹展翅上騰，他們奔跑卻不困倦，行走卻不疲乏。',
-    english: 'But those who wait for the Lord shall renew their strength, they shall mount up with wings like eagles, they shall run and not be weary, they shall walk and not faint.',
-  },
-  john155: {
-    book: '約翰福音',
-    reference: 'John 15:5',
-    chinese: '我是葡萄樹，你們是枝子，常在我裡面的，我也常在他裡面，這人就多結果子，因為離了我，你們就不能作甚麼。',
-    english: 'I am the vine, you are the branches. Those who abide in me and I in them bear much fruit, because apart from me you can do nothing.',
-  },
-  tim31617: { book: '提摩太後書', reference: '2Tim 3:16-17', chinese: '聖經都是神所默示的，於教訓、督責、使人歸正、教導人學義，都是有益的，叫屬神的人得以完全，預備行各樣的善事。' },
-  john1624: { book: '約翰福音', reference: 'John 16:24', chinese: '向來你們沒有奉我的名求甚麼， 如今你們求就必得著，叫你們的喜樂可以滿足。', english: 'Until now you have not asked for anything in my name. Ask and you will receive, so that your joy may be complete.' },
-  phil467: { book: '腓立比書', reference: 'Phil 4:6-7', chinese: '應當一無掛慮，只要凡事藉著禱告、祈求、和感謝，將你們所要的告訴神。 神所賜出人意外的平安，必在基督耶穌裡保守你們的心懷意念。', english: 'Do not worry about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus.' },
-  mark135: { book: '馬可福音', reference: 'Mark 1:35', chinese: '次日早晨，天未亮的時候，耶穌起來到曠野地方去，在那裡禱告。', english: 'In the morning, while it was still very dark, he got up and went out to a deserted place, and there he prayed.' },
-};
+import { useAppContent } from '../context/ContentContext';
 
 const oldTestamentBooks =
   '創 創世紀 Genesis; 出 出埃及記 Exodus; 利 利未記 Leviticus; 民 民數記 Numbers; 申 申命記 Deuteronomy; 書 約書亞記 Joshua; 士 士師記 Judges; 得 路得記 Ruth; 撒上 撒母耳記上 1 Samuel; 撒下 撒母耳記下 2 Samuel; 王上 列王記上 1 Kings; 王下 列王記下 2 Kings; 代上 歷代志上 1 Chronicles; 代下 歷代志下 2 Chronicles; 拉 以斯拉記 Ezra; 尼 尼希米記 Nehemiah; 斯 以斯帖記 Esther; 伯 約伯記 Job; 詩 詩篇 Psalms; 箴 箴言 Proverbs; 傳 傳道書 Ecclesiastes; 歌 雅歌 Song of Songs; 賽 以賽亞書 Isaiah; 耶 耶利米書 Jeremiah; 哀 耶利米哀歌 Lamentations; 結 以西結書 Ezekiel; 但 但以理書 Daniel; 何 何西阿書 Hosea; 珥 約珥書 Joel; 摩 阿摩司書 Amos; 俄 俄巴底亞書 Obadiah; 拿 約拿書 Jonah; 彌 彌迦書 Micah; 鴻 那鴻書 Nahum; 哈 哈巴谷書 Habakkuk; 番 西番雅書 Zephaniah; 該 哈該書 Haggai; 亞 撒迦利亞 Zechariah; 瑪 瑪拉基書 Malachi';
@@ -85,9 +56,10 @@ function SavedAnswer({ storageKey }) {
   );
 }
 
-function ScriptureToggle({ scriptureKey }) {
+function ScriptureToggle({ scripture }) {
   const [isOpen, setIsOpen] = useState(false);
-  const scripture = scriptureMap[scriptureKey];
+
+  if (!scripture) return null;
 
   return (
     <div className="rounded-[1.45rem] border border-outline-variant/60 bg-surface-container-lowest">
@@ -97,9 +69,11 @@ function ScriptureToggle({ scriptureKey }) {
         className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
       >
         <span>
-          <span className="block font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
-            {scripture.book}
-          </span>
+          {scripture.book && (
+            <span className="block font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
+              {scripture.book}
+            </span>
+          )}
           <span className="mt-1 block font-headline text-[1.15rem] leading-tight">
             {scripture.reference}
           </span>
@@ -111,33 +85,14 @@ function ScriptureToggle({ scriptureKey }) {
           <p className="font-headline text-[1.05rem] leading-8 text-primary">
             {scripture.chinese}
           </p>
-          {scripture.english ? (
+          {scripture.english && (
             <p className="mt-4 text-sm leading-7 text-on-surface-variant">
               {scripture.english}
             </p>
-          ) : null}
+          )}
         </div>
       ) : null}
     </div>
-  );
-}
-
-function QuestionCard({ number, title, children }) {
-  return (
-    <article className="rounded-[2rem] bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
-      <div className="flex items-center gap-3 text-secondary">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
-          {number}
-        </span>
-        <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-          問題 {number}
-        </p>
-      </div>
-      <h3 className="mt-5 font-headline text-[1.45rem] leading-tight text-primary">
-        {title}
-      </h3>
-      <div className="mt-5 space-y-4">{children}</div>
-    </article>
   );
 }
 
@@ -181,157 +136,159 @@ function BookTable({ title, rows }) {
 }
 
 export function QuietTimeScreen() {
+  const { lessonRoutes } = useAppContent();
   const [showAppendix, setShowAppendix] = useState(false);
+
+  const activeLesson = lessonRoutes.find((r) => r.id === 'lesson-quiet-time');
+
+  if (!activeLesson) {
+    return (
+      <div className="p-12 text-center text-on-surface-variant font-bold">
+        加載中或無此課程...
+      </div>
+    );
+  }
+
+  // Helper to map card styling from presets
+  const getCardStyle = (accent) => {
+    if (accent === 'primary') {
+      return 'bg-primary text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)] p-8 rounded-[2.35rem] relative overflow-hidden';
+    }
+    if (accent === 'secondary') {
+      return 'bg-secondary text-white shadow-[0_28px_72px_rgba(121,89,0,0.22)] p-8 rounded-[2.35rem] relative overflow-hidden';
+    }
+    if (accent === 'tertiary') {
+      return 'bg-surface-container-low p-6 rounded-[2rem] text-primary border border-outline-variant/50 shadow-[0_18px_42px_rgba(40,53,28,0.08)]';
+    }
+    return 'bg-surface-container-lowest p-6 rounded-[2rem] text-primary border border-outline-variant/30 shadow-[0_18px_42px_rgba(40,53,28,0.08)]';
+  };
 
   return (
     <>
-      <PageHeader title="靈修" backTo="/journey" />
-      <main className="px-6 pb-36 pt-8">
-        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
-          <div className="relative">
-            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
-              新生命栽培 : (2)
-            </div>
-            <h2 className="font-headline text-[2.4rem] leading-tight">
-              靈修
-            </h2>
-            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
-              「靈修」是指基督徒透過讀聖經和禱告親近神，與神溝通。有規律的靈修能幫助你與神建立更親密的關係，促進新生命成長。
-            </p>
-          </div>
-        </section>
+      <PageHeader title={activeLesson.title} backTo="/journey" />
 
+      <main className="px-6 pb-36 pt-8 flex flex-col items-center">
+        <div className="w-full space-y-8 flex flex-col items-center">
+          {activeLesson.modules.map((mod) => {
+            const cardTheme = mod.visual?.accent || 'surface';
+            const cardStyle = getCardStyle(cardTheme);
+            const sizeClass = mod.visual?.imageStyle || 'max-w-2xl';
+            const heightClass = mod.visual?.eyebrow || 'min-h-auto';
 
-        <section className="mt-8 grid gap-5">
-          <QuestionCard
-            number="1"
-            title="約翰福音 1:12 說 : 凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。"
-          >
-            <ScriptureToggle scriptureKey="john112" />
-            <p className="text-[1.05rem] leading-8 text-on-surface-variant">
-              藉著接受耶穌基督的救贖，你已成為神的兒女，但對神的認識仍不夠深。神希望你與祂建立深厚的關係,認識祂的真理,活出敬虔的生命。
-            </p>
-            <p className="text-[1.05rem] leading-8 text-on-surface">
-              從以下經文可見，親近神和遠離神的生活會帶來甚麼不同的結果？
-            </p>
-            <div className="grid gap-3">
-              <ScriptureToggle scriptureKey="james48" />
-              <ScriptureToggle scriptureKey="isa4031" />
-              <ScriptureToggle scriptureKey="john155" />
-            </div>
-            <SavedAnswer storageKey="quiet-time-q1" />
-          </QuestionCard>
+            return (
+              <section
+                key={mod.id}
+                className={`w-full ${sizeClass} ${heightClass} ${cardStyle}`}
+              >
+                {/* Visual ambient gradients for primary green cards */}
+                {cardTheme === 'primary' && (
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)] pointer-events-none" />
+                )}
 
+                {/* Card Title Header */}
+                {mod.title && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
+                  <div className={`flex items-center gap-3 mb-5 ${cardTheme === 'primary' ? 'text-secondary-fixed-dim' : 'text-secondary'}`}>
+                    {mod.kind === 'reflection-prompt' && (
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+                        {mod.number || 'Q'}
+                      </span>
+                    )}
+                    <h3 className={`font-headline text-[1.45rem] leading-tight ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
+                      {mod.title}
+                    </h3>
+                  </div>
+                )}
 
-          <QuestionCard number="2" title="你可以透過讀聖經和禱告來親近神：">
-            <div className="rounded-[1.55rem] bg-surface-container-low p-5">
-              <h4 className="font-headline text-[1.25rem] leading-tight text-primary">
-                (a) 聖經記載了甚麼？研讀聖經能給你甚麼幫助？ 提摩太後書 3:16-17
-              </h4>
-              <div className="mt-5">
-                <ScriptureToggle scriptureKey="tim31617" />
-              </div>
-              <SavedAnswer storageKey="quiet-time-q2a" />
-            </div>
-            <div className="rounded-[1.55rem] bg-surface-container-low p-5">
-              <h4 className="font-headline text-[1.25rem] leading-tight text-primary">
-                (b) 什麼是禱告?你為什麼要向神禱告？ 約翰福音 16:24；腓立比書 4:6-7
-              </h4>
-              <div className="mt-5 grid gap-3">
-                <ScriptureToggle scriptureKey="john1624" />
-                <ScriptureToggle scriptureKey="phil467" />
-              </div>
-              <SavedAnswer storageKey="quiet-time-q2b" />
-            </div>
-          </QuestionCard>
+                {/* Render different kinds of study modules */}
+                {mod.kind === 'content-section' && (
+                  <div className="relative">
+                    {mod.body && (
+                      <p className={`text-[1.08rem] leading-8 ${cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>
+                        {mod.body}
+                      </p>
+                    )}
+                    {mod.scriptures && (
+                      <div className="mt-5 grid gap-3">
+                        {mod.scriptures.map((sc, sIdx) => (
+                          <ScriptureToggle key={sIdx} scripture={sc} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-          <QuestionCard number="3" title="從 馬可福音 1:35，可見主耶穌如何親近神：">
-            <ScriptureToggle scriptureKey="mark135" />
-            <div className="rounded-[1.55rem] bg-surface-container-low p-5">
-              <h4 className="font-headline text-[1.25rem] leading-tight text-primary">
-                時間、地方
-              </h4>
-              <SavedAnswer storageKey="quiet-time-q3-time-place" />
-            </div>
-            <div className="rounded-[1.55rem] bg-surface-container-low p-5">
-              <h4 className="font-headline text-[1.25rem] leading-tight text-primary">
-                方式、處境
-              </h4>
-              <SavedAnswer storageKey="quiet-time-q3-method-context" />
-            </div>
-          </QuestionCard>
+                {mod.kind === 'reflection-prompt' && (
+                  <div className="relative">
+                    <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
+                    {mod.scriptures && (
+                      <div className="mt-5 grid gap-3">
+                        {mod.scriptures.map((sc, sIdx) => (
+                          <ScriptureToggle key={sIdx} scripture={sc} />
+                        ))}
+                      </div>
+                    )}
+                    <SavedAnswer storageKey={mod.storageKey} />
+                  </div>
+                )}
 
-          <QuestionCard number="4" title="聖經書卷目錄與縮寫見 附件A">
-            <p className="text-[1.05rem] leading-8 text-on-surface-variant">
-              請查看 附件A 的聖經書卷目錄與縮寫，並在下方寫下你翻閱聖經或默想經文的感受。
-            </p>
-            <SavedAnswer storageKey="quiet-time-q4" />
-          </QuestionCard>
+                {mod.kind === 'appendix' && (
+                  <div className="relative">
+                    <div className="flex items-center gap-3 text-secondary">
+                      <Icon name="article" className="text-[22px]" />
+                      <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                        {mod.title || '附件'}
+                      </p>
+                    </div>
+                    <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
+                      {mod.title || '附件'}
+                    </h2>
+                    {mod.body && (
+                      <p className="mt-4 leading-7 text-on-surface-variant">
+                        {mod.body}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowAppendix(true)}
+                      className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95 cursor-pointer"
+                    >
+                      查看附件
+                      <Icon name="open_in_full" className="text-[18px]" />
+                    </button>
+                  </div>
+                )}
 
-          <section className="mt-12 rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
-            <div className="flex items-center gap-3 text-secondary">
-              <Icon name="article" className="text-[22px]" />
-              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                附件A
-              </p>
-            </div>
-            <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
-              附件A : 聖經書卷目錄與縮寫
-            </h2>
-            <p className="mt-4 leading-7 text-on-surface-variant">
-              請查閱 附件A 了解聖經舊約和新約書卷的目錄與縮寫對照表。
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowAppendix(true)}
-              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-            >
-              查看附件
-              <Icon name="open_in_full" className="text-[18px]" />
-            </button>
-          </section>
+                {mod.kind === 'extension-card' && (
+                  <div className="relative">
+                    <div className="flex items-center gap-3 text-secondary">
+                      <Icon name="extension" className="text-[22px]" />
+                      <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                        延伸學習
+                      </p>
+                    </div>
+                    <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
+                      {mod.title}
+                    </h3>
+                    {mod.description && (
+                      <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
+                        {mod.description}
+                      </p>
+                    )}
+                    <Link
+                      to={mod.route}
+                      className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
+                    >
+                      開始延伸學習
+                      <Icon name="arrow_forward" className="text-[18px]" />
+                    </Link>
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
 
-          <section className="rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
-            <div className="flex items-center gap-3 text-secondary">
-              <Icon name="extension" className="text-[22px]" />
-              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                延伸學習
-              </p>
-            </div>
-            <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
-              《靈修》延伸學習 (A) : 七分鐘與神獨處
-            </h3>
-            <Link
-              to="/journey/quiet-time/seven-minutes-with-god"
-              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-            >
-              開始延伸學習
-              <Icon name="arrow_forward" className="text-[18px]" />
-            </Link>
-          </section>
-
-          <section className="rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
-            <div className="flex items-center gap-3 text-secondary">
-              <Icon name="extension" className="text-[22px]" />
-              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                延伸學習
-              </p>
-            </div>
-            <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
-              《靈修》延伸學習 (B) : If Quiet Time is New to You
-            </h3>
-            <Link
-              to="/journey/quiet-time/new-to-you"
-              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-            >
-              開始延伸學習
-              <Icon name="arrow_forward" className="text-[18px]" />
-            </Link>
-          </section>
-        </section>
-
-        <section className="mt-8">
+        <section className="mt-8 w-full max-w-2xl">
           <JourneyPager
             previous={{ to: '/journey/salvation-assurance', label: '得救的確據' }}
             next={{ to: '/journey/prayer-assurance', label: '禱告的確據' }}
@@ -341,7 +298,7 @@ export function QuietTimeScreen() {
 
       {showAppendix ? (
         <div className="fixed inset-0 z-50 bg-black/45 px-4 py-6 backdrop-blur-sm">
-          <div className="mx-auto flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_28px_80px_rgba(20,25,18,0.32)]">
+          <div className="mx-auto flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_28px_80px_rgba(20,25,18,0.32)] border border-outline-variant/60">
             <div className="flex items-start justify-between gap-4 border-b border-outline-variant/50 bg-surface-container-lowest p-5">
               <div>
                 <p className="font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
@@ -360,7 +317,7 @@ export function QuietTimeScreen() {
                 <Icon name="close" className="text-[22px]" />
               </button>
             </div>
-            <div className="overflow-y-auto p-5">
+            <div className="overflow-y-auto p-5 bg-surface-container-lowest/30">
               <div className="grid gap-6">
                 <BookTable
                   title="舊約聖經書卷 (共39)"

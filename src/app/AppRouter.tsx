@@ -59,6 +59,8 @@ import { PersonalTestimonyScreen } from '../screens/PersonalTestimonyScreen';
 import { LifeGoalScreen } from '../screens/LifeGoalScreen';
 import { SpiritualGrowthScreen } from '../screens/SpiritualGrowthScreen';
 import { ROUTE_REGISTRY } from './routes';
+import { ContentProvider } from '../context/ContentContext';
+import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 
 const AppLayout: React.FC = () => (
   <ShellFrame>
@@ -224,11 +226,18 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: '/admin',
+    element: <AdminDashboardScreen />,
+  },
+  {
     path: '*',
     element: <Navigate to={ROUTE_REGISTRY.JOURNEY} replace />,
   },
 ]);
 
-export const AppRouter: React.FC = () => <RouterProvider router={router} />;
-
+export const AppRouter: React.FC = () => (
+  <ContentProvider>
+    <RouterProvider router={router} />
+  </ContentProvider>
+);
 export default AppRouter;
