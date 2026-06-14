@@ -9,7 +9,7 @@ export const LoginScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface p-8">
+      <div className="flex h-full w-full flex-col items-center justify-center bg-surface p-8">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
         <p className="mt-6 font-headline text-lg font-bold text-primary animate-pulse">
           讀取中...
@@ -23,44 +23,43 @@ export const LoginScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-surface flex items-center justify-center font-body">
-      <div className="w-full h-full min-h-screen md:min-h-0 md:h-auto md:max-w-[420px] bg-surface-container-lowest md:rounded-[2rem] md:shadow-[0_24px_80px_rgba(40,53,28,0.12)] md:border md:border-outline-variant/40 overflow-hidden flex flex-col relative">
-        {/* Back Button */}
-        <Link
-          to="/"
-          className="absolute left-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-md text-primary shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-outline-variant/20 hover:scale-105 active:scale-95 transition"
-          aria-label="返回首頁"
-        >
-          <Icon name="arrow_back" className="text-xl" />
-        </Link>
+    <div className="h-full w-full bg-surface-container-lowest flex flex-col relative overflow-hidden font-body">
+      {/* Back Button */}
+      <Link
+        to="/"
+        className="absolute left-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-md text-primary shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-outline-variant/20 hover:scale-105 active:scale-95 transition"
+        aria-label="返回首頁"
+      >
+        <Icon name="arrow_back" className="text-xl" />
+      </Link>
 
-        {/* Hero Image */}
-        <div className="relative w-full h-[55vh] md:h-[320px] overflow-hidden shrink-0">
-          <img
-            src={assetPath('assets/login_hero.png')}
-            alt="晨光穿過彩色玻璃窗灑在打開的聖經上"
-            className="w-full h-full object-cover object-top"
-          />
-          {/* Subtle bottom overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-surface-container-lowest to-transparent pointer-events-none" />
-        </div>
+      {/* Hero Image - taking exactly 55% of container height */}
+      <div className="relative w-full h-[55%] overflow-hidden shrink-0">
+        <img
+          src={assetPath('assets/login_hero.png')}
+          alt="晨光穿過彩色玻璃窗灑在打開的聖經上"
+          className="w-full h-full object-cover object-top"
+        />
+        {/* Subtle bottom overlay */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-surface-container-lowest to-transparent pointer-events-none" />
+      </div>
 
-        {/* Content Card */}
-        <div className="relative flex-1 bg-surface-container-lowest rounded-t-[16px] md:rounded-t-none mt-[-16px] md:mt-0 px-[28px] pt-8 pb-10 flex flex-col">
+      {/* Content Card - taking remaining 45% container height */}
+      <div className="relative flex-1 bg-surface-container-lowest px-[28px] pt-8 pb-10 flex flex-col justify-between overflow-y-auto">
+        <div className="flex flex-col gap-3">
           {/* Header */}
           <h2 className="font-headline text-[26px] md:text-[30px] font-bold text-primary leading-tight">
-            歡迎。你被深知。
+            延續你的屬靈旅程
           </h2>
 
           {/* Description */}
-          <p className="mt-3 text-[15px] leading-relaxed text-on-surface-variant font-body">
-            登入以開啟你的門徒成長之旅。
+          <p className="text-[15px] leading-relaxed text-on-surface-variant font-body">
+            登入以獲取靈修資源，神的話語正等待著你。
           </p>
+        </div>
 
-          {/* Spacer to push button down and maintain exact vertical rhythm */}
-          <div className="h-20" />
-
-          {/* Sign in with Google Button */}
+        {/* Sign in with Google Button */}
+        <div className="mt-8 shrink-0">
           <button
             onClick={signInWithGoogle}
             className="w-full h-[52px] rounded-[10px] bg-white border border-[#DADCE0] shadow-[0_1px_3px_rgba(0,0,0,0.1)] flex items-center justify-center gap-3.5 hover:bg-[#F8F8F8] hover:shadow-[0_2px_6px_rgba(0,0,0,0.12)] transition-all cursor-pointer font-body text-[15px] font-medium text-[#3c4043] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
