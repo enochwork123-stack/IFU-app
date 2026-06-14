@@ -27,6 +27,8 @@ export const LibraryScreen: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [drawnIds, setDrawnIds] = useState<string[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
 
   // Load starred items on mount
   useEffect(() => {
@@ -39,6 +41,27 @@ export const LibraryScreen: React.FC = () => {
       console.error('Error loading starred quiet times', e);
     }
   }, []);
+
+  // Lock scroll of the route viewport when modal is open
+  useEffect(() => {
+    const viewport = document.querySelector('.ifu-route-viewport');
+    if (!viewport) return;
+    
+    if (selectedEntry) {
+      setScrollTop(viewport.scrollTop);
+      setViewportHeight(viewport.clientHeight);
+      viewport.classList.add('overflow-hidden');
+      viewport.classList.remove('overflow-y-auto');
+    } else {
+      viewport.classList.remove('overflow-hidden');
+      viewport.classList.add('overflow-y-auto');
+    }
+
+    return () => {
+      viewport.classList.remove('overflow-hidden');
+      viewport.classList.add('overflow-y-auto');
+    };
+  }, [selectedEntry]);
 
   // Save starred items when state changes
   const toggleStar = (id: string, e?: React.MouseEvent) => {
@@ -669,7 +692,13 @@ export const LibraryScreen: React.FC = () => {
 
       {/* EXPANDED DEVOTIONAL DETAIL BOTTOM SHEET / OVERLAY DIALOG */}
       {selectedEntry && (
-        <div className="absolute inset-x-0 bottom-0 top-[4.35rem] z-50 flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity p-4">
+        <div 
+          className="absolute inset-x-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity p-4"
+          style={{ 
+            top: `calc(${scrollTop}px + 4.35rem)`, 
+            height: `calc(${viewportHeight}px - 4.35rem)`
+          }}
+        >
           {/* Modal Backdrop closer */}
           <div className="absolute inset-0" onClick={() => setSelectedEntry(null)} />
 

@@ -375,7 +375,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           faithDefinitions: parsed.faithDefinitions || defaultFaithDefinitions,
           assuranceGospelSections: parsed.assuranceGospelSections || defaultAssuranceGospelSections,
           quietTimeStudyItems: parsed.quietTimeStudyItems || defaultQuietTimeStudyItems,
-          lessonRoutes: parsed.lessonRoutes || defaultEnrichedLessonRoutes,
+          lessonRoutes: (parsed.lessonRoutes && parsed.lessonRoutes.length >= defaultEnrichedLessonRoutes.length)
+            ? parsed.lessonRoutes
+            : defaultEnrichedLessonRoutes,
           customScreenTexts: { ...DEFAULT_CUSTOM_TEXTS, ...(parsed.customScreenTexts || {}) },
         };
       }
