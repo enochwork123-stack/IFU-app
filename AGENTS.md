@@ -52,14 +52,18 @@ If they say no, proceed normally with whatever they ask for. But if at any point
 Run `gh issue list --repo enochwork123-stack/IFU-app --state open` and present the open issues. Ask the user which one they want to implement.
 
 ### Step 2 — Assign and branch
-Once an issue is chosen (e.g. issue #2):
+Once an issue is chosen (e.g. issue #7):
 1. Assign it to the user so teammates know it is taken:
-   `gh issue edit 2 --repo enochwork123-stack/IFU-app --add-assignee @me`
+   `gh issue edit 7 --repo enochwork123-stack/IFU-app --add-assignee @me`
 2. Pull the latest main to avoid conflicts:
    `git pull origin main`
-3. Create a branch named after the issue number:
-   `git checkout -b 2-daily-quiet-time`
-   (format: `<issue-number>-<short-kebab-slug>`)
+3. Check if a linked branch already exists for the issue:
+   `gh issue develop --list 7`
+   - **If no branch exists** — create, link to the issue, and check it out in one command:
+     `gh issue develop 7 --checkout`
+     GitHub auto-names it `<number>-<issue-title-slug>` (e.g. `7-user-authentication-profiles`).
+   - **If a branch was created manually before this workflow** — just check it out:
+     `git checkout <existing-branch-name>`
 
 ### Step 3 — Implement
 Work on the feature. Reference the issue number in commit messages so commits appear in the issue timeline:
@@ -81,3 +85,4 @@ A maintainer will review and merge the PR. Do not merge your own PR without a se
 - One issue → one branch → one PR. Do not combine multiple features in one branch.
 - Always branch from the latest `main`, not from another feature branch.
 - Never push directly to `main`.
+- Never commit and push to main without being explicitly told to do so.

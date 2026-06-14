@@ -75,6 +75,18 @@
     -webkit-backdrop-filter: blur(16px);
   }
 
+  @media (max-width: 768px) {
+    .hide-on-mobile {
+      display: none !important;
+    }
+    .no-truncate-on-mobile {
+      max-width: none !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+    }
+  }
+
   .bottom-nav-glass {
     background: rgba(251, 249, 245, 0.84);
     box-shadow: 0 -4px 24px rgba(40, 53, 28, 0.06);

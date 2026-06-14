@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
+/**
+ * @param {object} props
+ * @param {string} props.title
+ * @param {string} [props.backTo]
+ * @param {string} [props.backLabel]
+ * @param {any} [props.action]
+ * @param {boolean} [props.compact]
+ */
 export function PageHeader({
   title,
   backTo,

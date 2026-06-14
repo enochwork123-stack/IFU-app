@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
-import type { StudyModule, JourneyStep, HomeCard, ScriptureReference } from '../types/content';
+import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
+import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media';
 
@@ -16,10 +17,8 @@ export const AdminDashboardScreen: React.FC = () => {
     customScreenTexts,
     updateHomeCards,
     updateDiscipleshipSteps,
-    updateGospelSections,
     updateLessonRoutes,
     updateCustomText,
-    updateCustomTexts,
     addCardToLesson,
     updateCardInLesson,
     deleteCardFromLesson,
@@ -38,6 +37,11 @@ export const AdminDashboardScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('general');
   const [selectedLessonId, setSelectedLessonId] = useState<string>(lessonRoutes[0]?.id || '');
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [adminSidebarOpen, setAdminSidebarOpen] = useState(true);
+  
+  // Real-time Preview State
+  const [showPreview, setShowPreview] = useState(true);
+  const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
   const [showImportArea, setShowImportArea] = useState(false);
@@ -176,139 +180,122 @@ export const AdminDashboardScreen: React.FC = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-surface">
-      {/* Sidebar */}
-      <aside className="flex w-72 flex-col border-r border-outline-variant/60 bg-surface-container-lowest">
-        <div className="flex h-20 items-center justify-between border-b border-outline-variant/40 px-6">
-          <div className="flex items-center gap-3">
-            <Icon name="design_services" className="text-[22px] text-primary" />
-            <span className="font-headline text-lg font-black tracking-tight text-primary">
-              IFU 內容管理
-            </span>
-          </div>
-          <span className="rounded-full bg-secondary-fixed/55 px-2 py-0.5 text-[10px] font-bold text-on-secondary-fixed">
-            測試版
-          </span>
+      {/* Sidebar — collapsible */}
+      <aside className={`flex flex-col border-r border-outline-variant/60 bg-surface-container-lowest transition-all duration-300 ${ adminSidebarOpen ? 'w-72' : 'w-16' } shrink-0`}>
+        {/* Sidebar header */}
+        <div className="flex h-20 items-center justify-between border-b border-outline-variant/40 px-3 shrink-0">
+          {adminSidebarOpen && (
+            <div className="flex items-center gap-3 min-w-0">
+              <Icon name="design_services" className="text-[22px] text-primary shrink-0" />
+              <span className="font-headline text-lg font-black tracking-tight text-primary truncate">
+                IFU 內容管理
+              </span>
+            </div>
+          )}
+          <button
+            onClick={() => setAdminSidebarOpen(!adminSidebarOpen)}
+            title={adminSidebarOpen ? '收起側欄' : '展開側欄'}
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container transition cursor-pointer"
+          >
+            <Icon name={adminSidebarOpen ? 'chevron_left' : 'chevron_right'} className="text-xl text-secondary" />
+          </button>
         </div>
 
-        <nav className="flex-1 space-y-1.5 p-4">
-          <button
-            onClick={() => setActiveTab('general')}
-            className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-4 py-3 text-sm font-bold transition-all ${
-              activeTab === 'general'
-                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <Icon name="settings" className="text-xl" />
-            一般設定 & 標題
-          </button>
-
-          <button
-            onClick={() => setActiveTab('home-cards')}
-            className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-4 py-3 text-sm font-bold transition-all ${
-              activeTab === 'home-cards'
-                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <Icon name="home" className="text-xl" />
-            首頁入口卡片
-          </button>
-
-          <button
-            onClick={() => setActiveTab('journey-steps')}
-            className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-4 py-3 text-sm font-bold transition-all ${
-              activeTab === 'journey-steps'
-                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <Icon name="route" className="text-xl" />
-            培育生命路徑
-          </button>
-
-          <button
-            onClick={() => setActiveTab('lessons')}
-            className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-4 py-3 text-sm font-bold transition-all ${
-              activeTab === 'lessons'
-                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <Icon name="auto_stories" className="text-xl" />
-            課程頁面 & 卡片
-          </button>
-
-          <button
-            onClick={() => setActiveTab('media')}
-            className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-4 py-3 text-sm font-bold transition-all ${
-              activeTab === 'media'
-                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <Icon name="photo_library" className="text-xl" />
-            相片與媒體庫
-          </button>
+        <nav className="flex-1 space-y-1.5 p-3 overflow-hidden">
+          {([
+            { tab: 'general',        icon: 'settings',      label: '一般設定 & 標題' },
+            { tab: 'home-cards',     icon: 'home',          label: '首頁入口卡片' },
+            { tab: 'journey-steps',  icon: 'route',         label: '培育生命路徑' },
+            { tab: 'lessons',        icon: 'auto_stories',  label: '課程頁面 & 卡片' },
+            { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
+          ] as const).map(({ tab, icon, label }) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              title={!adminSidebarOpen ? label : undefined}
+              className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-3 py-3 text-sm font-bold transition-all ${
+                activeTab === tab
+                  ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
+                  : 'text-on-surface-variant hover:bg-surface-container-low'
+              }`}
+            >
+              <Icon name={icon} className="text-xl shrink-0" />
+              {adminSidebarOpen && <span className="truncate">{label}</span>}
+            </button>
+          ))}
         </nav>
 
         {/* Action buttons at footer of sidebar */}
-        <div className="border-t border-outline-variant/40 p-4 space-y-2.5">
-          <button
-            onClick={exportConfig}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 py-2.5 text-xs font-bold text-primary hover:bg-primary/5 active:scale-98 transition"
-          >
-            <Icon name="download" className="text-base" />
-            導出 JSON 配置文件
-          </button>
-          
-          <button
-            onClick={() => {
-              setImportStatus(null);
-              setShowImportArea(true);
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-outline-variant py-2.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container transition"
-          >
-            <Icon name="upload" className="text-base" />
-            導入 JSON 配置文件
-          </button>
-
-          <button
-            onClick={() => {
-              if (window.confirm('確定要清除所有更改並恢復為默認配置嗎？')) {
-                resetToDefaults();
-                alert('已恢復為預設值！');
-              }
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition"
-          >
-            <Icon name="restart_alt" className="text-base animate-spin-reverse" />
-            重置為默認數據
-          </button>
-
-          <button
-            onClick={() => navigate('/')}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-secondary py-3 text-xs font-extrabold tracking-widest text-white hover:brightness-105 active:scale-98 transition shadow-[0_8px_16px_rgba(121,89,0,0.15)]"
-          >
-            <Icon name="arrow_back" className="text-sm" />
-            返回前台網站
-          </button>
+        <div className="border-t border-outline-variant/40 p-3 space-y-2">
+          {adminSidebarOpen ? (
+            <>
+              <button
+                onClick={exportConfig}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 py-2.5 text-xs font-bold text-primary hover:bg-primary/5 active:scale-98 transition"
+              >
+                <Icon name="download" className="text-base" />
+                導出 JSON 配置文件
+              </button>
+              <button
+                onClick={() => { setImportStatus(null); setShowImportArea(true); }}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-outline-variant py-2.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container transition"
+              >
+                <Icon name="upload" className="text-base" />
+                導入 JSON 配置文件
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm('確定要清除所有更改並恢復為默認配置嗎？')) {
+                    resetToDefaults();
+                    alert('已恢復為預設值！');
+                  }
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition"
+              >
+                <Icon name="restart_alt" className="text-base" />
+                重置為默認數據
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-secondary py-3 text-xs font-extrabold tracking-widest text-white hover:brightness-105 active:scale-98 transition shadow-[0_8px_16px_rgba(121,89,0,0.15)]"
+              >
+                <Icon name="arrow_back" className="text-sm" />
+                返回前台網站
+              </button>
+            </>
+          ) : (
+            /* Collapsed: icon-only action buttons */
+            <>
+              <button onClick={exportConfig} title="導出 JSON" className="flex w-full items-center justify-center rounded-full border border-primary/40 py-2 hover:bg-primary/5 transition cursor-pointer">
+                <Icon name="download" className="text-base text-primary" />
+              </button>
+              <button onClick={() => { setImportStatus(null); setShowImportArea(true); }} title="導入 JSON" className="flex w-full items-center justify-center rounded-full border border-outline-variant py-2 hover:bg-surface-container transition cursor-pointer">
+                <Icon name="upload" className="text-base text-on-surface-variant" />
+              </button>
+              <button onClick={() => { if (window.confirm('確定要清除所有更改並恢復為默認配置嗎？')) { resetToDefaults(); alert('已恢復為預設值！'); } }} title="重置為默認數據" className="flex w-full items-center justify-center rounded-full border border-red-200 py-2 hover:bg-red-50 transition cursor-pointer">
+                <Icon name="restart_alt" className="text-base text-red-600" />
+              </button>
+              <button onClick={() => navigate('/')} title="返回前台網站" className="flex w-full items-center justify-center rounded-full bg-secondary py-2.5 hover:brightness-105 transition cursor-pointer">
+                <Icon name="arrow_back" className="text-sm text-white" />
+              </button>
+            </>
+          )}
         </div>
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 overflow-y-auto bg-surface-container-lowest/40 px-10 py-8">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-lowest/40">
         {/* Topbar of main panel */}
-        <div className="mb-8 flex items-center justify-between border-b border-outline-variant/40 pb-5">
+        <div className="px-10 py-5 shrink-0 border-b border-outline-variant/40 flex items-center justify-between bg-white/70 backdrop-blur-md">
           <div>
-            <h2 className="font-headline text-3xl font-black text-primary">
+            <h2 className="font-headline text-2xl font-black text-primary leading-tight">
               {activeTab === 'general' && '一般設定 & 標題'}
               {activeTab === 'home-cards' && '首頁入口卡片管理'}
               {activeTab === 'journey-steps' && '培育生命路徑管理 (12個靈修培育步驟)'}
               {activeTab === 'lessons' && '課程頁面 & 內容卡片'}
               {activeTab === 'media' && '相片與媒體庫'}
             </h2>
-            <p className="mt-1 text-sm text-on-surface-variant">
+            <p className="mt-1 text-xs text-on-surface-variant">
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
               {activeTab === 'home-cards' && '管理首頁顯示的三大主要培育路徑入口卡片。'}
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
@@ -317,11 +304,31 @@ export const AdminDashboardScreen: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-xs font-bold text-green-700">
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            本地存儲已啟用 (隔離保護中)
+          <div className="flex items-center gap-3">
+            {/* Real-time Preview Toggle */}
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                showPreview
+                  ? 'border-primary bg-primary/8 text-primary shadow-sm'
+                  : 'border-outline-variant hover:bg-surface-container'
+              }`}
+            >
+              <Icon name="chrome_reader_mode" className="text-base text-primary" />
+              {showPreview ? '隱藏實時預覽' : '顯示實時預覽'}
+            </button>
+
+            <div className="flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-xs font-bold text-green-700">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              本地存儲已啟用 (隔離保護中)
+            </div>
           </div>
         </div>
+
+        {/* Split pane content area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left panel: Form Editor */}
+          <div className={`h-full overflow-y-auto px-10 py-8 ${showPreview ? 'w-[50%]' : 'w-full'}`}>
 
         {/* Tab Contents */}
         {activeTab === 'general' && (
@@ -592,7 +599,7 @@ export const AdminDashboardScreen: React.FC = () => {
 
         {activeTab === 'lessons' && (
           <div className="flex gap-8 items-start">
-            {/* Left selector sidebar inside Tab */}
+            {/* Left selector sidebar */}
             <div className="w-64 shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3">
               <h4 className="px-2 text-xs font-bold text-secondary uppercase tracking-widest">選擇靈修章節</h4>
               <div className="space-y-1">
@@ -609,8 +616,8 @@ export const AdminDashboardScreen: React.FC = () => {
                         : 'text-on-surface-variant hover:bg-surface-container'
                     }`}
                   >
-                    <span>{route.title}</span>
-                    <span className="text-[9px] opacity-70 font-mono">{route.id}</span>
+                    <span className="truncate">{route.title}</span>
+                    <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{route.id.replace('lesson-','')}</span>
                   </button>
                 ))}
               </div>
@@ -1025,6 +1032,11 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
+
+
+
+
+
         {activeTab === 'media' && (
           <div className="space-y-8 max-w-4xl">
             <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
@@ -1124,6 +1136,92 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
           </div>
         )}
+
+        </div> {/* Left panel: Form Editor */}
+
+        {/* Right panel: Real-time Live Preview */}
+          {showPreview && (
+            <div className="w-[50%] h-full bg-surface-container-low/65 border-l border-outline-variant/40 flex flex-col overflow-hidden">
+              {/* Toolbar */}
+              <div className="bg-surface-container/70 px-6 py-3 border-b border-outline-variant/30 flex justify-between items-center shrink-0">
+                <span className="text-xs font-extrabold text-secondary uppercase tracking-widest flex items-center gap-1.5">
+                  <Icon name="visibility" className="text-sm" />
+                  實時畫面預覽
+                </span>
+                
+                <div className="flex bg-surface-container-high/80 rounded-full p-0.5 border border-outline-variant/20">
+                  <button
+                    onClick={() => setPreviewViewport('mobile')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                      previewViewport === 'mobile' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    <Icon name="smartphone" className="text-xs" />
+                    手機
+                  </button>
+                  <button
+                    onClick={() => setPreviewViewport('tablet')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                      previewViewport === 'tablet' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    <Icon name="tablet" className="text-xs" />
+                    平板
+                  </button>
+                  <button
+                    onClick={() => setPreviewViewport('desktop')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                      previewViewport === 'desktop' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    <Icon name="desktop_windows" className="text-xs" />
+                    桌面
+                  </button>
+                </div>
+              </div>
+
+              {/* Viewport Frame Container */}
+              <div className="flex-1 overflow-y-auto p-6 flex justify-center items-start">
+                <div className={
+                  previewViewport === 'mobile' ? 'w-[375px] h-[720px] rounded-[2.5rem] border-[10px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
+                  previewViewport === 'tablet' ? 'w-[768px] h-[960px] rounded-[2.5rem] border-[12px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
+                  'w-full min-h-full bg-surface relative shadow-sm border border-outline-variant/20'
+                }>
+                  {previewViewport !== 'desktop' ? (
+                    <div className="w-full h-full overflow-hidden flex flex-col">
+                      {/* Mock Status Bar */}
+                      <div className="h-6 bg-slate-950 text-white flex items-center justify-between px-6 text-[10px] select-none shrink-0 font-mono">
+                        <span>12:00</span>
+                        <div className="flex items-center gap-1.5">
+                          <Icon name="wifi" className="text-[11px]" />
+                          <Icon name="battery_full" className="text-[11px]" />
+                        </div>
+                      </div>
+                      
+                      {/* Inner Viewport Content */}
+                      <div className="flex-1 overflow-y-auto scrollbar-none">
+                        {activeTab === 'general' && <HomePreview />}
+                        {activeTab === 'home-cards' && <HomePreview />}
+                        {activeTab === 'journey-steps' && <JourneyPreview />}
+                        {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                        {activeTab === 'media' && <HomePreview />}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Desktop full-width content */
+                    <div className="w-full h-full overflow-y-auto">
+                      {activeTab === 'general' && <HomePreview />}
+                      {activeTab === 'home-cards' && <HomePreview />}
+                      {activeTab === 'journey-steps' && <JourneyPreview />}
+                      {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                      {activeTab === 'media' && <HomePreview />}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
 
       {/* JSON Import Area Modal */}
