@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
+import { assetPath } from '../utils/assets';
 
 interface ProgressStats {
   quietTimes: number;
@@ -19,7 +20,52 @@ export const ProfileScreen: React.FC = () => {
     bibleStudies: 0,
     discipleshipSteps: 0,
   });
+  const [streak, setStreak] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
+
+  const calculateQuietTimeStreak = (qtLogs: { completed_at: string }[]): number => {
+    if (qtLogs.length === 0) return 0;
+
+    // Extract unique dates and sort descending
+    const uniqueDates = Array.from(
+      new Set(qtLogs.map(log => log.completed_at))
+    ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+    if (uniqueDates.length === 0) return 0;
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    const todayStr = formatDate(today);
+    const yesterdayStr = formatDate(yesterday);
+
+    const mostRecent = uniqueDates[0];
+
+    // If the most recent quiet time is not today or yesterday, the streak is 0
+    if (mostRecent !== todayStr && mostRecent !== yesterdayStr) {
+      return 0;
+    }
+
+    let currentStreak = 1;
+    let current = new Date(mostRecent);
+
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i]);
+      const diffTime = Math.abs(current.getTime() - prev.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        currentStreak++;
+        current = prev;
+      } else if (diffDays > 1) {
+        break; // Streak is broken
+      }
+    }
+
+    return currentStreak;
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -29,7 +75,7 @@ export const ProfileScreen: React.FC = () => {
         setLoadingStats(true);
         const { data, error } = await supabase
           .from('user_progress')
-          .select('type');
+          .select('type, completed_at');
 
         if (!error && data) {
           const counts = data.reduce(
@@ -42,6 +88,10 @@ export const ProfileScreen: React.FC = () => {
             { quietTimes: 0, bibleStudies: 0, discipleshipSteps: 0 }
           );
           setStats(counts);
+
+          const qtLogs = data.filter(log => log.type === 'quiet_time');
+          const calculatedStreak = calculateQuietTimeStreak(qtLogs);
+          setStreak(calculatedStreak);
         }
       } catch (err) {
         console.error('Error fetching progress stats:', err);
@@ -71,17 +121,11 @@ export const ProfileScreen: React.FC = () => {
           <div className="absolute right-[-20px] top-[-20px] h-32 w-32 rounded-full bg-secondary/10 blur-2xl pointer-events-none" />
           
           <div className="flex items-center gap-4 relative z-10">
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.display_name || 'User'}
-                className="h-16 w-16 rounded-full object-cover border-2 border-white/20"
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/12">
-                <Icon name="person" filled className="text-4xl text-secondary-fixed" />
-              </div>
-            )}
+            <img
+              src={profile?.avatar_url || assetPath('assets/default_avatar.png')}
+              alt={profile?.display_name || 'User'}
+              className="h-16 w-16 rounded-full object-cover border-2 border-white/20 bg-white/10"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="font-headline text-[1.5rem] font-bold truncate">
@@ -117,7 +161,7 @@ export const ProfileScreen: React.FC = () => {
           {[
             {
               label: '每日靈修',
-              value: loadingStats ? '...' : `${stats.quietTimes} 次`,
+              value: loadingStats ? '...' : `${streak} 天`,
               icon: 'event_repeat',
             },
             {
