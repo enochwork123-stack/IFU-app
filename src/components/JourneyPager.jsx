@@ -95,85 +95,54 @@ export function JourneyPager({ previous, next }) {
   const hasCompletionButton = !!(type && referenceId);
 
   return (
-    <div className="w-full pt-4">
-      {hasCompletionButton ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-center w-full">
-          {/* Previous Slot */}
-          <div className="order-2 md:order-1 justify-self-start">
-            {previous ? (
-              <Link
-                to={previous.to}
-                className="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-2.5 text-sm font-bold text-primary transition-all hover:bg-surface-container active:scale-95"
-              >
-                <Icon name="arrow_back" className="text-[18px]" />
-                {previous.label}
-              </Link>
-            ) : (
-              <div className="w-1" />
-            )}
-          </div>
-
-          {/* Completion Button Slot */}
-          <div className="order-1 col-span-2 md:col-span-1 md:order-2 justify-self-center w-full md:w-auto flex justify-center">
-            {isCompleted ? (
-              <button
-                disabled
-                className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-6 py-2.5 text-sm font-bold text-green-700 w-full justify-center md:w-auto"
-              >
-                <Icon name="check_circle" className="text-[18px]" />
-                本課已完成 ✓
-              </button>
-            ) : (
-              <button
-                onClick={handleComplete}
-                disabled={submitting}
-                className="inline-flex items-center gap-2 rounded-full bg-primary-fixed border border-primary/20 px-6 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary/5 active:scale-95 w-full justify-center cursor-pointer shadow-sm disabled:opacity-50 md:w-auto"
-              >
-                <Icon name={submitting ? "autorenew" : "done_all"} className={`text-[18px] ${submitting ? 'animate-spin' : ''}`} />
-                {user ? '標記本課已完成' : '登入後可記錄進度'}
-              </button>
-            )}
-          </div>
-
-          {/* Next Slot */}
-          <div className="order-3 md:order-3 justify-self-end">
-            {next ? (
-              <Link
-                to={next.to}
-                className="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-              >
-                {next.label}
-                <Icon name="arrow_forward" className="text-[18px]" />
-              </Link>
-            ) : (
-              <div className="w-1" />
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between gap-4 w-full">
-          {previous ? (
-            <Link
-              to={previous.to}
-              className="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-2.5 text-sm font-bold text-primary transition-all hover:bg-surface-container active:scale-95"
+    <div className="flex flex-col gap-4 pt-4 w-full items-center">
+      {/* Complete Button - Centered above previous/next buttons */}
+      {hasCompletionButton && (
+        <div className="flex justify-center w-full">
+          {isCompleted ? (
+            <button
+              disabled
+              className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-6 py-2.5 text-sm font-bold text-green-700 justify-center whitespace-nowrap"
             >
-              <Icon name="arrow_back" className="text-[18px]" />
-              {previous.label}
-            </Link>
+              <Icon name="check_circle" className="text-[18px]" />
+              本課已完成 ✓
+            </button>
           ) : (
-            <span />
-          )}
-          {next ? (
-            <Link
-              to={next.to}
-              className="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
+            <button
+              onClick={handleComplete}
+              disabled={submitting}
+              className="inline-flex items-center gap-2 rounded-full bg-primary-fixed border border-primary/20 px-6 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary/5 active:scale-95 justify-center cursor-pointer shadow-sm disabled:opacity-50 whitespace-nowrap"
             >
-              {next.label}
-              <Icon name="arrow_forward" className="text-[18px]" />
-            </Link>
-          ) : null}
+              <Icon name={submitting ? "autorenew" : "done_all"} className={`text-[18px] ${submitting ? 'animate-spin' : ''}`} />
+              {user ? '標記本課已完成' : '登入後可記錄進度'}
+            </button>
+          )}
         </div>
       )}
+
+      {/* Navigation Row - Page Before and Next Page */}
+      <div className="flex items-center justify-between gap-4 w-full">
+        {previous ? (
+          <Link
+            to={previous.to}
+            className="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-2.5 text-sm font-bold text-primary transition-all hover:bg-surface-container active:scale-95 whitespace-nowrap"
+          >
+            <Icon name="arrow_back" className="text-[18px]" />
+            {previous.label}
+          </Link>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <Link
+            to={next.to}
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95 whitespace-nowrap"
+          >
+            {next.label}
+            <Icon name="arrow_forward" className="text-[18px]" />
+          </Link>
+        ) : null}
+      </div>
     </div>
   );
 }
