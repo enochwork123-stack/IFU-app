@@ -28,6 +28,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const createProfileOnTheFly = async (currentUser: User): Promise<Profile | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: currentUser.id,
+          display_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || 'New disciple',
+          avatar_url: currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null,
+          email: currentUser.email,
+          role: 'member',
+        })
+        .select()
+        .single();
+      
+      if (!error && data) {
+        return data as Profile;
+      }
+      if (error) {
+        console.error('Error creating profile on the fly:', error);
+      }
+    } catch (err) {
+      console.error('Unexpected error creating profile on the fly:', err);
+    }
+    return null;
+  };
+
   const fetchProfileWithRetry = async (userId: string, retries = 3, delay = 500): Promise<Profile | null> => {
     for (let i = 0; i < retries; i++) {
       try {
@@ -51,13 +77,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return null;
   };
 
+  const getOrInitializeProfile = async (currentUser: User): Promise<Profile | null> => {
+    let p = await fetchProfileWithRetry(currentUser.id);
+    if (!p) {
+      console.log('Profile missing. Attempting to create on the fly...');
+      p = await createProfileOnTheFly(currentUser);
+    }
+    return p;
+  };
+
   const loadSession = async () => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        const p = await fetchProfileWithRetry(session.user.id);
+        const p = await getOrInitializeProfile(session.user);
         setProfile(p);
       } else {
         setUser(null);
@@ -72,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (user) {
-      const p = await fetchProfileWithRetry(user.id, 1);
+      const p = await getOrInitializeProfile(user);
       if (p) setProfile(p);
     }
   };
@@ -83,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        const p = await fetchProfileWithRetry(session.user.id);
+        const p = await getOrInitializeProfile(session.user);
         setProfile(p);
       } else {
         setUser(null);

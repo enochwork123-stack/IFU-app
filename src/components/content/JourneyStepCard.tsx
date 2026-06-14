@@ -12,6 +12,7 @@ export const JourneyStepCard: React.FC<JourneyStepCardProps> = ({
 }) => {
   const isLocked = step.status === 'locked';
   const isActive = step.status === 'active';
+  const isCompleted = step.status === 'complete';
   const canNavigate = !isLocked && Boolean(step.route);
 
   return (
@@ -28,17 +29,34 @@ export const JourneyStepCard: React.FC<JourneyStepCardProps> = ({
           ? 'cursor-not-allowed border-transparent bg-[#efe9dd]/40 opacity-60 grayscale'
           : isActive
             ? 'scale-[1.02] border-[#c68a4c] bg-white shadow-lg'
-            : 'border-[#efe9dd] bg-white shadow-sm active:scale-95'
+            : isCompleted
+              ? 'border-green-100 bg-white shadow-sm hover:scale-[1.01] active:scale-95'
+              : 'border-[#efe9dd] bg-white shadow-sm active:scale-95'
       }`}
     >
       <div
-        className={`mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-          isActive ? 'bg-[#c68a4c] text-white' : 'bg-[#efe9dd] text-[#3e4c31]'
+        className={`relative mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+          isCompleted
+            ? 'bg-[#c68a4c] text-white shadow-sm'
+            : isActive
+              ? 'bg-[#c68a4c] text-white shadow-[0_4px_12px_rgba(198,138,76,0.25)]'
+              : 'bg-[#efe9dd] text-[#3e4c31]'
         }`}
       >
-        <span className="material-symbols-outlined text-2xl">
-          {isLocked ? 'lock' : step.icon}
-        </span>
+        {isCompleted ? (
+          <>
+            <span className="material-symbols-outlined text-2xl opacity-40">
+              {step.icon}
+            </span>
+            <span className="material-symbols-outlined absolute text-2xl text-white font-extrabold">
+              check
+            </span>
+          </>
+        ) : (
+          <span className="material-symbols-outlined text-2xl">
+            {isLocked ? 'lock' : step.icon}
+          </span>
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
