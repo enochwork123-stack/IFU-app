@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { assetPath } from '../utils/assets';
+import { quietTimeEntries } from '../data/quietTimeData';
 
 interface ProgressStats {
   quietTimes: number;
@@ -75,17 +76,23 @@ export const ProfileScreen: React.FC = () => {
         setLoadingStats(true);
         const { data, error } = await supabase
           .from('user_progress')
-          .select('type, completed_at');
+          .select('type, reference_id, completed_at');
 
         if (!error && data) {
+          // Count unique quiet times completed
+          const uniqueQuietTimes = new Set(
+            data
+              .filter((log) => log.type === 'quiet_time')
+              .map((log) => log.reference_id)
+          );
+
           const counts = data.reduce(
             (acc, curr) => {
-              if (curr.type === 'quiet_time') acc.quietTimes++;
-              else if (curr.type === 'bible_study') acc.bibleStudies++;
+              if (curr.type === 'bible_study') acc.bibleStudies++;
               else if (curr.type === 'discipleship_step') acc.discipleshipSteps++;
               return acc;
             },
-            { quietTimes: 0, bibleStudies: 0, discipleshipSteps: 0 }
+            { quietTimes: uniqueQuietTimes.size, bibleStudies: 0, discipleshipSteps: 0 }
           );
           setStats(counts);
 
@@ -160,8 +167,8 @@ export const ProfileScreen: React.FC = () => {
         <section className="grid grid-cols-3 gap-3">
           {[
             {
-              label: '栽培課程',
-              value: loadingStats ? '...' : `${stats.bibleStudies} 課`,
+              label: '靈修卡片',
+              value: loadingStats ? '...' : `${stats.quietTimes}/${quietTimeEntries.length}`,
               icon: 'auto_stories',
             },
             {
