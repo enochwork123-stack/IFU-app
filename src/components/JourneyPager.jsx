@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
+/**
+ * @param {object} props
+ * @param {{to: string, label: string}} [props.previous]
+ * @param {{to: string, label: string}} [props.next]
+ */
 export function JourneyPager({ previous, next }) {
   return (
     <div className="flex items-center justify-between gap-4 pt-2">

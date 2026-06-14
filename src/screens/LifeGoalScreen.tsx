@@ -10,7 +10,7 @@ interface Scripture {
   english?: string;
 }
 
-const lifeGoalScriptures: Record<string, Scripture> = {
+const lifeGoalScriptures = {
   john1010: {
     book: '約翰福音',
     reference: 'John 10:10',
@@ -47,7 +47,7 @@ const lifeGoalScriptures: Record<string, Scripture> = {
     chinese: '有了我的命令又遵守的，這人就是愛我的；愛我的必蒙我父愛他，我也要愛他，並且要向他顯現。',
     english: 'They who have my commandments and keep them are those who love me; and those who love me will be loved by my Father, and I will love them and reveal myself to them.',
   },
-};
+} satisfies Record<string, Scripture>;
 
 interface SavedAnswerProps {
   storageKey: string;

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
-import type { StudyModule, JourneyStep, HomeCard, ScriptureReference } from '../types/content';
+import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
 import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
 
@@ -17,10 +17,8 @@ export const AdminDashboardScreen: React.FC = () => {
     customScreenTexts,
     updateHomeCards,
     updateDiscipleshipSteps,
-    updateGospelSections,
     updateLessonRoutes,
     updateCustomText,
-    updateCustomTexts,
     addCardToLesson,
     updateCardInLesson,
     deleteCardFromLesson,

@@ -13,7 +13,6 @@ import type {
   JourneyStep,
   LessonRoute,
   StudyModule,
-  ScriptureReference,
   GospelSection,
 } from '../types/content';
 

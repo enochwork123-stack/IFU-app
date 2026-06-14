@@ -10,7 +10,7 @@ interface Scripture {
   english?: string;
 }
 
-const spiritualGrowthScriptures: Record<string, Scripture> = {
+const spiritualGrowthScriptures = {
   col267: {
     book: '歌羅西書',
     reference: 'Col 2:6-7',
@@ -49,7 +49,7 @@ const spiritualGrowthScriptures: Record<string, Scripture> = {
     chinese: '所以，弟兄們，我以神的慈悲勸你們，將身體獻上，當作活祭，是聖潔的，是神所喜悅的；你們如此事奉乃是理所當然的。不要效法這個世界，只要心意更新而變化，叫你們察驗何為神的善良、純全、可喜悅的旨意。',
     english: 'I appeal to you therefore, brothers and sisters, by the mercies of God, to present your bodies as a living sacrifice, holy and acceptable to God, which is your spiritual worship. Do not be conformed to this world, but be transformed by the renewing of your minds, so that you may discern what is the will of God-- what is good and acceptable and perfect.',
   },
-};
+} satisfies Record<string, Scripture>;
 
 interface SavedAnswerProps {
   storageKey: string;

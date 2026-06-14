@@ -11,7 +11,7 @@ interface Scripture {
   english?: string;
 }
 
-const witnessingScriptures: Record<string, Scripture> = {
+const witnessingScriptures = {
   matt516: {
     book: '馬太福音',
     reference: 'Matt 5:16',
@@ -36,7 +36,7 @@ const witnessingScriptures: Record<string, Scripture> = {
     chinese: '他說：「他是個罪人不是，我不知道；有一件事我知道，從前我是眼瞎的，如今能看見了。」',
     english: 'He answered, "I do not know whether he is a sinner. One thing I do know, that though I was blind, now I see."',
   },
-};
+} satisfies Record<string, Scripture>;
 
 interface SavedAnswerProps {
   storageKey: string;
@@ -144,43 +144,6 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
   );
 };
 
-interface SavedInputProps {
-  storageKey: string;
-  label: string;
-  placeholder?: string;
-}
-
-const SavedInput: React.FC<SavedInputProps> = ({
-  storageKey,
-  label,
-  placeholder = '',
-}) => {
-  const [value, setValue] = useState('');
-  const storageName = `ifu:${storageKey}`;
-
-  useEffect(() => {
-    setValue(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value;
-    setValue(nextValue);
-    window.localStorage.setItem(storageName, nextValue);
-  };
-
-  return (
-    <div className="flex flex-col gap-2 w-full">
-      <label className="text-xs font-bold text-secondary uppercase tracking-wider">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-outline-variant bg-surface-container-low/55 p-3 text-base text-on-surface outline-none transition focus:border-secondary focus:bg-white"
-      />
-    </div>
-  );
-};
 
 interface ScriptureToggleProps {
   scripture: Scripture;
