@@ -521,14 +521,14 @@ export const LibraryScreen: React.FC = () => {
         {viewMode === 'deck' && (
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-4">
             {/* Main Interactive Deck */}
-            <div className="relative w-full max-w-[320px] aspect-[3/4] perspective-1000">
+            <div className={`relative w-full max-w-[320px] aspect-[3/4] perspective-1000 ${deckCard && !isDrawing ? 'scale-up-pop' : ''}`}>
               {deckCard ? (
                 /* Card Element wrapper for 3D flip */
                 <div
                   onClick={() => {
                     if (!isDrawing) setIsFlipped(!isFlipped);
                   }}
-                  className={`absolute inset-0 cursor-pointer preserve-3d transition-transform duration-700 select-none ${isDrawing ? 'scale-95 opacity-50' : 'scale-up-pop'}`}
+                  className={`absolute inset-0 cursor-pointer preserve-3d transition-transform duration-700 select-none ${isDrawing ? 'scale-95 opacity-50' : ''}`}
                   style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
                 >
                   {/* CARD BACK SIDE */}
