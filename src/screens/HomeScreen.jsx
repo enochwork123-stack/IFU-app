@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ROUTE_REGISTRY } from '../app/routes';
 import { useAppContent } from '../context/ContentContext';
+import { useAuth } from '../context/AuthContext';
 
 function accentClass(accent) {
   if (accent === 'secondary') {
@@ -15,6 +16,7 @@ function accentClass(accent) {
 
 export function HomeScreen() {
   const { homeCards, customScreenTexts } = useAppContent();
+  const { user, profile } = useAuth();
 
   return (
     <>
@@ -35,10 +37,31 @@ export function HomeScreen() {
             >
               <Icon name="admin_panel_settings" className="text-[16px] sm:text-[20px]" />
             </Link>
-            <button className="inline-flex h-7 sm:h-9 items-center gap-1.5 rounded-full bg-surface-container-lowest px-3 sm:px-4 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95 whitespace-nowrap">
-              <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary shrink-0" />
-              登錄
-            </button>
+            {user ? (
+              <Link
+                to={ROUTE_REGISTRY.PROFILE}
+                className="inline-flex h-7 sm:h-9 items-center gap-1.5 rounded-full bg-surface-container-lowest px-3 sm:px-4 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95 whitespace-nowrap"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="avatar"
+                    className="h-4 w-4 sm:h-5 sm:w-5 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary shrink-0" />
+                )}
+                {profile?.display_name || '個人檔案'}
+              </Link>
+            ) : (
+              <Link
+                to={ROUTE_REGISTRY.LOGIN}
+                className="inline-flex h-7 sm:h-9 items-center gap-1.5 rounded-full bg-surface-container-lowest px-3 sm:px-4 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95 whitespace-nowrap"
+              >
+                <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary shrink-0" />
+                登錄
+              </Link>
+            )}
           </div>
         </div>
         <div className="h-px bg-[rgba(40,53,28,0.05)]" />

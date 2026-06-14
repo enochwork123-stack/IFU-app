@@ -53,10 +53,10 @@ Run `gh issue list --repo enochwork123-stack/IFU-app --state open` and present t
 
 ### Step 2 — Assign and branch
 Once an issue is chosen (e.g. issue #7):
-1. Assign it to the user so teammates know it is taken:
-   `gh issue edit 7 --repo enochwork123-stack/IFU-app --add-assignee @me`
-2. Pull the latest main to avoid conflicts:
+1. Pull the latest main from the remote GitHub repository first to avoid conflicts and ensure local is up-to-date:
    `git pull origin main`
+2. Assign the issue to the user so teammates know it is taken:
+   `gh issue edit 7 --repo enochwork123-stack/IFU-app --add-assignee @me`
 3. Check if a linked branch already exists for the issue:
    `gh issue develop --list 7`
    - **If no branch exists** — create, link to the issue, and check it out in one command:
@@ -82,6 +82,7 @@ The `Closes #<number>` phrase is important — it automatically closes the issue
 A maintainer will review and merge the PR. Do not merge your own PR without a second pair of eyes unless explicitly agreed.
 
 ### Key rules
+- Always pull from the remote GitHub repository (e.g. `git pull origin main`) first before creating or checking out a new branch for the chosen GitHub issue.
 - One issue → one branch → one PR. Do not combine multiple features in one branch.
 - Always branch from the latest `main`, not from another feature branch.
 - Never push directly to `main`.

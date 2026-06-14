@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
+import { useAuth } from '../context/AuthContext';
+import { assetPath } from '../utils/assets';
 
 /**
  * @param {object} props
@@ -16,6 +18,8 @@ export function PageHeader({
   action,
   compact = false,
 }) {
+  const { user, profile } = useAuth();
+
   return (
     <header className="ifu-page-header glass-topbar sticky top-0 z-[60] shrink-0">
       <div
@@ -41,9 +45,33 @@ export function PageHeader({
             {title}
           </h1>
         </div>
-        {action ?? <div className="h-9 w-9" />}
+        
+        {action !== undefined ? action : (
+          user ? (
+            <Link
+              to="/profile"
+              aria-label="個人檔案"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest overflow-hidden transition active:scale-95 shrink-0"
+            >
+              <img
+                src={profile?.avatar_url || assetPath('assets/default_avatar.png')}
+                alt="avatar"
+                className="h-full w-full object-cover"
+              />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              aria-label="登錄"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition active:scale-95 shrink-0"
+            >
+              <Icon name="account_circle" className="text-[20px]" />
+            </Link>
+          )
+        )}
       </div>
       <div className="h-px bg-[rgba(40,53,28,0.05)]" />
     </header>
   );
 }
+
