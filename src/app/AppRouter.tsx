@@ -62,6 +62,10 @@ import { SpiritualGrowthScreen } from '../screens/SpiritualGrowthScreen';
 import { ROUTE_REGISTRY } from './routes';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
+import { AuthProvider } from '../context/AuthContext';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { LoginScreen } from '../screens/LoginScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 
 const AppLayout: React.FC = () => {
   const location = useLocation();
@@ -240,11 +244,27 @@ const router = createBrowserRouter([
         path: ROUTE_REGISTRY.SPIRITUAL_GROWTH,
         element: <SpiritualGrowthScreen />,
       },
+      {
+        path: ROUTE_REGISTRY.PROFILE,
+        element: (
+          <ProtectedRoute>
+            <ProfileScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTE_REGISTRY.LOGIN,
+        element: <LoginScreen />,
+      },
     ],
   },
   {
     path: '/admin',
-    element: <AdminDashboardScreen />,
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminDashboardScreen />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '*',
@@ -253,8 +273,10 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRouter: React.FC = () => (
-  <ContentProvider>
-    <RouterProvider router={router} />
-  </ContentProvider>
+  <AuthProvider>
+    <ContentProvider>
+      <RouterProvider router={router} />
+    </ContentProvider>
+  </AuthProvider>
 );
 export default AppRouter;

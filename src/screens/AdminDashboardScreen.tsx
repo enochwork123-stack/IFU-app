@@ -1,12 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
 import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
-type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media';
+type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media' | 'members';
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -29,9 +31,21 @@ export const AdminDashboardScreen: React.FC = () => {
   } = useAppContent();
 
   // Authentication State
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { isAdmin, user } = useAuth();
+  const [isAuthorized, setIsAuthorized] = useState(isAdmin);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+
+  // Members Management State
+  const [members, setMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [memberError, setMemberError] = useState('');
+
+  useEffect(() => {
+    if (isAdmin) {
+      setIsAuthorized(true);
+    }
+  }, [isAdmin]);
 
   // UI Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('general');
@@ -71,6 +85,54 @@ export const AdminDashboardScreen: React.FC = () => {
 
   const handleBypass = () => {
     setIsAuthorized(true);
+  };
+
+  const fetchMembers = async () => {
+    try {
+      setLoadingMembers(true);
+      setMemberError('');
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMembers(data || []);
+    } catch (err: any) {
+      console.error('Error fetching members:', err);
+      setMemberError(err.message || '無法取得成員清單');
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'members') {
+      fetchMembers();
+    }
+  }, [activeTab]);
+
+  const handleToggleRole = async (memberId: string, currentRole: string) => {
+    if (memberId === user?.id) {
+      alert('您不能修改自己的管理員權限！');
+      return;
+    }
+    try {
+      const newRole = currentRole === 'admin' ? 'member' : 'admin';
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+      if (error) throw error;
+      
+      setMembers(prev =>
+        prev.map(m => (m.id === memberId ? { ...m, role: newRole } : m))
+      );
+    } catch (err: any) {
+      console.error('Error updating member role:', err);
+      alert('更新權限失敗：' + err.message);
+    }
   };
 
   const handleImport = () => {
@@ -208,6 +270,7 @@ export const AdminDashboardScreen: React.FC = () => {
             { tab: 'journey-steps',  icon: 'route',         label: '培育生命路徑' },
             { tab: 'lessons',        icon: 'auto_stories',  label: '課程頁面 & 卡片' },
             { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
+            { tab: 'members',        icon: 'group',         label: '成員與權限管理' },
           ] as const).map(({ tab, icon, label }) => (
             <button
               key={tab}
@@ -294,6 +357,7 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'journey-steps' && '培育生命路徑管理 (12個靈修培育步驟)'}
               {activeTab === 'lessons' && '課程頁面 & 內容卡片'}
               {activeTab === 'media' && '相片與媒體庫'}
+              {activeTab === 'members' && '成員與權限管理'}
             </h2>
             <p className="mt-1 text-xs text-on-surface-variant">
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
@@ -301,6 +365,7 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
               {activeTab === 'lessons' && '編輯特定課程的內文、卡片視覺顏色樣式、大小尺寸以及添加/刪除卡片。'}
               {activeTab === 'media' && '在此上傳相片，系統會自動生成臨時 Base64 以供網站即時展示。'}
+              {activeTab === 'members' && '查看註冊會員、調整權限等級、變更管理員身份。'}
             </p>
           </div>
           
@@ -1137,6 +1202,102 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'members' && (
+          <div className="space-y-8 max-w-4xl">
+            <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+              <h3 className="font-headline text-xl font-black text-primary">註冊成員與權限管理</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                此處顯示所有已註冊的用戶清單。身為管理員，您可以將其他成員提升為管理員，或取消其管理員權限。
+              </p>
+
+              {memberError && (
+                <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-bold text-red-600">
+                  {memberError}
+                </div>
+              )}
+
+              {loadingMembers ? (
+                <div className="flex justify-center py-8">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-outline-variant/40 bg-white">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container-low border-b border-outline-variant/30 text-xs font-extrabold uppercase tracking-wider text-secondary">
+                        <th className="px-6 py-4">頭像</th>
+                        <th className="px-6 py-4">顯示名稱</th>
+                        <th className="px-6 py-4">電子郵件</th>
+                        <th className="px-6 py-4">權限等級</th>
+                        <th className="px-6 py-4 text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/20 text-sm">
+                      {members.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant font-medium">
+                            尚無註冊會員
+                          </td>
+                        </tr>
+                      ) : (
+                        members.map((member) => (
+                          <tr key={member.id} className="hover:bg-surface-container-lowest transition-colors">
+                            <td className="px-6 py-4">
+                              {member.avatar_url ? (
+                                <img
+                                  src={member.avatar_url}
+                                  alt={member.display_name || ''}
+                                  className="h-9 w-9 rounded-full object-cover border border-outline-variant/40"
+                                />
+                              ) : (
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                                  <Icon name="person" className="text-lg" />
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 font-bold text-primary">
+                              {member.display_name || '未設定名稱'}
+                            </td>
+                            <td className="px-6 py-4 text-on-surface-variant">
+                              {member.email || 'Google 登錄用戶'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border ${
+                                  member.role === 'admin'
+                                    ? 'bg-red-50 border-red-200 text-red-600'
+                                    : 'bg-green-50 border-green-200 text-green-700'
+                                }`}
+                              >
+                                {member.role}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => handleToggleRole(member.id, member.role)}
+                                disabled={member.id === user?.id}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
+                                  member.id === user?.id
+                                    ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
+                                    : member.role === 'admin'
+                                    ? 'bg-red-50 text-red-600 hover:bg-red-100/60'
+                                    : 'bg-primary/5 text-primary hover:bg-primary/10'
+                                }`}
+                              >
+                                {member.role === 'admin' ? '取消管理員' : '設為管理員'}
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         </div> {/* Left panel: Form Editor */}
 
         {/* Right panel: Real-time Live Preview */}
@@ -1205,6 +1366,7 @@ export const AdminDashboardScreen: React.FC = () => {
                         {activeTab === 'journey-steps' && <JourneyPreview />}
                         {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
+                        {activeTab === 'members' && <HomePreview />}
                       </div>
                     </div>
                   ) : (
@@ -1215,6 +1377,7 @@ export const AdminDashboardScreen: React.FC = () => {
                       {activeTab === 'journey-steps' && <JourneyPreview />}
                       {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
+                      {activeTab === 'members' && <HomePreview />}
                     </div>
                   )}
                 </div>
