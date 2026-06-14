@@ -160,11 +160,6 @@ export const ProfileScreen: React.FC = () => {
         <section className="grid grid-cols-3 gap-3">
           {[
             {
-              label: '每日靈修',
-              value: loadingStats ? '...' : `${streak} 天`,
-              icon: 'event_repeat',
-            },
-            {
               label: '栽培課程',
               value: loadingStats ? '...' : `${stats.bibleStudies} 課`,
               icon: 'auto_stories',
@@ -173,6 +168,11 @@ export const ProfileScreen: React.FC = () => {
               label: '栽培進度',
               value: loadingStats ? '...' : `${stats.discipleshipSteps}/12`,
               icon: 'signpost',
+            },
+            {
+              label: '每日靈修',
+              value: loadingStats ? '...' : `${streak} 天`,
+              icon: 'event_repeat',
             },
           ].map((stat, i) => (
             <article
