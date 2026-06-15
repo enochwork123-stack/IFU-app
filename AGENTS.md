@@ -72,7 +72,9 @@ git commit -m "Add scripture display component #2"
 ```
 
 ### Step 4 — Open a Pull Request
-When the feature is ready, open a PR targeting `main`:
+When the feature is ready, **do NOT automatically open a pull request**. Ask the user first or wait for the user's explicit instruction to open a PR.
+
+Only when explicitly instructed, open a PR targeting `main`:
 ```
 gh pr create --repo enochwork123-stack/IFU-app --base main --title "<short title>" --body "Closes #2"
 ```
@@ -82,6 +84,7 @@ The `Closes #<number>` phrase is important — it automatically closes the issue
 A maintainer will review and merge the PR. Do not merge your own PR without a second pair of eyes unless explicitly agreed.
 
 ### Key rules
+- Never open a Pull Request without the user's explicit instruction.
 - Always pull from the remote GitHub repository (e.g. `git pull origin main`) first before creating or checking out a new branch for the chosen GitHub issue.
 - One issue → one branch → one PR. Do not combine multiple features in one branch.
 - Always branch from the latest `main`, not from another feature branch.
