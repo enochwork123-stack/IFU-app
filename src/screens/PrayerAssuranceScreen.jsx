@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { ScriptureToggle as BaseScriptureToggle } from '../components/ScriptureToggle';
 
 const prayerScriptures = {
   psalm628: {
@@ -138,41 +139,8 @@ function SavedAnswer({ storageKey, placeholder = '在這裡輸入你的答案...
 }
 
 function ScriptureToggle({ scriptureKey }) {
-  const [isOpen, setIsOpen] = useState(false);
   const scripture = prayerScriptures[scriptureKey];
-
-  return (
-    <div className="rounded-[1.45rem] border border-outline-variant/60 bg-surface-container-lowest">
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
-      >
-        <span>
-          <span className="block font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
-            {scripture.book}
-          </span>
-          <span className="mt-1 block font-headline text-[1.15rem] leading-tight">
-            {scripture.reference}
-          </span>
-        </span>
-        <Icon
-          name={isOpen ? 'expand_less' : 'expand_more'}
-          className="shrink-0 text-[24px] text-secondary"
-        />
-      </button>
-      {isOpen ? (
-        <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary">
-            {scripture.chinese}
-          </p>
-          <p className="mt-4 text-sm leading-7 text-on-surface-variant">
-            {scripture.english}
-          </p>
-        </div>
-      ) : null}
-    </div>
-  );
+  return <BaseScriptureToggle scripture={scripture} />;
 }
 
 function QuestionCard({ number, title, children }) {

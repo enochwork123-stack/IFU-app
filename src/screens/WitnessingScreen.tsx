@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { useLanguage } from '../context/LanguageContext';
+import { useAppContent } from '../context/ContentContext';
+import { assetPath } from '../utils/assets';
+import { ScriptureToggle } from '../components/ScriptureToggle';
 
 interface Scripture {
   book: string;
@@ -46,9 +50,10 @@ interface SavedAnswerProps {
 
 const SavedAnswer: React.FC<SavedAnswerProps> = ({
   storageKey,
-  placeholder = '在這裡輸入你的答案...',
+  placeholder,
   rows = 4,
 }) => {
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState('');
   const storageName = `ifu:${storageKey}`;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -73,17 +78,17 @@ const SavedAnswer: React.FC<SavedAnswerProps> = ({
 
   return (
     <label className="mt-4 block">
-      <span className="sr-only">你的答案</span>
+      <span className="sr-only">{t('你的答案')}</span>
       <textarea
         ref={textareaRef}
         value={answer}
         onChange={handleChange}
         rows={rows}
         className="min-h-24 w-full resize-none overflow-y-hidden rounded-2xl border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : t('在這裡輸入你的答案...')}
       />
       <span className="mt-1 block text-right text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
+        {t('已自動儲存')}
       </span>
     </label>
   );
@@ -98,8 +103,9 @@ interface FillInTheBlankProps {
 const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
   storageKey,
   prefixText,
-  placeholder = '填入答案...',
+  placeholder,
 }) => {
+  const { t } = useLanguage();
   const [value, setValue] = useState('');
   const storageName = `ifu:${storageKey}`;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -125,7 +131,7 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
   return (
     <div className="flex flex-col gap-2 mt-3 p-3 rounded-xl bg-surface border border-outline-variant/30 w-full overflow-hidden">
       <span className="font-body text-sm text-primary font-bold block break-words">
-        {prefixText}
+        {t(prefixText)}
       </span>
       <div className="flex flex-col gap-1 w-full">
         <textarea
@@ -133,57 +139,13 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
           rows={2}
           value={value}
           onChange={handleChange}
-          placeholder={placeholder}
+          placeholder={placeholder ? t(placeholder) : t('填入答案...')}
           className="w-full overflow-y-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest p-2 text-base text-on-surface outline-none transition focus:border-secondary focus:bg-white resize-none"
         />
         <span className="text-[9px] font-bold tracking-[0.1em] text-on-surface-variant/45 text-right block pr-1">
-          已自動儲存
+          {t('已自動儲存')}
         </span>
       </div>
-    </div>
-  );
-};
-
-
-interface ScriptureToggleProps {
-  scripture: Scripture;
-}
-
-const ScriptureToggle: React.FC<ScriptureToggleProps> = ({ scripture }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm w-full overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen((curr) => !curr)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
-      >
-        <span>
-          <span className="block font-body text-[10px] font-extrabold tracking-[0.2em] text-secondary">
-            {scripture.book}
-          </span>
-          <span className="mt-1 block font-headline text-[1.1rem] leading-tight font-bold">
-            {scripture.reference}
-          </span>
-        </span>
-        <Icon
-          name={isOpen ? 'expand_less' : 'expand_more'}
-          className="shrink-0 text-[24px] text-secondary"
-        />
-      </button>
-      {isOpen && (
-        <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary break-words">
-            {scripture.chinese}
-          </p>
-          {scripture.english && (
-            <p className="mt-2 text-xs leading-5 text-on-surface-variant font-body break-words">
-              {scripture.english}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -195,6 +157,7 @@ interface QuestionCardProps {
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) => {
+  const { t } = useLanguage();
   return (
     <article className="rounded-[2rem] bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)] w-full overflow-hidden">
       <div className="flex items-center gap-3 text-secondary">
@@ -202,11 +165,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) 
           {number}
         </span>
         <p className="font-body text-[10px] font-extrabold tracking-[0.2em]">
-          問題 {number}
+          {t('問題')} {number}
         </p>
       </div>
       <h3 className="mt-4 font-headline text-[1.35rem] leading-snug font-bold text-primary break-words">
-        {title}
+        {t(title)}
       </h3>
       <div className="mt-5 space-y-4 w-full">{children}</div>
     </article>
@@ -214,27 +177,27 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) 
 };
 
 export const WitnessingScreen: React.FC = () => {
+  const { t } = useLanguage();
   return (
     <>
-      <PageHeader title="見證主" backTo="/journey" />
+      <PageHeader title={t("見證主")} backTo="/journey" />
       <main className="px-6 pb-36 pt-8 overflow-x-hidden">
         {/* Course Banner */}
         <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)] w-full">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
           <div className="relative">
             <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
-              新生命栽培 : (10)
+              {t("新生命栽培 : (10)")}
             </div>
             <h2 className="font-headline text-[2.4rem] leading-tight break-words">
-              見證主
+              {t("見證主")}
             </h2>
             <p className="mt-2 font-medium text-secondary-fixed font-body">Witnessing</p>
             <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container break-words">
-              見證主就是向別人表明你是基督徒，已靠主耶穌成為神的兒女。神要我們以好行為與真誠的言詞在人面前承認祂，引導人認識主。
+              {t("見證主就是向別人表明你是基督徒，已靠主耶穌成為神的兒女。神要我們以好行為與真誠的言詞在人面前承認祂，引導人認識主。")}
             </p>
           </div>
         </section>
-
 
         {/* Lesson Body */}
         <section className="mt-8 grid gap-6 w-full">
@@ -276,7 +239,7 @@ export const WitnessingScreen: React.FC = () => {
 
             <div className="mt-6 border-t border-outline-variant/35 pt-5 w-full">
               <h4 className="font-headline text-[1.15rem] font-bold text-primary break-words">
-                在這三方面你是否一個好的見證人？有遇到甚麼困難嗎？
+                {t("在這三方面你是否一個好的見證人？有遇到甚麼困難嗎？")}
               </h4>
               <SavedAnswer
                 storageKey="witnessing-q1-d"
@@ -311,27 +274,27 @@ export const WitnessingScreen: React.FC = () => {
             <div className="flex items-center gap-3 text-secondary">
               <Icon name="info" className="text-[22px]" />
               <p className="font-body text-[10px] font-extrabold tracking-[0.2em]">
-                見證指引
+                {t("見證指引")}
               </p>
             </div>
             <h3 className="mt-4 font-headline text-[1.35rem] font-bold text-primary break-words">
-              撰寫個人得救見證
+              {t("撰寫個人得救見證")}
             </h3>
             <p className="mt-3 text-sm leading-6 text-on-surface-variant break-words">
-              正如 約 9:25 的例子，講述個人得救的經歷是個有力的方法去見證神。請寫下你的得救見證，包括信主前的境況、信主的經過和信主後的改變三部分（見附件 A）。
+              {t("正如 約 9:25 的例子，講述個人得救的經歷是個有力的方法去見證神。請寫下你的得救見證，包括信主前的境況、信主的經過和信主後的改變三部分（見附件 A）。")}
             </p>
             <div className="mt-4 rounded-xl bg-surface/50 p-4 text-xs leading-5 text-on-surface-variant space-y-1 w-full">
-              <p className="font-bold text-secondary">原則與要求：</p>
-              <p>1. 要精簡，可在三至五分鐘內講完（約 300 至 500 字）。</p>
-              <p>2. 重點是把主耶穌在你身上所做的告訴人，不要像講道一般教訓人。</p>
-              <p>3. 儘量用第一人稱「我」而不是「你」或「我們」。</p>
-              <p>4. 適當時可引用一兩節經文。要謙卑坦誠，真誠道出遭遇，不要誇張失實。</p>
+              <p className="font-bold text-secondary">{t("原則與要求：")}</p>
+              <p>{t("1. 要精簡，可在三至五分鐘內講完（約 300 至 500 字）。")}</p>
+              <p>{t("2. 重點是把主耶穌在你身上所做的告訴人，不要像講道一般教訓人。")}</p>
+              <p>{t("3. 儘量用第一人稱「我」而不是「你」或「我們」。")}</p>
+              <p>{t("4. 適當時可引用一兩節經文。要謙卑坦誠，真誠道出遭遇，不要誇張失實。")}</p>
             </div>
             <Link
               to="/journey/witnessing/personal-testimony"
               className="mt-5 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
             >
-              開始填寫見證
+              {t("開始填寫見證")}
               <Icon name="arrow_forward" className="text-[18px]" />
             </Link>
           </section>
@@ -351,8 +314,8 @@ export const WitnessingScreen: React.FC = () => {
         {/* Navigation Pager */}
         <section className="mt-8 w-full">
           <JourneyPager
-            previous={{ to: '/journey/fellowship', label: '團契互助' }}
-            next={{ to: '/journey/life-goal', label: '人生目的' }}
+            previous={{ to: '/journey/fellowship', label: t('團契互助') }}
+            next={{ to: '/journey/life-goal', label: t('人生目的') }}
           />
         </section>
       </main>

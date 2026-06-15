@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 import { useAuth } from '../context/AuthContext';
 import { assetPath } from '../utils/assets';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * @param {object} props
@@ -19,6 +20,7 @@ export function PageHeader({
   compact = false,
 }) {
   const { user, profile } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <header className="ifu-page-header glass-topbar sticky top-0 z-[60] shrink-0">
@@ -31,7 +33,7 @@ export function PageHeader({
           {backTo ? (
             <Link
               to={backTo}
-              aria-label={backLabel}
+              aria-label={t(backLabel)}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full text-primary transition-transform active:scale-95"
             >
               <Icon name="arrow_back" className="text-[22px]" />
@@ -42,7 +44,7 @@ export function PageHeader({
             </span>
           )}
           <h1 className="font-headline text-[1.35rem] font-bold tracking-tight text-primary">
-            {title}
+            {t(title)}
           </h1>
         </div>
         
@@ -50,7 +52,7 @@ export function PageHeader({
           user ? (
             <Link
               to="/profile"
-              aria-label="個人檔案"
+              aria-label={t("個人檔案")}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest overflow-hidden transition active:scale-95 shrink-0"
             >
               <img
@@ -62,7 +64,7 @@ export function PageHeader({
           ) : (
             <Link
               to="/login"
-              aria-label="登錄"
+              aria-label={t("登錄")}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition active:scale-95 shrink-0"
             >
               <Icon name="account_circle" className="text-[20px]" />

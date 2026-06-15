@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon';
 import { ROUTE_REGISTRY } from '../app/routes';
 import { useAppContent } from '../context/ContentContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 function accentClass(accent) {
   if (accent === 'secondary') {
@@ -17,6 +18,7 @@ function accentClass(accent) {
 export function HomeScreen() {
   const { homeCards, customScreenTexts } = useAppContent();
   const { user, profile } = useAuth();
+  const { t, tContent } = useLanguage();
 
   return (
     <>
@@ -25,7 +27,7 @@ export function HomeScreen() {
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Icon name="menu_book" className="text-[18px] sm:text-[22px] text-primary shrink-0" />
             <p className="font-headline text-sm sm:text-base md:text-xl font-bold tracking-tight text-primary whitespace-nowrap no-truncate-on-mobile">
-              {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
+              {tContent(customScreenTexts, 'home:hero-title') || t('基督門徒訓練')}
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
@@ -43,7 +45,7 @@ export function HomeScreen() {
                 ) : (
                   <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary shrink-0" />
                 )}
-                {profile?.display_name || '個人檔案'}
+                {profile?.display_name || t('個人檔案')}
               </Link>
             ) : (
               <Link
@@ -51,7 +53,7 @@ export function HomeScreen() {
                 className="inline-flex h-7 sm:h-9 items-center gap-1.5 rounded-full bg-surface-container-lowest px-3 sm:px-4 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95 whitespace-nowrap"
               >
                 <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary shrink-0" />
-                登錄
+                {t('登錄')}
               </Link>
             )}
           </div>
@@ -66,10 +68,10 @@ export function HomeScreen() {
 
         <section className="relative z-10 mx-auto mb-14 mt-2 max-w-xl text-center">
           <h1 className="font-headline text-[3.2rem] leading-[1.06] tracking-tight text-primary">
-            {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
+            {tContent(customScreenTexts, 'home:hero-title') || t('基督門徒訓練')}
           </h1>
           <p className="mx-auto mt-5 max-w-[18rem] text-lg leading-8 text-on-surface-variant">
-            {customScreenTexts['home:hero-subtitle'] || '在信仰中成長的旅程，一步一腳印。'}
+            {tContent(customScreenTexts, 'home:hero-subtitle') || t('在信仰中成長的旅程，一步一腳印。')}
           </p>
         </section>
 
@@ -91,10 +93,10 @@ export function HomeScreen() {
                 </div>
                 <div className="flex-1">
                   <h2 className="font-headline text-[1.9rem] text-primary">
-                    {card.title}
+                    {tContent(card, 'title')}
                   </h2>
                   <p className="mt-2 leading-7 text-on-surface-variant">
-                    {card.description}
+                    {tContent(card, 'description')}
                   </p>
                 </div>
                 <Icon
@@ -111,10 +113,10 @@ export function HomeScreen() {
             to={ROUTE_REGISTRY.JOURNEY}
             className="inline-flex items-center rounded-full bg-secondary px-8 py-4 font-body text-sm font-extrabold tracking-[0.16em] text-white shadow-[0_18px_40px_rgba(121,89,0,0.24)] transition-all duration-300 hover:brightness-105 active:scale-95"
           >
-            開啟你的旅程
+            {t('開啟你的旅程')}
           </Link>
           <p className="mt-4 font-body text-[11px] font-extrabold tracking-[0.22em] text-primary/40">
-            {customScreenTexts['home:footer-text'] || '每週更新課程'}
+            {tContent(customScreenTexts, 'home:footer-text') || t('每週更新課程')}
           </p>
         </section>
       </main>

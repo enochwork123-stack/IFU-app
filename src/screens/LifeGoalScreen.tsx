@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { useLanguage } from '../context/LanguageContext';
+import { ScriptureToggle as BaseScriptureToggle } from '../components/ScriptureToggle';
 
 interface Scripture {
   book: string;
@@ -26,7 +28,7 @@ const lifeGoalScriptures = {
   matt633: {
     book: '馬太福音',
     reference: 'Matt 6:33',
-    chinese: '你們要先求他的國和他的義，這些東西都要加給你們了。',
+    chinese: '你們要先求他的國 and 他的義，這些東西都要加給你們了。' || '你們要先求他的國和他的義，這些東西都要加給你們了。',
     english: 'But strive first for the kingdom of God and his righteousness, and all these things will be given to you as well.',
   },
   matt281920: {
@@ -57,9 +59,10 @@ interface SavedAnswerProps {
 
 const SavedAnswer: React.FC<SavedAnswerProps> = ({
   storageKey,
-  placeholder = '在這裡輸入你的答案...',
+  placeholder,
   rows = 4,
 }) => {
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState('');
   const storageName = `ifu:${storageKey}`;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -84,17 +87,17 @@ const SavedAnswer: React.FC<SavedAnswerProps> = ({
 
   return (
     <label className="mt-4 block">
-      <span className="sr-only">你的答案</span>
+      <span className="sr-only">{t('你的答案')}</span>
       <textarea
         ref={textareaRef}
         value={answer}
         onChange={handleChange}
         rows={rows}
         className="min-h-24 w-full resize-none overflow-y-hidden rounded-2xl border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : t('在這裡輸入你的答案...')}
       />
       <span className="mt-1 block text-right text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
+        {t('已自動儲存')}
       </span>
     </label>
   );
@@ -105,42 +108,7 @@ interface ScriptureToggleProps {
 }
 
 const ScriptureToggle: React.FC<ScriptureToggleProps> = ({ scripture }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm">
-      <button
-        type="button"
-        onClick={() => setIsOpen((curr) => !curr)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
-      >
-        <span>
-          <span className="block font-body text-[10px] font-extrabold tracking-[0.2em] text-secondary">
-            {scripture.book}
-          </span>
-          <span className="mt-1 block font-headline text-[1.1rem] leading-tight font-bold">
-            {scripture.reference}
-          </span>
-        </span>
-        <Icon
-          name={isOpen ? 'expand_less' : 'expand_more'}
-          className="shrink-0 text-[24px] text-secondary"
-        />
-      </button>
-      {isOpen && (
-        <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary">
-            {scripture.chinese}
-          </p>
-          {scripture.english && (
-            <p className="mt-2 text-xs leading-5 text-on-surface-variant font-body">
-              {scripture.english}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  return <BaseScriptureToggle scripture={scripture as any} />;
 };
 
 interface QuestionCardProps {
@@ -150,6 +118,7 @@ interface QuestionCardProps {
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) => {
+  const { t } = useLanguage();
   return (
     <article className="rounded-[2rem] bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
       <div className="flex items-center gap-3 text-secondary">
@@ -157,11 +126,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) 
           {number}
         </span>
         <p className="font-body text-[10px] font-extrabold tracking-[0.2em]">
-          問題 {number}
+          {t('問題')} {number}
         </p>
       </div>
       <h3 className="mt-4 font-headline text-[1.35rem] leading-snug font-bold text-primary">
-        {title}
+        {t(title)}
       </h3>
       <div className="mt-5 space-y-4">{children}</div>
     </article>
@@ -169,23 +138,24 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) 
 };
 
 export const LifeGoalScreen: React.FC = () => {
+  const { t } = useLanguage();
   return (
     <>
-      <PageHeader title="人生目的" backTo="/journey" />
+      <PageHeader title={t("人生目的")} backTo="/journey" />
       <main className="px-6 pb-36 pt-8">
         {/* Course Banner */}
         <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
           <div className="relative">
             <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
-              新生命栽培 : (11)
+              {t("新生命栽培 : (11)")}
             </div>
             <h2 className="font-headline text-[2.4rem] leading-tight">
-              人生目的
+              {t("人生目的")}
             </h2>
             <p className="mt-2 font-medium text-secondary-fixed font-body">Life Goal</p>
             <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
-              主耶穌答應跟隨祂的人，能得豐盛的生命（約 10:10）。這是我們人生的正確方向。聖經教導我們該怎樣過這一生，為神的獨特呼召而活。
+              {t("主耶穌答應跟隨祂的人，能得豐盛的生命（約 10:10）。這是我們人生的正確方向。聖經教導我們該怎樣過這一生，為神的獨特呼召而活。")}
             </p>
           </div>
         </section>
@@ -260,11 +230,12 @@ export const LifeGoalScreen: React.FC = () => {
         {/* Navigation Pager */}
         <section className="mt-8">
           <JourneyPager
-            previous={{ to: '/journey/witnessing', label: '見證主' }}
-            next={{ to: '/journey/spiritual-growth', label: '屬靈生命的成長' }}
+            previous={{ to: '/journey/witnessing', label: t('見證主') }}
+            next={{ to: '/journey/spiritual-growth', label: t('屬靈生命的成長') }}
           />
         </section>
       </main>
     </>
   );
 };
+export default LifeGoalScreen;

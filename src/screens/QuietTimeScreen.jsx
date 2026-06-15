@@ -4,6 +4,8 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { useAppContent } from '../context/ContentContext';
+import { useLanguage } from '../context/LanguageContext';
+import { ScriptureToggle } from '../components/ScriptureToggle';
 
 const oldTestamentBooks =
   '創 創世紀 Genesis; 出 出埃及記 Exodus; 利 利未記 Leviticus; 民 民數記 Numbers; 申 申命記 Deuteronomy; 書 約書亞記 Joshua; 士 士師記 Judges; 得 路得記 Ruth; 撒上 撒母耳記上 1 Samuel; 撒下 撒母耳記下 2 Samuel; 王上 列王記上 1 Kings; 王下 列王記下 2 Kings; 代上 歷代志上 1 Chronicles; 代下 歷代志下 2 Chronicles; 拉 以斯拉記 Ezra; 尼 尼希米記 Nehemiah; 斯 以斯帖記 Esther; 伯 約伯記 Job; 詩 詩篇 Psalms; 箴 箴言 Proverbs; 傳 傳道書 Ecclesiastes; 歌 雅歌 Song of Songs; 賽 以賽亞書 Isaiah; 耶 耶利米書 Jeremiah; 哀 耶利米哀歌 Lamentations; 結 以西結書 Ezekiel; 但 但以理書 Daniel; 何 何西阿書 Hosea; 珥 約珥書 Joel; 摩 阿摩司書 Amos; 俄 俄巴底亞書 Obadiah; 拿 約拿書 Jonah; 彌 彌迦書 Micah; 鴻 那鴻書 Nahum; 哈 哈巴谷書 Habakkuk; 番 西番雅書 Zephaniah; 該 哈該書 Haggai; 亞 撒迦利亞 Zechariah; 瑪 瑪拉基書 Malachi';
@@ -28,6 +30,7 @@ const newTestamentRows = parseBookRows(newTestamentBooks);
 
 function SavedAnswer({ storageKey }) {
   const [answer, setAnswer] = useState('');
+  const { t } = useLanguage();
   const storageName = `ifu:${storageKey}`;
 
   useEffect(() => {
@@ -41,74 +44,35 @@ function SavedAnswer({ storageKey }) {
 
   return (
     <label className="mt-5 block">
-      <span className="sr-only">你的答案</span>
+      <span className="sr-only">{t('你的答案')}</span>
       <textarea
         value={answer}
         onChange={handleChange}
         rows={4}
         className="min-h-28 w-full resize-y rounded-[1.25rem] border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder="在這裡輸入你的答案..."
+        placeholder={t('在這裡輸入你的答案...')}
       />
       <span className="mt-2 block text-right text-[11px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
+        {t('已自動儲存')}
       </span>
     </label>
   );
 }
 
-function ScriptureToggle({ scripture }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  if (!scripture) return null;
-
-  return (
-    <div className="rounded-[1.45rem] border border-outline-variant/60 bg-surface-container-lowest">
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
-      >
-        <span>
-          {scripture.book && (
-            <span className="block font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
-              {scripture.book}
-            </span>
-          )}
-          <span className="mt-1 block font-headline text-[1.15rem] leading-tight">
-            {scripture.reference}
-          </span>
-        </span>
-        <Icon name={isOpen ? 'expand_less' : 'expand_more'} className="shrink-0 text-[24px] text-secondary" />
-      </button>
-      {isOpen ? (
-        <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary">
-            {scripture.chinese}
-          </p>
-          {scripture.english && (
-            <p className="mt-4 text-sm leading-7 text-on-surface-variant">
-              {scripture.english}
-            </p>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function BookTable({ title, rows }) {
+  const { t, translateText } = useLanguage();
   return (
     <div className="overflow-hidden rounded-[1.4rem] bg-surface-container-low shadow-inner shadow-primary/5">
       <div className="bg-primary px-4 py-3">
-        <h4 className="font-headline text-[1.25rem] text-white">{title}</h4>
+        <h4 className="font-headline text-[1.25rem] text-white">{t(title)}</h4>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[24rem] border-collapse text-left">
           <thead>
             <tr className="bg-surface-container text-[11px] font-extrabold tracking-[0.14em] text-secondary">
-              <th className="w-16 px-4 py-3">縮寫</th>
-              <th className="px-4 py-3">中文書名</th>
-              <th className="px-4 py-3">English</th>
+              <th className="w-16 px-4 py-3">{t('縮寫')}</th>
+              <th className="px-4 py-3">{t('中文書名')}</th>
+              <th className="px-4 py-3">{t('English')}</th>
             </tr>
           </thead>
           <tbody>
@@ -118,10 +82,10 @@ function BookTable({ title, rows }) {
                 className={index % 2 === 0 ? 'bg-white/72' : 'bg-surface/48'}
               >
                 <td className="border-t border-outline-variant/45 px-4 py-3 font-headline text-lg font-black text-secondary">
-                  {book.abbr}
+                  {translateText(book.abbr)}
                 </td>
                 <td className="border-t border-outline-variant/45 px-4 py-3 font-semibold text-primary">
-                  {book.chinese}
+                  {translateText(book.chinese)}
                 </td>
                 <td className="border-t border-outline-variant/45 px-4 py-3 text-sm font-medium text-on-surface-variant">
                   {book.english}
@@ -135,8 +99,10 @@ function BookTable({ title, rows }) {
   );
 }
 
+
 export function QuietTimeScreen() {
   const { lessonRoutes } = useAppContent();
+  const { t, tContent } = useLanguage();
   const [showAppendix, setShowAppendix] = useState(false);
 
   const activeLesson = lessonRoutes.find((r) => r.id === 'lesson-quiet-time');
@@ -144,7 +110,7 @@ export function QuietTimeScreen() {
   if (!activeLesson) {
     return (
       <div className="p-12 text-center text-on-surface-variant font-bold">
-        加載中或無此課程...
+        {t('加載中或無此課程...')}
       </div>
     );
   }
@@ -165,7 +131,7 @@ export function QuietTimeScreen() {
 
   return (
     <>
-      <PageHeader title={activeLesson.title} backTo="/journey" />
+      <PageHeader title={tContent(activeLesson, 'title')} backTo="/journey" />
 
       <main className="px-6 pb-36 pt-8 flex flex-col items-center">
         <div className="w-full space-y-8 flex flex-col items-center">
@@ -194,7 +160,7 @@ export function QuietTimeScreen() {
                       </span>
                     )}
                     <h3 className={`font-headline text-[1.45rem] leading-tight ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
-                      {mod.title}
+                      {tContent(mod, 'title')}
                     </h3>
                   </div>
                 )}
@@ -204,7 +170,7 @@ export function QuietTimeScreen() {
                   <div className="relative">
                     {mod.body && (
                       <p className={`text-[1.08rem] leading-8 ${cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>
-                        {mod.body}
+                        {tContent(mod, 'body')}
                       </p>
                     )}
                     {mod.scriptures && (
@@ -219,7 +185,7 @@ export function QuietTimeScreen() {
 
                 {mod.kind === 'reflection-prompt' && (
                   <div className="relative">
-                    <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
+                    <p className="text-[1.05rem] leading-8 text-on-surface">{tContent(mod, 'prompt')}</p>
                     {mod.scriptures && (
                       <div className="mt-5 grid gap-3">
                         {mod.scriptures.map((sc, sIdx) => (
@@ -236,15 +202,15 @@ export function QuietTimeScreen() {
                     <div className="flex items-center gap-3 text-secondary">
                       <Icon name="article" className="text-[22px]" />
                       <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                        {mod.title || '附件'}
+                        {t(mod.title || '附件')}
                       </p>
                     </div>
                     <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
-                      {mod.title || '附件'}
+                      {tContent(mod, 'title') || t('附件')}
                     </h2>
                     {mod.body && (
                       <p className="mt-4 leading-7 text-on-surface-variant">
-                        {mod.body}
+                        {tContent(mod, 'body')}
                       </p>
                     )}
                     <button
@@ -252,7 +218,7 @@ export function QuietTimeScreen() {
                       onClick={() => setShowAppendix(true)}
                       className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95 cursor-pointer"
                     >
-                      查看附件
+                      {t('查看附件')}
                       <Icon name="open_in_full" className="text-[18px]" />
                     </button>
                   </div>
@@ -263,22 +229,22 @@ export function QuietTimeScreen() {
                     <div className="flex items-center gap-3 text-secondary">
                       <Icon name="extension" className="text-[22px]" />
                       <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                        延伸學習
+                        {t('延伸學習')}
                       </p>
                     </div>
                     <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
-                      {mod.title}
+                      {tContent(mod, 'title')}
                     </h3>
                     {mod.description && (
                       <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
-                        {mod.description}
+                        {tContent(mod, 'description')}
                       </p>
                     )}
                     <Link
                       to={mod.route}
                       className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
                     >
-                      開始延伸學習
+                      {t('開始延伸學習')}
                       <Icon name="arrow_forward" className="text-[18px]" />
                     </Link>
                   </div>
@@ -290,8 +256,8 @@ export function QuietTimeScreen() {
 
         <section className="mt-8 w-full max-w-2xl">
           <JourneyPager
-            previous={{ to: '/journey/salvation-assurance', label: '得救的確據' }}
-            next={{ to: '/journey/prayer-assurance', label: '禱告的確據' }}
+            previous={{ to: '/journey/salvation-assurance', label: t('得救的確據') }}
+            next={{ to: '/journey/prayer-assurance', label: t('禱告的確據') }}
           />
         </section>
       </main>
@@ -302,17 +268,17 @@ export function QuietTimeScreen() {
             <div className="flex items-start justify-between gap-4 border-b border-outline-variant/50 bg-surface-container-lowest p-5">
               <div>
                 <p className="font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
-                  附件A
+                  {t('附件A')}
                 </p>
                 <h2 className="mt-1 font-headline text-[1.55rem] leading-tight text-primary">
-                  聖經書卷目錄與縮寫
+                  {t('聖經書卷目錄與縮寫')}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAppendix(false)}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-primary transition-all active:scale-95"
-                aria-label="關閉附件"
+                aria-label={t('關閉')}
               >
                 <Icon name="close" className="text-[22px]" />
               </button>

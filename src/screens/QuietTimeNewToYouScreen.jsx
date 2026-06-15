@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { useLanguage } from '../context/LanguageContext';
 
 function SavedAnswer({ storageKey }) {
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState('');
   const storageName = `ifu:${storageKey}`;
 
@@ -83,6 +85,8 @@ const problems = [
 ];
 
 export function QuietTimeNewToYouScreen() {
+  const { t } = useLanguage();
+
   return (
     <>
       <PageHeader title="If Quiet Time is New to You" backTo="/journey/quiet-time" />
@@ -90,7 +94,7 @@ export function QuietTimeNewToYouScreen() {
       <main className="px-6 pb-36 pt-8">
         <section className="rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
           <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
-            《靈修》延伸學習 (B)
+            {t("《靈修》延伸學習 (B)")}
           </div>
           <h1 className="font-headline text-[2.2rem] leading-tight">
             If Quiet Time is New to You
@@ -161,7 +165,7 @@ export function QuietTimeNewToYouScreen() {
         </div>
 
         <section className="mt-8">
-          <JourneyPager previous={{ to: '/journey/quiet-time', label: '靈修' }} />
+          <JourneyPager previous={{ to: '/journey/quiet-time', label: t('靈修') }} />
         </section>
       </main>
     </>

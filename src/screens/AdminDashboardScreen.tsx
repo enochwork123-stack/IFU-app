@@ -7,6 +7,7 @@ import { assetPath } from '../utils/assets';
 import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useLanguage, Language } from '../context/LanguageContext';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media' | 'members';
 
@@ -29,6 +30,8 @@ export const AdminDashboardScreen: React.FC = () => {
     exportConfig,
     importConfig,
   } = useAppContent();
+
+  const [editingLanguage, setEditingLanguage] = useState<Language>('zh-TW');
 
   // Authentication State
   const { isAdmin, user } = useAuth();
@@ -521,6 +524,30 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Editing Language Switcher */}
+            {activeTab !== 'media' && activeTab !== 'members' && (
+              <div className="flex bg-surface-container-high/80 rounded-full p-0.5 border border-outline-variant/20 mr-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingLanguage('zh-TW')}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                    editingLanguage === 'zh-TW' ? 'bg-secondary text-white shadow-sm' : 'text-on-surface-variant hover:text-secondary'
+                  }`}
+                >
+                  中文編輯
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingLanguage('en')}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                    editingLanguage === 'en' ? 'bg-secondary text-white shadow-sm' : 'text-on-surface-variant hover:text-secondary'
+                  }`}
+                >
+                  English Edit
+                </button>
+              </div>
+            )}
+
             {/* Real-time Preview Toggle */}
             {activeTab !== 'members' && (
               <button
@@ -552,14 +579,16 @@ export const AdminDashboardScreen: React.FC = () => {
         {activeTab === 'general' && (
           <div className="max-w-2xl space-y-6">
             <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40">
-              <h3 className="font-headline text-lg font-black text-primary mb-5">首頁設定</h3>
+              <h3 className="font-headline text-lg font-black text-primary mb-5">
+                首頁設定 ({editingLanguage === 'en' ? 'English' : '中文'})
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest">網站主標題</label>
                   <input
                     type="text"
-                    value={customScreenTexts['home:hero-title'] || ''}
-                    onChange={(e) => updateCustomText('home:hero-title', e.target.value)}
+                    value={editingLanguage === 'en' ? customScreenTexts['home:hero-title_en'] || '' : customScreenTexts['home:hero-title'] || ''}
+                    onChange={(e) => updateCustomText(editingLanguage === 'en' ? 'home:hero-title_en' : 'home:hero-title', e.target.value)}
                     className="mt-2 w-full rounded-[1rem] border border-outline-variant bg-white p-3 text-base text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
@@ -567,8 +596,8 @@ export const AdminDashboardScreen: React.FC = () => {
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest">網站副標題</label>
                   <input
                     type="text"
-                    value={customScreenTexts['home:hero-subtitle'] || ''}
-                    onChange={(e) => updateCustomText('home:hero-subtitle', e.target.value)}
+                    value={editingLanguage === 'en' ? customScreenTexts['home:hero-subtitle_en'] || '' : customScreenTexts['home:hero-subtitle'] || ''}
+                    onChange={(e) => updateCustomText(editingLanguage === 'en' ? 'home:hero-subtitle_en' : 'home:hero-subtitle', e.target.value)}
                     className="mt-2 w-full rounded-[1rem] border border-outline-variant bg-white p-3 text-base text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
@@ -576,8 +605,8 @@ export const AdminDashboardScreen: React.FC = () => {
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest">頁尾描述</label>
                   <input
                     type="text"
-                    value={customScreenTexts['home:footer-text'] || ''}
-                    onChange={(e) => updateCustomText('home:footer-text', e.target.value)}
+                    value={editingLanguage === 'en' ? customScreenTexts['home:footer-text_en'] || '' : customScreenTexts['home:footer-text'] || ''}
+                    onChange={(e) => updateCustomText(editingLanguage === 'en' ? 'home:footer-text_en' : 'home:footer-text', e.target.value)}
                     className="mt-2 w-full rounded-[1rem] border border-outline-variant bg-white p-3 text-base text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
@@ -585,14 +614,16 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
 
             <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40">
-              <h3 className="font-headline text-lg font-black text-primary mb-5">路徑總覽頁設定</h3>
+              <h3 className="font-headline text-lg font-black text-primary mb-5">
+                路徑總覽頁設定 ({editingLanguage === 'en' ? 'English' : '中文'})
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest">路徑頁標題</label>
                   <input
                     type="text"
-                    value={customScreenTexts['journey:title'] || ''}
-                    onChange={(e) => updateCustomText('journey:title', e.target.value)}
+                    value={editingLanguage === 'en' ? customScreenTexts['journey:title_en'] || '' : customScreenTexts['journey:title'] || ''}
+                    onChange={(e) => updateCustomText(editingLanguage === 'en' ? 'journey:title_en' : 'journey:title', e.target.value)}
                     className="mt-2 w-full rounded-[1rem] border border-outline-variant bg-white p-3 text-base text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
@@ -600,8 +631,8 @@ export const AdminDashboardScreen: React.FC = () => {
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest">路徑頁副標題</label>
                   <input
                     type="text"
-                    value={customScreenTexts['journey:subtitle'] || ''}
-                    onChange={(e) => updateCustomText('journey:subtitle', e.target.value)}
+                    value={editingLanguage === 'en' ? customScreenTexts['journey:subtitle_en'] || '' : customScreenTexts['journey:subtitle'] || ''}
+                    onChange={(e) => updateCustomText(editingLanguage === 'en' ? 'journey:subtitle_en' : 'journey:subtitle', e.target.value)}
                     className="mt-2 w-full rounded-[1rem] border border-outline-variant bg-white p-3 text-base text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
@@ -615,7 +646,9 @@ export const AdminDashboardScreen: React.FC = () => {
             {homeCards.map((card, idx) => (
               <div key={card.id} className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
                 <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-                  <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
+                  <span className="font-headline text-lg font-black text-primary">
+                    入口卡片 #{idx + 1} ({editingLanguage === 'en' ? 'English' : '中文'})
+                  </span>
                   <span className="text-xs text-on-surface-variant font-mono">{card.id}</span>
                 </div>
                 <div className="space-y-4">
@@ -623,10 +656,14 @@ export const AdminDashboardScreen: React.FC = () => {
                     <label className="block text-xs font-bold text-secondary">卡片名稱</label>
                     <input
                       type="text"
-                      value={card.title}
+                      value={editingLanguage === 'en' ? card.title_en || '' : card.title || ''}
                       onChange={(e) => {
                         const newCards = [...homeCards];
-                        newCards[idx] = { ...card, title: e.target.value };
+                        if (editingLanguage === 'en') {
+                          newCards[idx] = { ...card, title_en: e.target.value };
+                        } else {
+                          newCards[idx] = { ...card, title: e.target.value };
+                        }
                         updateHomeCards(newCards);
                       }}
                       className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
@@ -635,11 +672,15 @@ export const AdminDashboardScreen: React.FC = () => {
                   <div>
                     <label className="block text-xs font-bold text-secondary">描述文字</label>
                     <textarea
-                      value={card.description}
+                      value={editingLanguage === 'en' ? card.description_en || '' : card.description || ''}
                       rows={2}
                       onChange={(e) => {
                         const newCards = [...homeCards];
-                        newCards[idx] = { ...card, description: e.target.value };
+                        if (editingLanguage === 'en') {
+                          newCards[idx] = { ...card, description_en: e.target.value };
+                        } else {
+                          newCards[idx] = { ...card, description: e.target.value };
+                        }
                         updateHomeCards(newCards);
                       }}
                       className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
@@ -731,33 +772,42 @@ export const AdminDashboardScreen: React.FC = () => {
                           <div className="flex flex-col gap-2">
                             <input
                               type="text"
-                              value={step.title}
+                              value={editingLanguage === 'en' ? step.title_en || '' : step.title || ''}
                               onChange={(e) => {
-                                const nextSteps = discipleshipSteps.map(s => s.id === step.id ? { ...s, title: e.target.value } : s);
+                                const nextSteps = discipleshipSteps.map(s => s.id === step.id ? (
+                                  editingLanguage === 'en' ? { ...s, title_en: e.target.value } : { ...s, title: e.target.value }
+                                ) : s);
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="border border-outline-variant/80 bg-white px-2 py-1 rounded text-sm font-bold text-primary outline-none"
+                              placeholder="Title"
                             />
                             <input
                               type="text"
-                              value={step.subtitle}
+                              value={editingLanguage === 'en' ? step.subtitle_en || '' : step.subtitle || ''}
                               onChange={(e) => {
-                                const nextSteps = discipleshipSteps.map(s => s.id === step.id ? { ...s, subtitle: e.target.value } : s);
+                                const nextSteps = discipleshipSteps.map(s => s.id === step.id ? (
+                                  editingLanguage === 'en' ? { ...s, subtitle_en: e.target.value } : { ...s, subtitle: e.target.value }
+                                ) : s);
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="border border-outline-variant/80 bg-white px-2 py-1 rounded text-xs text-on-surface-variant outline-none"
+                              placeholder="Subtitle"
                             />
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <textarea
-                            value={step.description}
+                            value={editingLanguage === 'en' ? step.description_en || '' : step.description || ''}
                             rows={2}
                             onChange={(e) => {
-                              const nextSteps = discipleshipSteps.map(s => s.id === step.id ? { ...s, description: e.target.value } : s);
+                              const nextSteps = discipleshipSteps.map(s => s.id === step.id ? (
+                                  editingLanguage === 'en' ? { ...s, description_en: e.target.value } : { ...s, description: e.target.value }
+                                ) : s);
                               updateDiscipleshipSteps(nextSteps);
                             }}
                             className="w-full border border-outline-variant/80 bg-white px-2 py-1 rounded text-xs text-on-surface-variant outline-none resize-none"
+                            placeholder="Description"
                           />
                         </td>
                         <td className="px-6 py-4">
@@ -848,7 +898,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   <div className="rounded-[1.8rem] bg-surface-container-low p-6 border border-outline-variant/40 shadow-sm space-y-4">
                     <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
                       <h3 className="font-headline text-lg font-black text-primary">
-                        頁面基本資訊: {activeLesson.title}
+                        頁面基本資訊: {editingLanguage === 'en' ? activeLesson.title_en || activeLesson.title : activeLesson.title} ({editingLanguage === 'en' ? 'English' : '中文'})
                       </h3>
                       <span className="text-xs text-secondary font-mono bg-surface-container-high px-2 py-0.5 rounded">
                         路徑: {activeLesson.route}
@@ -860,21 +910,25 @@ export const AdminDashboardScreen: React.FC = () => {
                         <label className="block text-xs font-bold text-secondary">標題</label>
                         <input
                           type="text"
-                          value={activeLesson.title}
+                          value={editingLanguage === 'en' ? activeLesson.title_en || '' : activeLesson.title}
                           onChange={(e) => {
-                            const nextRoutes = lessonRoutes.map(r => r.id === activeLesson.id ? { ...r, title: e.target.value } : r);
+                            const nextRoutes = lessonRoutes.map(r => r.id === activeLesson.id ? (
+                              editingLanguage === 'en' ? { ...r, title_en: e.target.value } : { ...r, title: e.target.value }
+                            ) : r);
                             updateLessonRoutes(nextRoutes);
                           }}
                           className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-secondary">英文副標題</label>
+                        <label className="block text-xs font-bold text-secondary">英文副標題 / Subtitle</label>
                         <input
                           type="text"
-                          value={activeLesson.subtitle || ''}
+                          value={editingLanguage === 'en' ? activeLesson.subtitle_en || '' : activeLesson.subtitle || ''}
                           onChange={(e) => {
-                            const nextRoutes = lessonRoutes.map(r => r.id === activeLesson.id ? { ...r, subtitle: e.target.value } : r);
+                            const nextRoutes = lessonRoutes.map(r => r.id === activeLesson.id ? (
+                              editingLanguage === 'en' ? { ...r, subtitle_en: e.target.value } : { ...r, subtitle: e.target.value }
+                            ) : r);
                             updateLessonRoutes(nextRoutes);
                           }}
                           className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
@@ -1089,8 +1143,8 @@ export const AdminDashboardScreen: React.FC = () => {
                                   <label className="block text-xs font-bold text-secondary">卡片標題</label>
                                   <input
                                     type="text"
-                                    value={mod.title || ''}
-                                    onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, { title: e.target.value })}
+                                    value={editingLanguage === 'en' ? mod.title_en || '' : mod.title || ''}
+                                    onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, editingLanguage === 'en' ? { title_en: e.target.value } : { title: e.target.value })}
                                     className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none"
                                   />
                                 </div>
@@ -1100,9 +1154,9 @@ export const AdminDashboardScreen: React.FC = () => {
                                     <div>
                                       <label className="block text-xs font-bold text-secondary">討論問題題目 (Prompt)</label>
                                       <textarea
-                                        value={(mod as any).prompt || ''}
+                                        value={editingLanguage === 'en' ? (mod as any).prompt_en || '' : (mod as any).prompt || ''}
                                         rows={3}
-                                        onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, { prompt: e.target.value } as any)}
+                                        onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, editingLanguage === 'en' ? { prompt_en: e.target.value } as any : { prompt: e.target.value } as any)}
                                         className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none resize-y"
                                       />
                                     </div>
@@ -1129,16 +1183,40 @@ export const AdminDashboardScreen: React.FC = () => {
                                   </>
                                 )}
 
-                                {(mod.kind === 'summary-card' || mod.kind === 'content-section' || mod.kind === 'prayer') && (
+                                {(mod.kind === 'summary-card' || mod.kind === 'content-section' || mod.kind === 'prayer' || mod.kind === 'appendix') && (
                                   <div>
                                     <label className="block text-xs font-bold text-secondary">內文主要內容 (Body Text)</label>
                                     <textarea
-                                      value={(mod as any).body || ''}
+                                      value={editingLanguage === 'en' ? (mod as any).body_en || '' : (mod as any).body || ''}
                                       rows={5}
-                                      onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, { body: e.target.value } as any)}
+                                      onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, editingLanguage === 'en' ? { body_en: e.target.value } as any : { body: e.target.value } as any)}
                                       className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none resize-y font-sans leading-relaxed"
                                     />
                                   </div>
+                                )}
+
+                                {mod.kind === 'extension-card' && (
+                                  <>
+                                    <div>
+                                      <label className="block text-xs font-bold text-secondary">延伸學習簡短描述 (Description)</label>
+                                      <textarea
+                                        value={editingLanguage === 'en' ? (mod as any).description_en || '' : (mod as any).description || ''}
+                                        rows={3}
+                                        onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, editingLanguage === 'en' ? { description_en: e.target.value } as any : { description: e.target.value } as any)}
+                                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none resize-y"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-bold text-secondary">跳轉路由路徑 (Route Path)</label>
+                                      <input
+                                        type="text"
+                                        value={(mod as any).route || ''}
+                                        onChange={(e) => updateCardInLesson(activeLesson.id, mod.id, { route: e.target.value } as any)}
+                                        placeholder="例如: /journey/salvation-assurance/are-you-saved"
+                                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none font-mono"
+                                      />
+                                    </div>
+                                  </>
                                 )}
 
                                 {/* Scripture sub-editor */}
@@ -1614,21 +1692,21 @@ ON CONFLICT (email) DO NOTHING;`}
                       
                       {/* Inner Viewport Content */}
                       <div className="flex-1 overflow-y-auto scrollbar-none">
-                        {activeTab === 'general' && <HomePreview />}
-                        {activeTab === 'home-cards' && <HomePreview />}
-                        {activeTab === 'journey-steps' && <JourneyPreview />}
-                        {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
-                        {activeTab === 'media' && <HomePreview />}
+                        {activeTab === 'general' && <HomePreview language={editingLanguage} />}
+                        {activeTab === 'home-cards' && <HomePreview language={editingLanguage} />}
+                        {activeTab === 'journey-steps' && <JourneyPreview language={editingLanguage} />}
+                        {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} language={editingLanguage} />}
+                        {activeTab === 'media' && <HomePreview language={editingLanguage} />}
                       </div>
                     </div>
                   ) : (
                     /* Desktop full-width content */
                     <div className="w-full h-full overflow-y-auto">
-                      {activeTab === 'general' && <HomePreview />}
-                      {activeTab === 'home-cards' && <HomePreview />}
-                      {activeTab === 'journey-steps' && <JourneyPreview />}
-                      {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
-                      {activeTab === 'media' && <HomePreview />}
+                      {activeTab === 'general' && <HomePreview language={editingLanguage} />}
+                      {activeTab === 'home-cards' && <HomePreview language={editingLanguage} />}
+                      {activeTab === 'journey-steps' && <JourneyPreview language={editingLanguage} />}
+                      {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} language={editingLanguage} />}
+                      {activeTab === 'media' && <HomePreview language={editingLanguage} />}
                     </div>
                   )}
                 </div>

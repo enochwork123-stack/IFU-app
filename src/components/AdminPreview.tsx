@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContent } from '../context/ContentContext';
 import type { StudyModule, ScriptureReference } from '../types/content';
+import { useLanguage, Language } from '../context/LanguageContext';
 
 // Simple Material Icon mimic if not loaded (though we have Icon / Material Icons font loaded globally)
 const Icon: React.FC<{ name: string; className?: string }> = ({ name, className = '' }) => (
@@ -33,9 +34,23 @@ const getCardStyle = (accent?: string) => {
 };
 
 // Reusable mock Scripture reveal accordion
-const ScriptureToggle: React.FC<{ scripture: ScriptureReference }> = ({ scripture }) => {
+const ScriptureToggle: React.FC<{ scripture: ScriptureReference; language?: Language }> = ({ scripture, language }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { translateText, language: currentLang } = useLanguage();
   if (!scripture) return null;
+
+  const lang = language || currentLang;
+
+  // Localize book name
+  const bookText = scripture.book ? translateText(scripture.book, lang) : '';
+  const refText = scripture.reference;
+
+  // Localize Chinese verse
+  const chineseText = scripture.chinese ? translateText(scripture.chinese, lang) : '';
+  const englishText = scripture.english || '';
+
+  // Order based on language preference
+  const showEnglishFirst = lang === 'en';
 
   return (
     <div className="rounded-[1.45rem] border border-outline-variant/60 bg-surface-container-lowest text-on-surface">
@@ -45,13 +60,13 @@ const ScriptureToggle: React.FC<{ scripture: ScriptureReference }> = ({ scriptur
         className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
       >
         <span>
-          {scripture.book && (
+          {bookText && (
             <span className="block font-body text-[11px] font-extrabold tracking-[0.2em] text-secondary">
-              {scripture.book}
+              {bookText}
             </span>
           )}
           <span className="mt-1 block font-headline text-[1.15rem] leading-tight text-primary">
-            {scripture.reference}
+            {refText}
           </span>
         </span>
         <Icon
@@ -61,13 +76,32 @@ const ScriptureToggle: React.FC<{ scripture: ScriptureReference }> = ({ scriptur
       </button>
       {isOpen && (
         <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary">
-            {scripture.chinese}
-          </p>
-          {scripture.english && (
-            <p className="mt-4 text-sm leading-7 text-on-surface-variant">
-              {scripture.english}
-            </p>
+          {showEnglishFirst ? (
+            <>
+              {englishText && (
+                <p className="text-sm font-medium leading-7 text-primary">
+                  {englishText}
+                </p>
+              )}
+              {chineseText && (
+                <p className="mt-4 font-headline text-[1.05rem] leading-8 text-on-surface-variant">
+                  {chineseText}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              {chineseText && (
+                <p className="font-headline text-[1.05rem] leading-8 text-primary">
+                  {chineseText}
+                </p>
+              )}
+              {englishText && (
+                <p className="mt-4 text-sm leading-7 text-on-surface-variant">
+                  {englishText}
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
@@ -76,8 +110,11 @@ const ScriptureToggle: React.FC<{ scripture: ScriptureReference }> = ({ scriptur
 };
 
 // 1. Home Preview (Header, Hero Section, Cards list, CTA, and Footer)
-export const HomePreview: React.FC = () => {
+export const HomePreview: React.FC<{ language?: Language }> = ({ language }) => {
   const { homeCards, customScreenTexts } = useAppContent();
+  const { t, tContent } = useLanguage();
+
+  const activeLang = language || 'zh-TW';
 
   return (
     <div className="w-full bg-surface text-on-surface select-none pb-24 font-sans">
@@ -86,7 +123,7 @@ export const HomePreview: React.FC = () => {
           <div className="flex items-center gap-2">
             <Icon name="menu_book" className="text-xl text-primary" />
             <p className="font-headline text-sm font-bold tracking-tight text-primary truncate max-w-[140px] sm:max-w-xs">
-              {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
+              {tContent(customScreenTexts, 'home:hero-title', activeLang) || t('基督門徒訓練', activeLang)}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -95,7 +132,7 @@ export const HomePreview: React.FC = () => {
             </div>
             <button className="flex h-7 items-center gap-1 rounded-full bg-surface-container-lowest px-3 text-[10px] font-semibold text-on-surface ring-1 ring-[rgba(40,53,28,0.06)] shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
-              登錄
+              {t('登錄', activeLang)}
             </button>
           </div>
         </div>
@@ -108,10 +145,10 @@ export const HomePreview: React.FC = () => {
 
         <section className="relative z-10 mx-auto mb-10 mt-2 text-center">
           <h1 className="font-headline text-3xl font-black leading-tight tracking-tight text-primary">
-            {customScreenTexts['home:hero-title'] || '基督門徒訓練'}
+            {tContent(customScreenTexts, 'home:hero-title', activeLang) || t('基督門徒訓練', activeLang)}
           </h1>
           <p className="mx-auto mt-3 max-w-[18rem] text-sm leading-6 text-on-surface-variant">
-            {customScreenTexts['home:hero-subtitle'] || '在信仰中成長的旅程，一步一腳印。'}
+            {tContent(customScreenTexts, 'home:hero-subtitle', activeLang) || t('在信仰中成長的旅程，一步一腳印。', activeLang)}
           </p>
         </section>
 
@@ -131,10 +168,10 @@ export const HomePreview: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="font-headline text-lg font-bold text-primary truncate">
-                    {card.title}
+                    {tContent(card, 'title', activeLang)}
                   </h2>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant line-clamp-2">
-                    {card.description}
+                    {tContent(card, 'description', activeLang)}
                   </p>
                 </div>
                 <Icon
@@ -151,10 +188,10 @@ export const HomePreview: React.FC = () => {
             type="button"
             className="inline-flex items-center rounded-full bg-secondary px-6 py-3 text-xs font-extrabold tracking-widest text-white shadow-md active:scale-95"
           >
-            開啟你的旅程
+            {t('開啟你的旅程', activeLang)}
           </button>
           <p className="mt-3 text-[10px] font-extrabold tracking-widest text-primary/40">
-            {customScreenTexts['home:footer-text'] || '每週更新課程'}
+            {tContent(customScreenTexts, 'home:footer-text', activeLang) || t('每週更新課程', activeLang)}
           </p>
         </section>
       </main>
@@ -163,19 +200,21 @@ export const HomePreview: React.FC = () => {
 };
 
 // 2. Journey Path Preview (Visual 12 steps flow)
-export const JourneyPreview: React.FC = () => {
+export const JourneyPreview: React.FC<{ language?: Language }> = ({ language }) => {
   const { discipleshipSteps, customScreenTexts } = useAppContent();
+  const { t, tContent } = useLanguage();
 
+  const activeLang = language || 'zh-TW';
   const sortedSteps = [...discipleshipSteps].sort((a, b) => a.order - b.order);
 
   return (
     <div className="w-full bg-surface text-on-surface pb-24 font-sans select-none">
       <header className="p-5 border-b border-[rgba(40,53,28,0.05)] bg-white/80 backdrop-blur-md">
         <h1 className="font-headline text-2xl font-black text-primary">
-          {customScreenTexts['journey:title'] || '門徒生命成長路徑'}
+          {tContent(customScreenTexts, 'journey:title', activeLang) || t('門徒生命成長路徑', activeLang)}
         </h1>
         <p className="text-xs font-bold text-secondary">
-          {customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}
+          {tContent(customScreenTexts, 'journey:subtitle', activeLang) || t('Discipleship Journey', activeLang)}
         </p>
       </header>
 
@@ -218,10 +257,10 @@ export const JourneyPreview: React.FC = () => {
                     )}
                   </div>
                   <h3 className="font-headline text-sm font-bold leading-tight text-primary truncate">
-                    {step.title}
+                    {tContent(step, 'title', activeLang)}
                   </h3>
                   <p className="truncate text-[10px] text-on-surface-variant/70">
-                    {step.subtitle}
+                    {tContent(step, 'subtitle', activeLang)}
                   </p>
                 </div>
               </div>
@@ -238,14 +277,17 @@ interface LessonPreviewProps {
   lessonId: string;
 }
 
-export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
+export const LessonPreview: React.FC<LessonPreviewProps & { language?: Language }> = ({ lessonId, language }) => {
   const { lessonRoutes } = useAppContent();
+  const { t, tContent } = useLanguage();
+
+  const activeLang = language || 'zh-TW';
   const activeLesson = lessonRoutes.find((r) => r.id === lessonId);
 
   if (!activeLesson) {
     return (
       <div className="p-8 text-center text-xs font-bold text-on-surface-variant">
-        正在載入或未選擇課程
+        {t('加載中或無此課程...', activeLang)}
       </div>
     );
   }
@@ -257,7 +299,7 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
         <div className="flex items-center gap-2 text-primary">
           <Icon name="arrow_back" className="text-lg cursor-pointer" />
           <h2 className="font-headline text-sm font-black leading-tight">
-            {activeLesson.title}
+            {tContent(activeLesson, 'title', activeLang)}
           </h2>
         </div>
         <span className="text-[10px] font-bold text-secondary font-mono bg-surface-container px-2 py-0.5 rounded">
@@ -283,7 +325,7 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
               )}
 
               {/* Title display */}
-              {mod.title && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
+              {tContent(mod, 'title', activeLang) && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
                 <div
                   className={`flex items-center gap-2 mb-3.5 ${
                     cardTheme === 'primary' ? 'text-secondary-fixed-dim' : 'text-secondary'
@@ -299,7 +341,7 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                       cardTheme === 'primary' ? 'text-white' : 'text-primary'
                     }`}
                   >
-                    {mod.title}
+                    {tContent(mod, 'title', activeLang)}
                   </h3>
                 </div>
               )}
@@ -307,19 +349,19 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
               {/* Kind based content rendering */}
               {mod.kind === 'content-section' && (
                 <div className="space-y-3">
-                  {mod.body && (
+                  {tContent(mod, 'body', activeLang) && (
                     <p
                       className={`text-xs leading-6 whitespace-pre-wrap ${
                         cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'
                       }`}
                     >
-                      {mod.body}
+                      {tContent(mod, 'body', activeLang)}
                     </p>
                   )}
                   {mod.scriptures && mod.scriptures.length > 0 && (
                     <div className="mt-3.5 space-y-2">
                       {mod.scriptures.map((sc, sIdx) => (
-                        <ScriptureToggle key={sIdx} scripture={sc} />
+                        <ScriptureToggle key={sIdx} scripture={sc} language={activeLang} />
                       ))}
                     </div>
                   )}
@@ -329,12 +371,12 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
               {mod.kind === 'reflection-prompt' && (
                 <div className="space-y-3 text-on-surface">
                   <p className="text-xs font-semibold leading-5 text-on-surface">
-                    {(mod as any).prompt}
+                    {tContent(mod, 'prompt', activeLang)}
                   </p>
                   {(mod as any).scriptures && (mod as any).scriptures.length > 0 && (
                     <div className="space-y-2">
                       {(mod as any).scriptures.map((sc: ScriptureReference, sIdx: number) => (
-                        <ScriptureToggle key={sIdx} scripture={sc} />
+                        <ScriptureToggle key={sIdx} scripture={sc} language={activeLang} />
                       ))}
                     </div>
                   )}
@@ -343,10 +385,10 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                       disabled
                       rows={2}
                       className="w-full resize-none rounded-xl border border-outline-variant bg-surface-container-low/50 p-2.5 text-xs text-on-surface-variant outline-none"
-                      placeholder="在這裡輸入你的答案... (預覽模式不可輸入)"
+                      placeholder={t('在這裡輸入你的答案... (預覽模式不可輸入)', activeLang)}
                     />
                     <span className="mt-1 block text-right text-[9px] font-extrabold text-on-surface-variant/40">
-                      已自動儲存
+                      {t('已自動儲存', activeLang)}
                     </span>
                   </div>
                 </div>
@@ -354,13 +396,13 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
 
               {mod.kind === 'summary-card' && (
                 <div className="space-y-3">
-                  {(mod as any).body && (
+                  {tContent(mod, 'body', activeLang) && (
                     <p
                       className={`text-xs leading-6 whitespace-pre-wrap ${
                         cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'
                       }`}
                     >
-                      {(mod as any).body}
+                      {tContent(mod, 'body', activeLang)}
                     </p>
                   )}
                 </div>
@@ -372,7 +414,7 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                     cardTheme === 'primary' ? 'text-white' : 'text-primary'
                   }`}
                 >
-                  {mod.body}
+                  {tContent(mod, 'body', activeLang)}
                 </p>
               )}
 
@@ -381,22 +423,22 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                   <div className="flex items-center gap-2 text-secondary">
                     <Icon name="article" className="text-lg" />
                     <span className="text-[9px] font-extrabold uppercase tracking-wider">
-                      附件
+                      {t('附件', activeLang)}
                     </span>
                   </div>
                   <h4 className="mt-2 font-headline text-base font-bold text-primary">
-                    {mod.title || '附件標題'}
+                    {tContent(mod, 'title', activeLang) || t('附件標題', activeLang)}
                   </h4>
-                  {mod.body && (
+                  {tContent(mod, 'body', activeLang) && (
                     <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-                      {mod.body}
+                      {tContent(mod, 'body', activeLang)}
                     </p>
                   )}
                   <button
                     type="button"
                     className="mt-3 flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-[10px] font-extrabold text-white"
                   >
-                    查看附件
+                    {t('查看附件', activeLang)}
                     <Icon name="open_in_full" className="text-[12px]" />
                   </button>
                 </div>
@@ -407,22 +449,22 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                   <div className="flex items-center gap-2 text-secondary">
                     <Icon name="extension" className="text-lg" />
                     <span className="text-[9px] font-extrabold uppercase tracking-wider">
-                      延伸學習
+                      {t('延伸學習', activeLang)}
                     </span>
                   </div>
                   <h4 className="mt-2 font-headline text-base font-bold text-primary">
-                    {mod.title}
+                    {tContent(mod, 'title', activeLang)}
                   </h4>
-                  {(mod as any).description && (
+                  {tContent(mod, 'description', activeLang) && (
                     <p className="mt-1 text-[10px] leading-4 text-on-surface-variant">
-                      {(mod as any).description}
+                      {tContent(mod, 'description', activeLang)}
                     </p>
                   )}
                   <button
                     type="button"
                     className="mt-3.5 flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-[10px] font-extrabold text-white"
                   >
-                    開始延伸學習
+                    {t('開始延伸學習', activeLang)}
                     <Icon name="arrow_forward" className="text-[12px]" />
                   </button>
                 </div>

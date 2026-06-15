@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { PageHeader } from '../components/PageHeader';
-import { discipleshipSteps } from '../data/appContent';
+import { useAppContent } from '../context/ContentContext';
+import { useLanguage } from '../context/LanguageContext';
 
 function JourneyCard({ step, isLast }) {
   const isActive = step.status === 'active';
   const isAvailable = isActive || step.status === 'available';
+  const { t, tContent } = useLanguage();
 
   const body = (
     <div
@@ -38,10 +40,10 @@ function JourneyCard({ step, isLast }) {
                 isActive ? 'text-primary' : 'text-on-surface-variant'
               }`}
             >
-              {step.title}
+              {tContent(step, 'title')}
             </h3>
             <p className="mt-1 text-xs font-medium text-on-surface-variant/70">
-              ({step.subtitle})
+              ({tContent(step, 'subtitle')})
             </p>
           </div>
           {isActive ? (
@@ -57,12 +59,12 @@ function JourneyCard({ step, isLast }) {
           )}
         </div>
         <p className="text-sm leading-7 text-on-surface-variant/85">
-          {step.description}
+          {tContent(step, 'description')}
         </p>
         {isAvailable ? (
           <div className="mt-4">
             <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-bold text-white shadow-[0_14px_36px_rgba(121,89,0,0.2)]">
-              開始學習
+              {t('開始學習')}
               <Icon name="arrow_forward" className="text-[18px]" />
             </span>
           </div>
@@ -83,10 +85,13 @@ function JourneyCard({ step, isLast }) {
 }
 
 export function JourneyOverviewScreen() {
+  const { discipleshipSteps, customScreenTexts } = useAppContent();
+  const { t, tContent } = useLanguage();
+
   return (
     <>
       <PageHeader
-        title="新生命栽培"
+        title={tContent(customScreenTexts, 'journey:title') || t('門徒生命成長路徑')}
         backTo="/"
         action={
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container">
@@ -101,17 +106,17 @@ export function JourneyOverviewScreen() {
             CHAPTER 1
           </div>
           <h2 className="mt-5 font-headline text-[2.3rem] text-primary">
-            初信栽培
+            {t('初信栽培')}
           </h2>
           <p className="mx-auto mt-3 max-w-[18rem] text-sm leading-7 text-on-surface-variant">
-            建立與基督穩固的聯結，開展屬靈成長的旅程。
+            {t('掌握聖經的教導，使你在基督裡的新生命健康成長。')}
           </p>
         </section>
 
         <div className="space-y-6">
           {discipleshipSteps.map((step, index) => (
             <JourneyCard
-              key={step.title}
+              key={step.id || step.title}
               step={step}
               isLast={index === discipleshipSteps.length - 1}
             />
@@ -121,9 +126,9 @@ export function JourneyOverviewScreen() {
         <section className="relative mt-14 overflow-hidden rounded-[2rem] bg-primary p-6 text-white shadow-[0_26px_70px_rgba(40,53,28,0.22)]">
           <div className="absolute -right-7 -top-7 h-28 w-28 rounded-full bg-primary-container/30 blur-3xl" />
           <div className="relative">
-            <h3 className="font-headline text-xl">Journey Progress</h3>
+            <h3 className="font-headline text-xl">{t('栽培進度')}</h3>
             <div className="mt-5 flex items-center justify-between text-xs">
-              <span className="text-white/70">Overall Completion</span>
+              <span className="text-white/70">{t('已完成')}</span>
               <span className="font-extrabold text-secondary-fixed">8%</span>
             </div>
             <div className="mt-3 flex gap-2">

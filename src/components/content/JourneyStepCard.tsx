@@ -1,5 +1,6 @@
 import React from 'react';
 import type { JourneyStep } from '../../types/content';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface JourneyStepCardProps {
   step: JourneyStep;
@@ -14,6 +15,7 @@ export const JourneyStepCard: React.FC<JourneyStepCardProps> = ({
   const isActive = step.status === 'active';
   const isCompleted = step.status === 'complete';
   const canNavigate = !isLocked && Boolean(step.route);
+  const { tContent } = useLanguage();
 
   return (
     <button
@@ -71,9 +73,9 @@ export const JourneyStepCard: React.FC<JourneyStepCardProps> = ({
           ) : null}
         </div>
         <h3 className="font-serif text-lg leading-tight text-[#3e4c31]">
-          {step.title}
+          {tContent(step, 'title')}
         </h3>
-        <p className="truncate text-xs text-[#3e4c31]/70">{step.subtitle}</p>
+        <p className="truncate text-xs text-[#3e4c31]/70">{tContent(step, 'subtitle')}</p>
       </div>
     </button>
   );

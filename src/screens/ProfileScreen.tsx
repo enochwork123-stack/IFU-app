@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage, Language } from '../context/LanguageContext';
 import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
@@ -15,6 +16,7 @@ interface ProgressStats {
 
 export const ProfileScreen: React.FC = () => {
   const { user, profile, signOut, isAdmin } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [stats, setStats] = useState<ProgressStats>({
     quietTimes: 0,
@@ -107,7 +109,11 @@ export const ProfileScreen: React.FC = () => {
       }
     };
 
-    fetchStats();
+    const handleProfileSync = async () => {
+      await fetchStats();
+    };
+
+    handleProfileSync();
   }, [user]);
 
   const handleSignOut = async () => {
@@ -121,7 +127,7 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <>
-      <PageHeader title="個人檔案" backTo="/" />
+      <PageHeader title={t("個人檔案")} backTo="/" />
       <main className="px-6 pb-36 pt-8 flex flex-col gap-6 max-w-xl mx-auto w-full">
         {/* User Card */}
         <section className="rounded-[2rem] bg-primary p-8 text-white shadow-[0_24px_64px_rgba(40,53,28,0.22)] flex flex-col gap-6 relative overflow-hidden">
@@ -136,7 +142,7 @@ export const ProfileScreen: React.FC = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="font-headline text-[1.5rem] font-bold truncate">
-                  {profile?.display_name || '同行中的門徒'}
+                  {profile?.display_name || t('同行中的門徒')}
                 </p>
                 {isAdmin && (
                   <span className="rounded-full bg-secondary/20 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-secondary uppercase border border-secondary/30">
@@ -157,7 +163,7 @@ export const ProfileScreen: React.FC = () => {
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3 text-xs font-bold tracking-wider text-white shadow-lg shadow-secondary/15 hover:brightness-105 active:scale-98 transition"
               >
                 <Icon name="admin_panel_settings" className="text-base" />
-                進入內容管理後台
+                {t("進入內容管理後台")}
               </Link>
             </div>
           )}
@@ -167,18 +173,18 @@ export const ProfileScreen: React.FC = () => {
         <section className="grid grid-cols-3 gap-3">
           {[
             {
-              label: '靈修卡片',
+              label: t('靈修卡片'),
               value: loadingStats ? '...' : `${stats.quietTimes}/${quietTimeEntries.length}`,
               icon: 'auto_stories',
             },
             {
-              label: '栽培進度',
+              label: t('栽培進度'),
               value: loadingStats ? '...' : `${stats.discipleshipSteps}/12`,
               icon: 'signpost',
             },
             {
-              label: '每日靈修',
-              value: loadingStats ? '...' : `${streak} 天`,
+              label: t('每日靈修'),
+              value: loadingStats ? '...' : `${streak} ${t('天')}`,
               icon: 'event_repeat',
             },
           ].map((stat, i) => (
@@ -202,32 +208,43 @@ export const ProfileScreen: React.FC = () => {
         {/* Details & Actions List */}
         <section className="rounded-[1.8rem] bg-surface-container-lowest p-6 shadow-[0_16px_38px_rgba(40,53,28,0.06)] border border-outline-variant/30 flex flex-col gap-5">
           <h3 className="font-headline text-base font-bold text-primary border-b border-outline-variant/40 pb-3">
-            帳戶設定與資訊
+            {t("帳戶設定與資訊")}
           </h3>
           
-          <div className="flex items-center justify-between py-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 gap-2 border-b border-outline-variant/10 pb-3">
             <div>
-              <p className="text-sm font-bold text-primary">語系偏好 (Language)</p>
-              <p className="text-xs text-on-surface-variant mt-0.5">目前系統所顯示的語言</p>
+              <p className="text-sm font-bold text-primary">{t('語系偏好 (Language)')}</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">{t('目前系統所顯示的語言')}</p>
             </div>
-            <span className="rounded-full bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-primary">
-              繁體中文 (ZH)
-            </span>
+            <div className="relative shrink-0 self-start sm:self-auto">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="w-40 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-xs font-bold text-primary outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition cursor-pointer appearance-none pr-8"
+              >
+                <option value="zh-TW">繁體中文</option>
+                <option value="zh-CN">简体中文</option>
+                <option value="en">English</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-secondary">
+                <Icon name="expand_more" className="text-base" />
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-between py-1">
             <div>
-              <p className="text-sm font-bold text-primary">加入時間</p>
-              <p className="text-xs text-on-surface-variant mt-0.5">您開始使用此門徒訓練系統的日期</p>
+              <p className="text-sm font-bold text-primary">{t("加入時間")}</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">{t("您開始使用此門徒訓練系統的日期")}</p>
             </div>
             <span className="text-xs text-on-surface-variant font-medium">
               {profile?.created_at
-                ? new Date(profile.created_at).toLocaleDateString('zh-TW', {
+                ? new Date(profile.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'zh-TW', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                   })
-                : '剛加入'}
+                : t('剛加入')}
             </span>
           </div>
 
@@ -235,10 +252,10 @@ export const ProfileScreen: React.FC = () => {
 
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-3.5 text-sm font-extrabold text-red-600 border border-red-100 hover:bg-red-100/40 active:scale-98 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-3.5 text-sm font-extrabold text-red-600 border border-red-100 hover:bg-red-100/40 active:scale-98 transition cursor-pointer"
           >
             <Icon name="logout" className="text-base" />
-            登出此帳號
+            {t("登出此帳號")}
           </button>
         </section>
       </main>

@@ -4,7 +4,7 @@
 
 This app was built as a mobile-first interactive discipleship learning tool. The first release focuses on the opening modules of **初信栽培**, helping new believers learn through scripture, reflection questions, saved responses, and extension readings. 
 
-Subsequent updates expanded the platform to cover the complete 12-step discipleship path, introduced a self-study quiet time system, and added an administrative panel to manage application content dynamically.
+Subsequent updates expanded the platform to cover the complete 12-step discipleship path, introduced a self-study quiet time system, added an administrative panel to manage application content dynamically, and integrated a multilingual translation framework to support English, Traditional Chinese, and Simplified Chinese readers.
 
 ## 2. Technology Stack
 
@@ -15,6 +15,7 @@ Subsequent updates expanded the platform to cover the complete 12-step disciples
 - **Content Source:** Notion lesson materials & parsed worksheet docs
 - **Database & Auth:** Supabase (PostgreSQL, Row Level Security, GoTrue Auth)
 - **Storage:** Browser `localStorage` for local inputs and Supabase for persistent learner progress
+- **Translation Engine:** `opencc-js` (Traditional to Simplified Chinese conversion)
 - **Deployment Target:** GitHub repo, deployable to Vercel
 
 ## 3. Design Direction
@@ -28,19 +29,22 @@ The visual style follows a “soft modern discipleship journal” approach:
 - Serif headings for an editorial/devotional feel
 - Compact interaction patterns suitable for phone use
 - Responsive web container layout for wider screens, alongside a mobile device-frame emulator toggle
+- Language preference selector on the profile screen (Traditional Chinese, Simplified Chinese, and English)
 
 The design strategy is documented in `lumina_path/DESIGN.md`.
 
 ## 4. Core App Structure
 
-The app is organized around reusable layout and learning components:
+The app is organized around reusable layout, learning, and translation components:
 
 - `AppShell` and `ShellFrame` control the persistent layout frames and viewports.
 - `PageHeader` provides consistent page titles and back navigation.
 - `JourneyPager` handles previous/next lesson movement.
-- `ScriptureCard` and custom scripture reveal panels present Bible passages.
+- `ScriptureCard` and `ScriptureToggle` present Bible passages with bilingual formatting.
 - `NotionMarkdownArticle` renders parsed Markdown documents dynamically.
 - `ContentProvider` (`ContentContext.tsx`) manages dynamic global state and localStorage configuration overrides.
+- `LanguageProvider` (`LanguageContext.tsx`) provides localization, translations for static UI keys, and content translation helpers.
+- `chineseConverter` (`chineseConverter.ts`) configures OpenCC for on-the-fly Traditional-to-Simplified Chinese conversions.
 - Screen components under `src/screens/` define each learning page.
 - Shared course data lives in `src/data/appContent.ts`.
 
@@ -97,11 +101,11 @@ The app is organized around reusable layout and learning components:
 - **登入頁面** (Login Screen)
   - Route: `/login`. Moss-green premium layout prompting users to login with their Google account to track their spiritual progress.
 - **個人檔案** (Profile Screen)
-  - Route: `/profile`. Displays the user's avatar, name, and email. Features three tracker counters: completed quiet time cards out of total (`靈修卡片`), discipleship progress (`栽培進度`), and daily quiet time streak (`每日靈修`).
+  - Route: `/profile`. Displays the user's avatar, name, and email. Features three tracker counters: completed quiet time cards out of total (`靈修卡片`), discipleship progress (`栽培進度`), and daily quiet time streak (`每日靈修`). Includes the translation preferred language selector toggles.
 
 ## 6. Content Workflow
 
-The source materials are processed in two ways:
+The source materials are processed in three ways:
 
 1. **Notion Imports**:
    - Extract raw Notion Markdown exports.
@@ -111,9 +115,17 @@ The source materials are processed in two ways:
    - Parse raw doc/PDF lesson worksheets using the `worksheet-extractor` script (`extract-chapters.mjs`).
    - Format underlines and open text areas into standard placeholder tags (`[__input:key__]`, `[__textarea:key__]`).
    - Map text to interactive TypeScript screen components.
+3. **Multilingual Localization & Content Mapping**:
+   - Static UI elements are translated via `t()` using the `UI_TRANSLATIONS` dictionary mapping.
+   - Dynamic content fields support localization key matching. Adding `_en` properties (e.g. `title_en`, `body_en`, `prompt_en`) to app models enables English local overrides.
+   - Simplified Chinese rendering dynamically converts database/content strings using `OpenCC-JS` when `zh-CN` is toggled.
 
-## 7. Key Learning Interactions
+## 7. Key Learning & Translation Interactions
 
+- **Dynamic UI Localization:** Language changes toggle immediately across the website via React Context. Preference is persisted to the browser `localStorage` and synced to the Supabase `profiles` table for authenticated users.
+- **Ordered Bilingual Scripture Rendering:** Display order of scriptures dynamically adapts to the selected language: English translations display before Chinese texts when `en` is active, and Chinese texts display before English otherwise.
+- **Simplified Chinese Transliteration:** On-the-fly Traditional-to-Simplified Chinese translation avoids content duplication and ensures consistency.
+- **Admin Bilingual Dashboard Control:** Admins can view and update the English text overrides alongside core content versions in the dual-pane admin preview.
 - **Click-to-expand scriptures:** Learners can reveal or hide Bible passages as needed.
 - **Saved answer blocks & inputs:** Reflection answers, multiline fields, and fill-in-the-blank boxes are typed directly into the page and stored locally.
 - **Interactive SVG Life Wheel:** A touch-responsive wheel segment visual (Step 12) displaying description cards reactively.
@@ -153,3 +165,4 @@ Possible next phases:
 
 - Configure Vercel environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) and deploy the app.
 - Migrate offline lesson reflection answers from localStorage to Supabase for full cloud synchronization.
+- Resolve any temporary TypeScript configuration or interface mismatch errors related to optional translation field overrides (`title_en`, etc.) in the dashboard model structures.

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { useLanguage } from '../context/LanguageContext';
+import { ScriptureToggle } from '../components/ScriptureToggle';
 
 interface Scripture {
   book: string;
@@ -59,9 +61,10 @@ interface SavedAnswerProps {
 
 const SavedAnswer: React.FC<SavedAnswerProps> = ({
   storageKey,
-  placeholder = '在這裡輸入你的答案...',
+  placeholder,
   rows = 4,
 }) => {
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState('');
   const storageName = `ifu:${storageKey}`;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -86,17 +89,17 @@ const SavedAnswer: React.FC<SavedAnswerProps> = ({
 
   return (
     <label className="mt-4 block">
-      <span className="sr-only">你的答案</span>
+      <span className="sr-only">{t('你的答案')}</span>
       <textarea
         ref={textareaRef}
         value={answer}
         onChange={handleChange}
         rows={rows}
         className="min-h-24 w-full resize-none overflow-y-hidden rounded-2xl border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : t('在這裡輸入你的答案...')}
       />
       <span className="mt-1 block text-right text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
+        {t('已自動儲存')}
       </span>
     </label>
   );
@@ -111,8 +114,9 @@ interface FillInTheBlankProps {
 const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
   storageKey,
   prefixText,
-  placeholder = '填入答案...',
+  placeholder,
 }) => {
+  const { t } = useLanguage();
   const [value, setValue] = useState('');
   const storageName = `ifu:${storageKey}`;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -138,7 +142,7 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
   return (
     <div className="flex flex-col gap-2 mt-3 p-3 rounded-xl bg-surface border border-outline-variant/30 w-full overflow-hidden">
       <span className="font-body text-sm text-primary font-bold block break-words">
-        {prefixText}
+        {t(prefixText)}
       </span>
       <div className="flex flex-col gap-1 w-full">
         <textarea
@@ -146,56 +150,13 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
           rows={2}
           value={value}
           onChange={handleChange}
-          placeholder={placeholder}
+          placeholder={placeholder ? t(placeholder) : t('填入答案...')}
           className="w-full overflow-y-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest p-2 text-base text-on-surface outline-none transition focus:border-secondary focus:bg-white resize-none"
         />
         <span className="text-[9px] font-bold tracking-[0.1em] text-on-surface-variant/45 text-right block pr-1">
-          已自動儲存
+          {t('已自動儲存')}
         </span>
       </div>
-    </div>
-  );
-};
-
-interface ScriptureToggleProps {
-  scripture: Scripture;
-}
-
-const ScriptureToggle: React.FC<ScriptureToggleProps> = ({ scripture }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm w-full overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen((curr) => !curr)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left text-primary"
-      >
-        <span>
-          <span className="block font-body text-[10px] font-extrabold tracking-[0.2em] text-secondary">
-            {scripture.book}
-          </span>
-          <span className="mt-1 block font-headline text-[1.1rem] leading-tight font-bold">
-            {scripture.reference}
-          </span>
-        </span>
-        <Icon
-          name={isOpen ? 'expand_less' : 'expand_more'}
-          className="shrink-0 text-[24px] text-secondary"
-        />
-      </button>
-      {isOpen && (
-        <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
-          <p className="font-headline text-[1.05rem] leading-8 text-primary break-words">
-            {scripture.chinese}
-          </p>
-          {scripture.english && (
-            <p className="mt-2 text-xs leading-5 text-on-surface-variant font-body break-words">
-              {scripture.english}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -207,6 +168,7 @@ interface QuestionCardProps {
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) => {
+  const { t } = useLanguage();
   return (
     <article className="rounded-[2rem] bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)] w-full overflow-hidden">
       <div className="flex items-center gap-3 text-secondary">
@@ -214,11 +176,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ number, title, children }) 
           {number}
         </span>
         <p className="font-body text-[10px] font-extrabold tracking-[0.2em]">
-          問題 {number}
+          {t('問題')} {number}
         </p>
       </div>
       <h3 className="mt-4 font-headline text-[1.35rem] leading-snug font-bold text-primary break-words">
-        {title}
+        {t(title)}
       </h3>
       <div className="mt-5 space-y-4 w-full">{children}</div>
     </article>
@@ -267,25 +229,26 @@ const wheelData: Record<Exclude<WheelPart, null>, WheelInfo> = {
 };
 
 export const SpiritualGrowthScreen: React.FC = () => {
+  const { t } = useLanguage();
   const [activePart, setActivePart] = useState<WheelPart>(null);
 
   return (
     <>
-      <PageHeader title="屬靈生命的成長" backTo="/journey" />
+      <PageHeader title={t("屬靈生命的成長")} backTo="/journey" />
       <main className="px-6 pb-36 pt-8 overflow-x-hidden">
         {/* Course Banner */}
         <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)] w-full">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
           <div className="relative">
             <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
-              新生命栽培 : (12)
+              {t("新生命栽培 : (12)")}
             </div>
             <h2 className="font-headline text-[2.4rem] leading-tight break-words">
-              屬靈生命的成長
+              {t("屬靈生命的成長")}
             </h2>
             <p className="mt-2 font-medium text-secondary-fixed font-body">Spiritual Growth</p>
             <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container break-words">
-              屬靈生命的成長是一生的追求。藉著持守聖經、禱告、團契與見證等「屬靈基要」操練，我們能以順服的心活出基督為中心的豐盛人生。
+              {t("屬靈生命的成長是一生的追求。藉著持守聖經、禱告、團契與見證等「屬靈基要」操練，我們能以順服的心活出基督為中心的豐盛人生。")}
             </p>
           </div>
         </section>
@@ -402,12 +365,12 @@ export const SpiritualGrowthScreen: React.FC = () => {
             <div className="w-full flex items-center gap-3 text-secondary mb-4">
               <Icon name="palette" className="text-[22px]" />
               <h3 className="font-headline text-[1.45rem] font-bold text-primary break-words">
-                附件 A : 生命輪 (The 'Wheel' Illustration)
+                {t("附件 A : 生命輪 (The 'Wheel' Illustration)")}
               </h3>
             </div>
             
             <p className="text-sm leading-6 text-on-surface-variant text-center w-full max-w-md mb-6 break-words">
-              點擊輪子的不同部分（中心輪轂、外側輪胎、四個輪輻），以探索基督徒屬靈生命的幾項基本基要操練。
+              {t("點擊輪子的不同部分（中心輪轂、外側輪胎、四個輪輻），以探索基督徒屬靈生命的幾項基本基要操練。")}
             </p>
 
             {/* SVG Interactive Wheel */}
@@ -504,7 +467,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   alignmentBaseline="middle"
                   className="pointer-events-none font-headline"
                 >
-                  基督
+                  {t("基督")}
                 </text>
 
                 {/* Rim Labels (Top and Bottom curves) */}
@@ -517,7 +480,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   textAnchor="middle"
                   className="pointer-events-none font-body uppercase tracking-[0.15em]"
                 >
-                  順 服 OBEDIENCE
+                  {t("順服基督")}
                 </text>
 
                 {/* Word Spoke Label */}
@@ -531,7 +494,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   alignmentBaseline="middle"
                   className="pointer-events-none font-headline"
                 >
-                  聖經
+                  {t("聖經")}
                 </text>
 
                 {/* Prayer Spoke Label */}
@@ -545,7 +508,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   alignmentBaseline="middle"
                   className="pointer-events-none font-headline"
                 >
-                  禱告
+                  {t("禱告")}
                 </text>
 
                 {/* Fellowship Spoke Label */}
@@ -559,7 +522,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   alignmentBaseline="middle"
                   className="pointer-events-none font-headline"
                 >
-                  團契
+                  {t("團契")}
                 </text>
 
                 {/* Witness Spoke Label */}
@@ -573,7 +536,7 @@ export const SpiritualGrowthScreen: React.FC = () => {
                   alignmentBaseline="middle"
                   className="pointer-events-none font-headline"
                 >
-                  見證
+                  {t("見證")}
                 </text>
               </svg>
             </div>
@@ -584,21 +547,21 @@ export const SpiritualGrowthScreen: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between gap-4">
                     <h4 className="font-headline font-bold text-primary text-[1.15rem] break-words">
-                      {wheelData[activePart].title}
+                      {t(wheelData[activePart].title)}
                     </h4>
                     <span className="text-xs font-bold text-secondary bg-secondary-fixed/50 px-2.5 py-1 rounded-md font-body whitespace-nowrap">
-                      {wheelData[activePart].scripture}
+                      {t(wheelData[activePart].scripture)}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-on-surface-variant font-body break-words">
-                    {wheelData[activePart].meaning}
+                    {t(wheelData[activePart].meaning)}
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center h-full">
                   <Icon name="touch_app" className="text-secondary text-[28px] animate-bounce mb-2" />
                   <p className="text-sm font-semibold text-secondary">
-                    請點選上方生命輪各個區塊以查閱詳情
+                    {t("請點選上方生命輪各個區塊以查閱詳情")}
                   </p>
                 </div>
               )}
@@ -609,17 +572,17 @@ export const SpiritualGrowthScreen: React.FC = () => {
           <div className="rounded-[2.35rem] bg-secondary p-8 text-white shadow-[0_22px_56px_rgba(121,89,0,0.22)] mt-4 w-full">
             <h3 className="font-headline text-[1.6rem] font-bold leading-tight flex items-center gap-3">
               <Icon name="workspace_premium" className="text-[28px] text-secondary-fixed" />
-              恭喜你！
+              {t("恭喜你！")}
             </h3>
             <p className="mt-3 text-[1.02rem] leading-7 text-white/90 break-words">
-              你已完成《新生命栽培課程》，請盡快加入查考聖經小組，開始《在基督裡的新生命》的查經系列。
+              {t("你已完成《新生命栽培課程》，請盡快加入查考聖經小組，開始《在基督裡的新生命》的查經系列。")}
             </p>
             <div className="mt-6 border-t border-white/20 pt-4 flex flex-col gap-2 w-full">
               <p className="text-xs italic leading-6 text-white/80 font-headline break-words">
-                「有了我的命令又遵守的，這人就是愛我的。愛我的必蒙我父愛他，我也要愛他，並且要向他顯現。」
+                {t("「有了我的命令又遵守的，這人就是愛我的。愛我的必蒙我父愛他，我也要愛他，並且要向他顯現。」")}
               </p>
               <p className="text-[10px] font-bold tracking-[0.16em] text-secondary-fixed">
-                約翰福音 14:21
+                {t("約翰福音 14:21")}
               </p>
             </div>
           </div>
@@ -628,11 +591,12 @@ export const SpiritualGrowthScreen: React.FC = () => {
         {/* Navigation Pager */}
         <section className="mt-8 w-full">
           <JourneyPager
-            previous={{ to: '/journey/life-goal', label: '人生目的' }}
-            next={{ to: '/journey', label: '返回目錄' }}
+            previous={{ to: '/journey/life-goal', label: t('人生目的') }}
+            next={{ to: '/journey', label: t('返回目錄') }}
           />
         </section>
       </main>
     </>
   );
 };
+export default SpiritualGrowthScreen;

@@ -4,11 +4,13 @@ import { JourneyStepCard } from '../components/content/JourneyStepCard';
 import { useAppContent } from '../context/ContentContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
 
 export const JourneyScreen: React.FC = () => {
   const navigate = useNavigate();
   const { discipleshipSteps, customScreenTexts } = useAppContent();
   const { user } = useAuth();
+  const { t, tContent } = useLanguage();
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,8 +71,12 @@ export const JourneyScreen: React.FC = () => {
   return (
     <div className="p-6">
       <header className="mb-8">
-        <h1 className="font-serif text-3xl text-[#3e4c31]">{customScreenTexts['journey:title'] || '門徒之路'}</h1>
-        <p className="font-medium text-[#c68a4c]">{customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}</p>
+        <h1 className="font-serif text-3xl text-[#3e4c31]">
+          {tContent(customScreenTexts, 'journey:title') || t('門徒之路')}
+        </h1>
+        <p className="font-medium text-[#c68a4c]">
+          {tContent(customScreenTexts, 'journey:subtitle') || t('Discipleship Journey')}
+        </p>
       </header>
 
       <div className="relative">
