@@ -234,16 +234,22 @@ export const AdminDashboardScreen: React.FC = () => {
       setSubmittingAdmin(true);
       setMemberError('');
 
-      // 1. Try to delete from whitelist
-      try {
-        const { error: whitelistError } = await supabase
-          .from('admin_whitelist')
-          .delete()
-          .eq('email', email);
+      // 1. Delete from whitelist
+      const { error: whitelistError } = await supabase
+        .from('admin_whitelist')
+        .delete()
+        .eq('email', email);
 
-        if (whitelistError) throw whitelistError;
-      } catch (whitelistError: any) {
-        console.warn('Could not delete from admin_whitelist:', whitelistError);
+      if (whitelistError) {
+        const isTableMissing = whitelistError.message && (
+          whitelistError.message.includes('admin_whitelist') ||
+          whitelistError.message.includes('schema cache') ||
+          whitelistError.message.includes('relation')
+        );
+        if (!isTableMissing || !memberId) {
+          throw whitelistError;
+        }
+        console.warn('admin_whitelist table missing during demotion, but profile demotion will be attempted.');
       }
 
       // 2. If registered, demote to member in profiles
