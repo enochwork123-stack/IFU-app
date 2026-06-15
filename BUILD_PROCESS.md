@@ -13,8 +13,9 @@ Subsequent updates expanded the platform to cover the complete 12-step disciples
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS 4
 - **Content Source:** Notion lesson materials & parsed worksheet docs
-- **Storage:** Browser `localStorage` for learner answers and custom admin overrides
-- **Deployment Target:** GitHub repo, later deployable to Vercel
+- **Database & Auth:** Supabase (PostgreSQL, Row Level Security, GoTrue Auth)
+- **Storage:** Browser `localStorage` for local inputs and Supabase for persistent learner progress
+- **Deployment Target:** GitHub repo, deployable to Vercel
 
 ## 3. Design Direction
 
@@ -89,7 +90,14 @@ The app is organized around reusable layout and learning components:
 
 - **管理後台** (Admin Content Portal)
   - Route: `/admin`
-  - Access code: `admin123`. Allows inline edits for all 12 chapters, cards reordering, Base64 image caching, and JSON configurations download/import.
+  - Integrates with Supabase roles: automatically authenticates database administrators, bypassing password prompts. Includes a member and permission dashboard to promote users to `admin` or demote to `member`.
+
+### Account & Profile
+
+- **登入頁面** (Login Screen)
+  - Route: `/login`. Moss-green premium layout prompting users to login with their Google account to track their spiritual progress.
+- **個人檔案** (Profile Screen)
+  - Route: `/profile`. Displays the user's avatar, name, and email. Features three tracker counters: completed quiet time cards out of total (`靈修卡片`), discipleship progress (`栽培進度`), and daily quiet time streak (`每日靈修`).
 
 ## 6. Content Workflow
 
@@ -111,6 +119,9 @@ The source materials are processed in two ways:
 - **Interactive SVG Life Wheel:** A touch-responsive wheel segment visual (Step 12) displaying description cards reactively.
 - **Devotional Deck Drawing:** Randomly draw cards with 3D flip card animations and progress metrics.
 - **Live Admin Preview:** Dual-pane layout on the admin dashboard showing real-time content changes in simulated Mobile, Tablet, and Desktop viewport frames.
+- **Supabase Authentication & OAuth:** Sign in securely using a Google account. Auth state is managed globally and protected routes redirect unauthorized traffic.
+- **Dynamic Step Completion:** Learners can mark discipleship steps and quiet time cards completed. Cards on the journey path update dynamically to complete status (styled with gold/orange background and white checkmark overlays) and automatically highlight the next lesson as active.
+- **Quiet Time Progress Badges:** Cards in the library view display "已讀" (Read) and "未讀" (Unread) status badges and can be sorted using new sorting filters.
 
 ## 8. GitHub Setup
 
@@ -140,6 +151,5 @@ The build completes successfully with zero compilation or TypeScript type errors
 
 Possible next phases:
 
-- Deploy the GitHub repo to Vercel.
-- Sync localStorage client overrides and learner answers to a server-side database (e.g., Supabase).
-- Implement cumulative progress tracking and learning analytics across the 12 steps.
+- Configure Vercel environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) and deploy the app.
+- Migrate offline lesson reflection answers from localStorage to Supabase for full cloud synchronization.

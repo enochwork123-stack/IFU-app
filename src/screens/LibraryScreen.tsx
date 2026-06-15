@@ -3,6 +3,8 @@ import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { quietTimeEntries } from '../data/quietTimeData';
 import { QuietTimeEntry } from '../types/quietTime';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export const LibraryScreen: React.FC = () => {
   // Navigation / View modes
@@ -12,7 +14,7 @@ export const LibraryScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<string>('all');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'starred'>('newest');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'starred' | 'read' | 'unread'>('newest');
   const [starredOnly, setStarredOnly] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -21,6 +23,11 @@ export const LibraryScreen: React.FC = () => {
 
   // Starred quiet times state (persistent in localStorage)
   const [starredIds, setStarredIds] = useState<string[]>([]);
+
+  // Supabase completed quiet times state
+  const { user } = useAuth();
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(false);
 
   // Random deck draw state
   const [deckCard, setDeckCard] = useState<QuietTimeEntry | null>(null);
@@ -41,6 +48,35 @@ export const LibraryScreen: React.FC = () => {
       console.error('Error loading starred quiet times', e);
     }
   }, []);
+
+  // Fetch completed quiet times from Supabase
+  useEffect(() => {
+    if (!user) {
+      setCompletedIds([]);
+      return;
+    }
+
+    const fetchCompletedQuietTimes = async () => {
+      try {
+        setLoadingProgress(true);
+        const { data, error } = await supabase
+          .from('user_progress')
+          .select('reference_id')
+          .eq('user_id', user.id)
+          .eq('type', 'quiet_time');
+
+        if (!error && data) {
+          setCompletedIds(data.map((row) => row.reference_id));
+        }
+      } catch (err) {
+        console.error('Error fetching completed quiet times:', err);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    fetchCompletedQuietTimes();
+  }, [user]);
 
   // Lock scroll of the route viewport when modal is open
   useEffect(() => {
@@ -140,12 +176,26 @@ export const LibraryScreen: React.FC = () => {
           return bStarred - aStarred; // Starred first
         }
         return dateB - dateA; // Then newest first
+      } else if (sortBy === 'read') {
+        const aRead = completedIds.includes(a.id) ? 1 : 0;
+        const bRead = completedIds.includes(b.id) ? 1 : 0;
+        if (aRead !== bRead) {
+          return bRead - aRead; // Read first
+        }
+        return dateB - dateA; // Then newest first
+      } else if (sortBy === 'unread') {
+        const aRead = completedIds.includes(a.id) ? 1 : 0;
+        const bRead = completedIds.includes(b.id) ? 1 : 0;
+        if (aRead !== bRead) {
+          return aRead - bRead; // Unread first
+        }
+        return dateB - dateA; // Then newest first
       }
       return 0;
     });
 
     return result;
-  }, [searchQuery, selectedBook, selectedTopic, sortBy, starredOnly, starredIds]);
+  }, [searchQuery, selectedBook, selectedTopic, sortBy, starredOnly, starredIds, completedIds]);
 
   // Deck Mode: Draw a random card
   const handleDrawCard = () => {
@@ -185,6 +235,59 @@ export const LibraryScreen: React.FC = () => {
     setDeckCard(null);
     setIsFlipped(false);
     setDrawnIds([]);
+  };
+
+  const handleToggleQuietTime = async (entry: QuietTimeEntry) => {
+    if (!user) {
+      alert('請先登入以保存您的學習進度！');
+      setSelectedEntry(null);
+      return;
+    }
+
+    const isCompleted = completedIds.includes(entry.id);
+
+    try {
+      if (isCompleted) {
+        // Optimistically remove from completedIds
+        setCompletedIds((prev) => prev.filter(id => id !== entry.id));
+
+        const { error } = await supabase
+          .from('user_progress')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('type', 'quiet_time')
+          .eq('reference_id', entry.id);
+
+        if (error) {
+          // Revert optimistic update
+          setCompletedIds((prev) => [...prev, entry.id]);
+          throw error;
+        }
+      } else {
+        // Optimistically add to completedIds
+        setCompletedIds((prev) => [...prev, entry.id]);
+
+        const { error } = await supabase.from('user_progress').insert({
+          user_id: user.id,
+          type: 'quiet_time',
+          reference_id: entry.id,
+          completed_at: new Date().toISOString().split('T')[0],
+        });
+
+        if (error) {
+          if (error.code !== '23505') {
+            // Revert optimistic update
+            setCompletedIds((prev) => prev.filter(id => id !== entry.id));
+            throw error;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling quiet time progress:', err);
+      alert('操作失敗，請重試！');
+    } finally {
+      setSelectedEntry(null);
+    }
   };
 
   return (
@@ -418,6 +521,8 @@ export const LibraryScreen: React.FC = () => {
                         <option value="newest">最新上架</option>
                         <option value="oldest">由舊到新</option>
                         <option value="starred">已收藏優先</option>
+                        <option value="read">已讀優先</option>
+                        <option value="unread">未讀優先</option>
                       </select>
                     </div>
 
@@ -466,9 +571,23 @@ export const LibraryScreen: React.FC = () => {
                       <div>
                         {/* Book & Passage citation header */}
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold tracking-widest text-secondary uppercase bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full">
-                            {entry.book} {entry.passage}
-                          </span>
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <span className="text-[10px] font-extrabold tracking-widest text-secondary uppercase bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
+                              {entry.book} {entry.passage}
+                            </span>
+                            {user && (
+                              completedIds.includes(entry.id) ? (
+                                <span className="text-[9px] font-extrabold tracking-wider bg-green-50 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5 border border-green-200 whitespace-nowrap shrink-0">
+                                  <Icon name="check" className="text-[9px]" />
+                                  已讀
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-extrabold tracking-wider bg-surface-container-low text-on-surface-variant/70 px-2 py-0.5 rounded-full border border-outline-variant/30 whitespace-nowrap shrink-0">
+                                  未讀
+                                </span>
+                              )
+                            )}
+                          </div>
                           
                           {/* Star toggle button */}
                           <button
@@ -803,12 +922,24 @@ export const LibraryScreen: React.FC = () => {
               <span className="text-[10px] font-extrabold text-outline">
                 建立日期: {selectedEntry.dateAdded}
               </span>
-              <button
-                onClick={() => setSelectedEntry(null)}
-                className="px-6 py-2 bg-primary hover:bg-[#3e4c31] text-white text-xs font-bold rounded-full transition active:scale-95 cursor-pointer"
-              >
-                已完成靈修
-              </button>
+              {completedIds.includes(selectedEntry.id) ? (
+                <button
+                  onClick={() => handleToggleQuietTime(selectedEntry)}
+                  className="group px-6 py-2 bg-green-50 hover:bg-red-50 border border-green-200 hover:border-red-200 text-green-700 hover:text-red-700 text-xs font-bold rounded-full flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                >
+                  <Icon name="check" className="text-sm font-extrabold group-hover:hidden" />
+                  <Icon name="close" className="text-sm font-extrabold hidden group-hover:inline" />
+                  <span className="group-hover:hidden">已完成 ✓</span>
+                  <span className="hidden group-hover:inline">取消已完成</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleToggleQuietTime(selectedEntry)}
+                  className="px-6 py-2 bg-primary hover:bg-[#3e4c31] text-white text-xs font-bold rounded-full transition active:scale-95 cursor-pointer"
+                >
+                  已完成靈修
+                </button>
+              )}
             </div>
           </div>
         </div>

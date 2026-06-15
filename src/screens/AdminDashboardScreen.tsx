@@ -1,12 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
 import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
-type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media';
+type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media' | 'members';
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -29,9 +31,24 @@ export const AdminDashboardScreen: React.FC = () => {
   } = useAppContent();
 
   // Authentication State
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { isAdmin, user } = useAuth();
+  const [isAuthorized, setIsAuthorized] = useState(isAdmin);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+
+  // Members Management State
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [whitelist, setWhitelist] = useState<any[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [submittingAdmin, setSubmittingAdmin] = useState(false);
+  const [memberError, setMemberError] = useState('');
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      setIsAuthorized(true);
+    }
+  }, [isAdmin]);
 
   // UI Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('general');
@@ -41,6 +58,7 @@ export const AdminDashboardScreen: React.FC = () => {
   
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
+  const isPreviewActive = showPreview && activeTab !== 'members';
   const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
@@ -71,6 +89,201 @@ export const AdminDashboardScreen: React.FC = () => {
 
   const handleBypass = () => {
     setIsAuthorized(true);
+  };
+
+  const fetchAdminsAndWhitelist = async () => {
+    try {
+      setLoadingMembers(true);
+      setMemberError('');
+      
+      // 1. Fetch registered admins
+      let profilesData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'admin')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        profilesData = data || [];
+      } catch (profilesError: any) {
+        console.error('Error fetching profiles:', profilesError);
+        setMemberError('無法取得已註冊管理員清單：' + (profilesError.message || '未知錯誤'));
+      }
+
+      // 2. Fetch whitelisted emails
+      let whitelistData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('admin_whitelist')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        whitelistData = data || [];
+      } catch (whitelistError: any) {
+        console.warn('Error fetching admin_whitelist (table may not exist yet):', whitelistError);
+        // We append a helpful setup warning, but don't crash
+        setMemberError(prev => 
+          (prev ? prev + '\n' : '') + 
+          'DatabaseWarning: 尚未建立 admin_whitelist 資料表。未註冊用戶將無法進行預先授權，請執行 Supabase SQL 設定。'
+        );
+      }
+
+      setAdmins(profilesData);
+      setWhitelist(whitelistData);
+    } catch (err: any) {
+      console.error('Unexpected error in fetchAdminsAndWhitelist:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'members') {
+      fetchAdminsAndWhitelist();
+    }
+  }, [activeTab]);
+
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailToNormalize = newAdminEmail.trim().toLowerCase();
+    if (!emailToNormalize) return;
+
+    try {
+      setSubmittingAdmin(true);
+      setMemberError('');
+
+      let whitelistSuccess = false;
+      let whitelistDuplicate = false;
+      try {
+        // 1. Try to insert into whitelist
+        const { error: whitelistError } = await supabase
+          .from('admin_whitelist')
+          .insert({ email: emailToNormalize });
+
+        if (whitelistError) {
+          if (whitelistError.code === '23505') {
+            whitelistDuplicate = true;
+          }
+          throw whitelistError;
+        }
+        whitelistSuccess = true;
+      } catch (whitelistError: any) {
+        console.warn('Could not insert into admin_whitelist:', whitelistError);
+        if (whitelistDuplicate) {
+          throw new Error('此電子郵件已在管理員名單中！');
+        }
+        // Notify user about missing table, but attempt role update if registered
+        setMemberError('警告：無法寫入 admin_whitelist（資料表可能尚未建立）。系統將嘗試直接為已註冊帳號進行升級。');
+      }
+
+      // 2. If the user is already registered in profiles, promote them to admin
+      const { data: existingProfiles, error: checkError } = await supabase
+        .from('profiles')
+        .select('id, role')
+        .eq('email', emailToNormalize);
+
+      let promoteSuccess = false;
+      if (!checkError && existingProfiles && existingProfiles.length > 0) {
+        for (const p of existingProfiles) {
+          if (p.role !== 'admin') {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ role: 'admin' })
+              .eq('id', p.id);
+            if (!updateError) promoteSuccess = true;
+          } else {
+            promoteSuccess = true;
+          }
+        }
+      }
+
+      if (whitelistSuccess || promoteSuccess) {
+        setNewAdminEmail('');
+        await fetchAdminsAndWhitelist();
+        alert(promoteSuccess ? '成功將該註冊用戶設為管理員！' : '已成功加入管理員授權名單！');
+      } else {
+        throw new Error('新增失敗：該電子郵件尚未註冊，且資料庫尚未建立 admin_whitelist 資料表。');
+      }
+    } catch (err: any) {
+      console.error('Error adding admin:', err);
+      setMemberError(err.message || '新增管理員失敗');
+    } finally {
+      setSubmittingAdmin(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (email: string, memberId?: string) => {
+    const defaultDevs = ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'];
+    if (defaultDevs.includes(email)) {
+      alert('您不能移除系統預設的開發人員管理權限！');
+      return;
+    }
+    if ((memberId && memberId === user?.id) || (user?.email && email.toLowerCase() === user.email.toLowerCase())) {
+      alert('您不能移除自己的管理員權限！');
+      return;
+    }
+
+    if (!confirm(`確定要移除管理員 ${email} 嗎？`)) {
+      return;
+    }
+
+    try {
+      setSubmittingAdmin(true);
+      setMemberError('');
+
+      // 1. Delete from whitelist
+      const { error: whitelistError } = await supabase
+        .from('admin_whitelist')
+        .delete()
+        .eq('email', email);
+
+      if (whitelistError) {
+        const isTableMissing = whitelistError.message && (
+          whitelistError.message.includes('admin_whitelist') ||
+          whitelistError.message.includes('schema cache') ||
+          whitelistError.message.includes('relation')
+        );
+        if (!isTableMissing || !memberId) {
+          throw whitelistError;
+        }
+        console.warn('admin_whitelist table missing during demotion, but profile demotion will be attempted.');
+      }
+
+      // 2. If registered, demote to member in profiles
+      if (memberId) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ role: 'member' })
+          .eq('id', memberId);
+
+        if (profileError) throw profileError;
+      } else {
+        const { data: registeredUsers } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email);
+
+        if (registeredUsers && registeredUsers.length > 0) {
+          for (const u of registeredUsers) {
+            await supabase
+              .from('profiles')
+              .update({ role: 'member' })
+              .eq('id', u.id);
+          }
+        }
+      }
+
+      await fetchAdminsAndWhitelist();
+      alert('成功移除管理員權限！');
+    } catch (err: any) {
+      console.error('Error removing admin:', err);
+      setMemberError(err.message || '移除管理員失敗');
+    } finally {
+      setSubmittingAdmin(false);
+    }
   };
 
   const handleImport = () => {
@@ -208,6 +421,7 @@ export const AdminDashboardScreen: React.FC = () => {
             { tab: 'journey-steps',  icon: 'route',         label: '培育生命路徑' },
             { tab: 'lessons',        icon: 'auto_stories',  label: '課程頁面 & 卡片' },
             { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
+            { tab: 'members',        icon: 'group',         label: '成員與權限管理' },
           ] as const).map(({ tab, icon, label }) => (
             <button
               key={tab}
@@ -294,6 +508,7 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'journey-steps' && '培育生命路徑管理 (12個靈修培育步驟)'}
               {activeTab === 'lessons' && '課程頁面 & 內容卡片'}
               {activeTab === 'media' && '相片與媒體庫'}
+              {activeTab === 'members' && '成員與權限管理'}
             </h2>
             <p className="mt-1 text-xs text-on-surface-variant">
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
@@ -301,22 +516,25 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
               {activeTab === 'lessons' && '編輯特定課程的內文、卡片視覺顏色樣式、大小尺寸以及添加/刪除卡片。'}
               {activeTab === 'media' && '在此上傳相片，系統會自動生成臨時 Base64 以供網站即時展示。'}
+              {activeTab === 'members' && '查看註冊會員、調整權限等級、變更管理員身份。'}
             </p>
           </div>
           
           <div className="flex items-center gap-3">
             {/* Real-time Preview Toggle */}
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                showPreview
-                  ? 'border-primary bg-primary/8 text-primary shadow-sm'
-                  : 'border-outline-variant hover:bg-surface-container'
-              }`}
-            >
-              <Icon name="chrome_reader_mode" className="text-base text-primary" />
-              {showPreview ? '隱藏實時預覽' : '顯示實時預覽'}
-            </button>
+            {activeTab !== 'members' && (
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                  showPreview
+                    ? 'border-primary bg-primary/8 text-primary shadow-sm'
+                    : 'border-outline-variant hover:bg-surface-container'
+                }`}
+              >
+                <Icon name="chrome_reader_mode" className="text-base text-primary" />
+                {showPreview ? '隱藏實時預覽' : '顯示實時預覽'}
+              </button>
+            )}
 
             <div className="flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-xs font-bold text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -328,7 +546,7 @@ export const AdminDashboardScreen: React.FC = () => {
         {/* Split pane content area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left panel: Form Editor */}
-          <div className={`h-full overflow-y-auto px-10 py-8 ${showPreview ? 'w-[50%]' : 'w-full'}`}>
+          <div className={`h-full overflow-y-auto px-10 py-8 ${isPreviewActive ? 'w-[50%]' : 'w-full'}`}>
 
         {/* Tab Contents */}
         {activeTab === 'general' && (
@@ -1137,10 +1355,206 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'members' && (
+          <div className="space-y-8 max-w-4xl">
+            {/* Database warning with copyable SQL if table is missing */}
+            {memberError && (memberError.includes('admin_whitelist') || memberError.includes('DatabaseWarning')) && (
+              <div className="rounded-[1.8rem] bg-amber-50 border border-amber-200 p-6 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 font-bold text-amber-800">
+                  <Icon name="warning" className="text-xl" />
+                  資料庫設定未完成 (Supabase Configuration Required)
+                </div>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  您的 Supabase 資料庫中目前缺少 <code>admin_whitelist</code> 資料表。這會導致無法對未註冊用戶進行預先授權。
+                  請在 <strong>Supabase Dashboard -&gt; SQL Editor</strong> 中執行以下 SQL 語句以完成設定：
+                </p>
+                <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre select-all">
+{`CREATE TABLE IF NOT EXISTS public.admin_whitelist (
+  email text PRIMARY KEY,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.admin_whitelist ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can read admin whitelist"
+  ON public.admin_whitelist FOR SELECT
+  USING (public.is_admin());
+
+CREATE POLICY "Admins can insert into admin whitelist"
+  ON public.admin_whitelist FOR INSERT
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Admins can delete from admin whitelist"
+  ON public.admin_whitelist FOR DELETE
+  USING (public.is_admin());
+
+INSERT INTO public.admin_whitelist (email)
+VALUES ('enochwork123@gmail.com'), ('lawfelix2002@gmail.com')
+ON CONFLICT (email) DO NOTHING;`}
+                </pre>
+              </div>
+            )}
+
+            {/* Add Admin form */}
+            <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+              <h3 className="font-headline text-xl font-black text-primary">新增管理員人員</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                請輸入欲授權之電子郵件。若該用戶已註冊，系統會立即升級其權限；若尚未註冊，該電子郵件將加入授權名單，在其首次登入時自動升級為管理員。
+              </p>
+
+              {memberError && !(memberError.includes('admin_whitelist') || memberError.includes('DatabaseWarning')) && (
+                <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-bold text-red-600 animate-fade-in">
+                  {memberError}
+                </div>
+              )}
+
+              <form onSubmit={handleAddAdmin} className="flex gap-4 max-w-lg">
+                <input
+                  type="email"
+                  required
+                  placeholder="例如: disciple@example.com"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  className="flex-1 rounded-[1rem] border border-outline-variant bg-white p-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingAdmin}
+                  className="rounded-full bg-primary px-6 py-3 text-xs font-extrabold tracking-wider text-white hover:brightness-105 active:scale-95 transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Icon name="person_add" className="text-sm" />
+                  授權並新增
+                </button>
+              </form>
+            </div>
+
+            {/* Registered Admins */}
+            <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+              <h3 className="font-headline text-xl font-black text-primary">系統管理員列表</h3>
+              {loadingMembers ? (
+                <div className="flex justify-center py-8">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-outline-variant/40 bg-white">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container-low border-b border-outline-variant/30 text-xs font-extrabold uppercase tracking-wider text-secondary">
+                        <th className="px-6 py-4">頭像</th>
+                        <th className="px-6 py-4">顯示名稱</th>
+                        <th className="px-6 py-4">電子郵件</th>
+                        <th className="px-6 py-4">權限</th>
+                        <th className="px-6 py-4 text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/20 text-sm">
+                      {admins.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant font-medium">
+                            尚無已註冊的管理員
+                          </td>
+                        </tr>
+                      ) : (
+                        admins.map((member) => (
+                          <tr key={member.id} className="hover:bg-surface-container-lowest transition-colors">
+                            <td className="px-6 py-4">
+                              {member.avatar_url ? (
+                                <img
+                                  src={member.avatar_url}
+                                  alt={member.display_name || ''}
+                                  className="h-9 w-9 rounded-full object-cover border border-outline-variant/40"
+                                />
+                              ) : (
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                                  <Icon name="person" className="text-lg" />
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 font-bold text-primary">
+                              {member.display_name || '未設定名稱'}
+                            </td>
+                            <td className="px-6 py-4 text-on-surface-variant">
+                              {member.email || 'Google 登錄用戶'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border bg-red-50 border-red-200 text-red-600">
+                                {member.role}
+                              </span>
+                            </td>
+                             <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => handleRemoveAdmin(member.email, member.id)}
+                                disabled={member.id === user?.id || (user?.email && member.email?.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
+                                  member.id === user?.id || (user?.email && member.email?.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)
+                                    ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
+                                    : 'bg-red-50 text-red-600 hover:bg-red-100/60'
+                                }`}
+                              >
+                                取消管理員
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Whitelisted but not yet registered admins */}
+            {!loadingMembers && whitelist.filter(w => !admins.some(a => a.email && a.email.toLowerCase() === w.email.toLowerCase())).length > 0 && (
+              <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+                <h3 className="font-headline text-xl font-black text-primary">待註冊管理員授權名單</h3>
+                <div className="overflow-x-auto rounded-2xl border border-outline-variant/40 bg-white">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container-low border-b border-outline-variant/30 text-xs font-extrabold uppercase tracking-wider text-secondary">
+                        <th className="px-6 py-4">電子郵件</th>
+                        <th className="px-6 py-4">授權時間</th>
+                        <th className="px-6 py-4 text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/20 text-sm">
+                      {whitelist
+                        .filter(w => !admins.some(a => a.email && a.email.toLowerCase() === w.email.toLowerCase()))
+                        .map((item) => (
+                          <tr key={item.email} className="hover:bg-surface-container-lowest transition-colors">
+                            <td className="px-6 py-4 font-bold text-primary">
+                              {item.email}
+                            </td>
+                            <td className="px-6 py-4 text-on-surface-variant">
+                              {item.created_at ? new Date(item.created_at).toLocaleString('zh-TW') : '未知'}
+                            </td>
+                             <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => handleRemoveAdmin(item.email)}
+                                disabled={(user?.email && item.email.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
+                                  (user?.email && item.email.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)
+                                    ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
+                                    : 'bg-red-50 text-red-600 hover:bg-red-100/60'
+                                }`}
+                              >
+                                取消授權
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         </div> {/* Left panel: Form Editor */}
 
         {/* Right panel: Real-time Live Preview */}
-          {showPreview && (
+          {isPreviewActive && (
             <div className="w-[50%] h-full bg-surface-container-low/65 border-l border-outline-variant/40 flex flex-col overflow-hidden">
               {/* Toolbar */}
               <div className="bg-surface-container/70 px-6 py-3 border-b border-outline-variant/30 flex justify-between items-center shrink-0">
