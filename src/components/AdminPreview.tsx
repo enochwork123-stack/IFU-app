@@ -233,7 +233,66 @@ export const JourneyPreview: React.FC = () => {
   );
 };
 
-// 3. Lesson Preview (Previewing dynamic card composition: Headers, script reveals, reflection worksheets)
+// 3. Quiet Time Library Preview (shows what users see on 自修學習 / LibraryScreen)
+export const QuietTimeLibraryPreview: React.FC = () => {
+  const { quietTimeEntries } = useAppContent();
+
+  return (
+    <div className="w-full bg-surface text-on-surface select-none pb-24 font-sans">
+      <header className="sticky top-0 z-30 border-b border-[rgba(40,53,28,0.05)] bg-white/80 backdrop-blur-md">
+        <div className="flex h-14 items-center gap-3 px-5">
+          <Icon name="arrow_back" className="text-lg text-primary" />
+          <div>
+            <p className="font-headline text-sm font-black text-primary">自修學習</p>
+            <p className="text-[9px] font-bold text-secondary">每日靈修卡片</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="px-4 pt-5 space-y-3">
+        {quietTimeEntries.length === 0 ? (
+          <div className="py-12 text-center text-xs font-bold text-on-surface-variant">
+            尚無靈修卡片
+          </div>
+        ) : (
+          quietTimeEntries.map((entry) => (
+            <div
+              key={entry.id}
+              className="rounded-[1.5rem] bg-white border border-outline-variant/30 shadow-sm p-4"
+            >
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 shrink-0 rounded-full bg-secondary/10 px-2.5 py-0.5 text-[9px] font-bold text-secondary">
+                  {entry.book}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-headline text-sm font-bold text-primary truncate">{entry.title}</p>
+                  <p className="mt-0.5 text-[10px] font-medium text-secondary">{entry.passage}</p>
+                  {entry.scriptureText && (
+                    <p className="mt-1.5 text-[10px] leading-4 text-on-surface-variant line-clamp-2">
+                      {entry.scriptureText}
+                    </p>
+                  )}
+                  {entry.topics.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {entry.topics.slice(0, 3).map((t, i) => (
+                        <span key={i} className="rounded-full bg-surface-container-low px-2 py-0.5 text-[8px] font-bold text-primary/60">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <Icon name="arrow_forward_ios" className="mt-1 shrink-0 text-[11px] text-secondary/50" />
+              </div>
+            </div>
+          ))
+        )}
+      </main>
+    </div>
+  );
+};
+
+// 4. Lesson Preview (Previewing dynamic card composition: Headers, script reveals, reflection worksheets)
 interface LessonPreviewProps {
   lessonId: string;
 }

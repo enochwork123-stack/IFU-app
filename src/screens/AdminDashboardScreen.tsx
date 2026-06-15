@@ -4,7 +4,7 @@ import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
-import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
+import { HomePreview, JourneyPreview, LessonPreview, QuietTimeLibraryPreview } from '../components/AdminPreview';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -20,8 +20,8 @@ export const AdminDashboardScreen: React.FC = () => {
     updateHomeCards,
     updateDiscipleshipSteps,
     updateLessonRoutes,
-    quietTimeStudyItems,
-    updateQuietTimeStudyItems,
+    quietTimeEntries,
+    updateQuietTimeEntries,
     updateCustomText,
     addCardToLesson,
     updateCardInLesson,
@@ -58,11 +58,40 @@ export const AdminDashboardScreen: React.FC = () => {
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [adminSidebarOpen, setAdminSidebarOpen] = useState(true);
   const [lessonsSidebarOpen, setLessonsSidebarOpen] = useState(true);
-  
+
+  // Quiet Time Entries Editor State
+  const [showQtForm, setShowQtForm] = useState(false);
+  const [expandedQtId, setExpandedQtId] = useState<string | null>(null);
+  interface QtFormData {
+    id: string;
+    title: string;
+    book: string;
+    passage: string;
+    scriptureText: string;
+    content: string[]; // stored as array, edited as multiline textarea
+    reflection: string[];
+    prayer: string;
+    topics: string[];
+    dateAdded: string;
+  }
+  const emptyQtForm: QtFormData = {
+    id: '',
+    title: '',
+    book: '',
+    passage: '',
+    scriptureText: '',
+    content: [''],
+    reflection: [''],
+    prayer: '',
+    topics: [],
+    dateAdded: new Date().toISOString().slice(0, 10),
+  };
+  const [qtFormData, setQtFormData] = useState<QtFormData>(emptyQtForm);
+
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
   const isPreviewActive = showPreview && activeTab !== 'members' && activeTab !== 'wishlist';
-  const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
+  const [previewViewport, setPreviewViewport] = useState<'mobile' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
   const [showImportArea, setShowImportArea] = useState(false);
@@ -230,11 +259,6 @@ export const AdminDashboardScreen: React.FC = () => {
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    if (activeTab === 'lessons' && previewViewport === 'tablet') {
-      setPreviewViewport('mobile');
-    }
-  }, [activeTab, previewViewport]);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -504,33 +528,70 @@ export const AdminDashboardScreen: React.FC = () => {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1.5 p-3 overflow-hidden">
-          {([
-            { tab: 'general',        icon: 'settings',      label: '一般設定 & 標題' },
-            { tab: 'home-cards',     icon: 'home',          label: '首頁入口卡片' },
-            { tab: 'journey-steps',    icon: 'route',         label: '培育生命路徑' },
-            { tab: 'quiet-time-study', icon: 'wb_sunny',      label: '每日靈修研讀' },
-            { tab: 'lessons',          icon: 'auto_stories',  label: '課程頁面 & 卡片' },
-            { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
-            { tab: 'members',        icon: 'group',         label: '成員與權限管理' },
-            { tab: 'wishlist',       icon: 'lightbulb',     label: '功能許願池' },
-          ] as const).map(({ tab, icon, label }) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              title={!adminSidebarOpen ? label : undefined}
-              className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
-                adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
-              } ${
-                activeTab === tab
-                  ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                  : 'text-on-surface-variant hover:bg-surface-container-low'
-              }`}
-            >
-              <Icon name={icon} className="text-xl shrink-0" />
-              {adminSidebarOpen && <span className="truncate">{label}</span>}
-            </button>
-          ))}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3">
+          {/* Group 1: Web Page Content */}
+          {adminSidebarOpen && (
+            <p className="mb-1.5 mt-1 px-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-secondary/55">
+              網頁內容管理
+            </p>
+          )}
+          <div className="space-y-1.5">
+            {([
+              { tab: 'general',          icon: 'settings',     label: '一般設定 & 標題' },
+              { tab: 'home-cards',       icon: 'home',         label: '首頁入口卡片' },
+              { tab: 'journey-steps',    icon: 'route',        label: '培育生命路徑' },
+              { tab: 'quiet-time-study', icon: 'wb_sunny',     label: '每日靈修研讀' },
+              { tab: 'lessons',          icon: 'auto_stories', label: '課程頁面 & 卡片' },
+            ] as const).map(({ tab, icon, label }) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                title={!adminSidebarOpen ? label : undefined}
+                className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
+                  adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
+                } ${
+                  activeTab === tab
+                    ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
+                    : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                <Icon name={icon} className="text-xl shrink-0" />
+                {adminSidebarOpen && <span className="truncate">{label}</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="mx-1 my-3 h-px bg-outline-variant/30" />
+
+          {/* Group 2: Platform Management */}
+          {adminSidebarOpen && (
+            <p className="mb-1.5 px-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-secondary/55">
+              平台管理
+            </p>
+          )}
+          <div className="space-y-1.5">
+            {([
+              { tab: 'media',    icon: 'photo_library', label: '相片與媒體庫' },
+              { tab: 'members',  icon: 'group',         label: '成員與權限管理' },
+              { tab: 'wishlist', icon: 'lightbulb',     label: '功能許願池' },
+            ] as const).map(({ tab, icon, label }) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                title={!adminSidebarOpen ? label : undefined}
+                className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
+                  adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
+                } ${
+                  activeTab === tab
+                    ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
+                    : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                <Icon name={icon} className="text-xl shrink-0" />
+                {adminSidebarOpen && <span className="truncate">{label}</span>}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Action buttons at footer of sidebar */}
@@ -610,7 +671,7 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
               {activeTab === 'home-cards' && '管理首頁顯示的三大主要培育路徑入口卡片。'}
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
-              {activeTab === 'quiet-time-study' && '修改靈修單元中的研讀題目與關聯聖經經文。'}
+              {activeTab === 'quiet-time-study' && '管理每日靈修卡片的新增、編輯與刪除。所有變更即時同步至自修學習頁面。'}
               {activeTab === 'lessons' && '編輯特定課程的內文、卡片視覺顏色樣式、大小尺寸以及添加/刪除卡片。'}
               {activeTab === 'media' && '在此上傳相片，系統會自動生成臨時 Base64 以供網站即時展示。'}
               {activeTab === 'members' && '查看註冊會員、調整權限等級、變更管理員身份。'}
@@ -999,66 +1060,423 @@ export const AdminDashboardScreen: React.FC = () => {
 
         {activeTab === 'quiet-time-study' && (
           <div className="flex flex-col gap-6 max-w-2xl">
-            <div className="rounded-[1.8rem] bg-surface-container-low p-6 border border-outline-variant/40 shadow-sm space-y-4">
-              <h3 className="font-headline text-lg font-black text-primary border-b border-outline-variant/30 pb-3">每日靈修研讀題目設定</h3>
-              
-              <div className="space-y-6">
-                {quietTimeStudyItems.map((item, idx) => (
-                  <div key={idx} className="p-5 bg-white rounded-2xl border border-outline-variant/40 space-y-4 shadow-sm">
-                    <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary-fixed text-[10px] font-extrabold text-on-secondary-fixed">
-                        {item.label}
-                      </span>
-                      <span className="font-headline font-black text-sm text-primary">研讀項目 {item.label}</span>
+            {/* Header bar */}
+            <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-[1.8rem] border border-outline-variant/40 shadow-sm">
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">
+                每日靈修卡片 ({quietTimeEntries.length} 篇)
+              </span>
+              <button
+                onClick={() => {
+                  setQtFormData({ ...emptyQtForm, id: `qt-${Date.now()}` });
+                  setShowQtForm(true);
+                  setExpandedQtId(null);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+              >
+                <Icon name="add" className="text-xs" />
+                新增靈修卡片
+              </button>
+            </div>
+
+            {/* Add New Card Form */}
+            {showQtForm && (
+              <div className="rounded-[1.8rem] bg-white p-6 border-2 border-primary/20 shadow-md space-y-4">
+                <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+                  <h3 className="font-headline text-base font-black text-primary flex items-center gap-2">
+                    <Icon name="add_circle" className="text-secondary text-base" />
+                    新增每日靈修卡片
+                  </h3>
+                  <button
+                    onClick={() => setShowQtForm(false)}
+                    className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
+                  >
+                    <Icon name="close" className="text-sm" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">靈修標題</label>
+                    <input
+                      type="text"
+                      value={qtFormData.title}
+                      onChange={(e) => setQtFormData({ ...qtFormData, title: e.target.value })}
+                      placeholder="例如：活在基督裡"
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">聖經書卷 (Book)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.book}
+                        onChange={(e) => setQtFormData({ ...qtFormData, book: e.target.value })}
+                        placeholder="例如：約翰福音"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
                     </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-secondary">題目描述 (Title)</label>
-                        <textarea
-                          value={item.title}
-                          rows={2}
-                          onChange={(e) => {
-                            const nextItems = [...quietTimeStudyItems];
-                            nextItems[idx] = { ...item, title: e.target.value };
-                            updateQuietTimeStudyItems(nextItems);
-                          }}
-                          className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary font-sans leading-relaxed"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-secondary">關聯聖經經文 (Reference)</label>
-                          <input
-                            type="text"
-                            value={item.reference}
-                            onChange={(e) => {
-                              const nextItems = [...quietTimeStudyItems];
-                              nextItems[idx] = { ...item, reference: e.target.value };
-                              updateQuietTimeStudyItems(nextItems);
-                            }}
-                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-secondary">圖示類型 (Material Icon)</label>
-                          <input
-                            type="text"
-                            value={item.icon}
-                            onChange={(e) => {
-                              const nextItems = [...quietTimeStudyItems];
-                              nextItems[idx] = { ...item, icon: e.target.value };
-                              updateQuietTimeStudyItems(nextItems);
-                            }}
-                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary"
-                          />
-                        </div>
-                      </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">章節 (Passage)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.passage}
+                        onChange={(e) => setQtFormData({ ...qtFormData, passage: e.target.value })}
+                        placeholder="例如：15:4-5"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
                     </div>
                   </div>
-                ))}
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      中文經文引文
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#ffdfa0]/40 px-1.5 py-0.5 rounded">【經文】</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.scriptureText}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, scriptureText: e.target.value })}
+                      placeholder="請輸入中文聖經引文..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      靈修分享
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【靈修分享】</span>
+                      <span className="text-on-surface-variant font-normal ml-1">(每段落佔一行)</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.content.join('\n')}
+                      rows={5}
+                      onChange={(e) => setQtFormData({ ...qtFormData, content: e.target.value.split('\n') })}
+                      placeholder="請輸入靈修分享內容，每個段落佔一行..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      默想應用問題
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【默想應用】</span>
+                      <span className="text-on-surface-variant font-normal ml-1">(每題佔一行)</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.reflection.join('\n')}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, reflection: e.target.value.split('\n') })}
+                      placeholder="請輸入反思問題，每題佔一行..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      祈禱回應
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#d8e8c4]/50 px-1.5 py-0.5 rounded">【祈禱回應】</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.prayer}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, prayer: e.target.value })}
+                      placeholder="請輸入禱告文..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">主題標籤 (以逗號分隔)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.topics.join(', ')}
+                        onChange={(e) => setQtFormData({ ...qtFormData, topics: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                        placeholder="例如：信心, 禱告, 感恩"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">發佈日期</label>
+                      <input
+                        type="date"
+                        value={qtFormData.dateAdded}
+                        onChange={(e) => setQtFormData({ ...qtFormData, dateAdded: e.target.value })}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2 border-t border-outline-variant/20">
+                    <button
+                      onClick={() => setShowQtForm(false)}
+                      className="rounded-full border border-outline-variant px-5 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-container transition cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!qtFormData.title.trim()) return;
+                        const newEntry = {
+                          id: qtFormData.id,
+                          title: qtFormData.title.trim(),
+                          book: qtFormData.book.trim(),
+                          passage: qtFormData.passage.trim(),
+                          scriptureText: qtFormData.scriptureText.trim(),
+                          content: qtFormData.content.filter(p => p.trim()),
+                          reflection: qtFormData.reflection.filter(r => r.trim()),
+                          prayer: qtFormData.prayer.trim(),
+                          topics: qtFormData.topics,
+                          dateAdded: qtFormData.dateAdded,
+                        };
+                        updateQuietTimeEntries([newEntry, ...quietTimeEntries]);
+                        setShowQtForm(false);
+                      }}
+                      className="rounded-full bg-primary px-6 py-2 text-xs font-bold text-white hover:brightness-105 transition cursor-pointer shadow-sm"
+                    >
+                      儲存並新增
+                    </button>
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* Empty state */}
+            {quietTimeEntries.length === 0 && !showQtForm && (
+              <div className="rounded-[1.8rem] border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
+                <Icon name="wb_sunny" className="text-[48px] text-outline/30 mx-auto block" />
+                <p className="mt-4 font-headline text-base font-bold text-primary">尚無每日靈修卡片</p>
+                <p className="mt-2 text-xs text-on-surface-variant">點擊右上角「新增靈修卡片」開始新增。</p>
+              </div>
+            )}
+
+            {/* Entries List */}
+            <div className="space-y-3">
+              {quietTimeEntries.map((entry, idx) => {
+                const isExpanded = expandedQtId === entry.id;
+                return (
+                  <div
+                    key={entry.id}
+                    className={`rounded-[1.8rem] border transition shadow-sm ${
+                      isExpanded
+                        ? 'border-primary ring-2 ring-primary/5 bg-surface-container-low'
+                        : 'border-outline-variant/40 bg-surface-container-low/75'
+                    }`}
+                  >
+                    {/* Entry header row */}
+                    <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-secondary border border-outline-variant/50 shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <span className="inline-block text-[10px] font-extrabold tracking-widest text-secondary bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full">
+                            {entry.book} {entry.passage}
+                          </span>
+                          <p className="font-headline font-black text-sm text-primary mt-1 truncate">
+                            {entry.title || '(無標題)'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setExpandedQtId(isExpanded ? null : entry.id)}
+                          className="flex h-8 items-center gap-1 px-3 rounded-full border border-outline-variant bg-white text-xs font-bold text-on-surface hover:bg-surface-container cursor-pointer transition"
+                        >
+                          <Icon name={isExpanded ? 'done' : 'edit'} className="text-sm text-primary" />
+                          {isExpanded ? '完成' : '編輯'}
+                        </button>
+                        <button
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const next = [...quietTimeEntries];
+                            [next[idx], next[idx - 1]] = [next[idx - 1]!, next[idx]!];
+                            updateQuietTimeEntries(next);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                          title="移上"
+                        >
+                          <Icon name="arrow_upward" className="text-xs" />
+                        </button>
+                        <button
+                          disabled={idx === quietTimeEntries.length - 1}
+                          onClick={() => {
+                            const next = [...quietTimeEntries];
+                            [next[idx], next[idx + 1]] = [next[idx + 1]!, next[idx]!];
+                            updateQuietTimeEntries(next);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                          title="移下"
+                        >
+                          <Icon name="arrow_downward" className="text-xs" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('確定要刪除這篇靈修卡片嗎？此操作將同步從自修學習頁面移除。')) {
+                              updateQuietTimeEntries(quietTimeEntries.filter(e => e.id !== entry.id));
+                              if (expandedQtId === entry.id) setExpandedQtId(null);
+                            }
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer transition"
+                          title="刪除"
+                        >
+                          <Icon name="delete" className="text-sm" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Inline Edit Form */}
+                    {isExpanded && (
+                      <div className="px-6 pb-6 pt-2 space-y-4 bg-white/60 rounded-b-[1.8rem] border-t border-outline-variant/20">
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">靈修標題</label>
+                          <input
+                            type="text"
+                            value={entry.title}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, title: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">聖經書卷 (Book)</label>
+                            <input
+                              type="text"
+                              value={entry.book}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, book: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">章節 (Passage)</label>
+                            <input
+                              type="text"
+                              value={entry.passage}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, passage: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            中文經文引文
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#ffdfa0]/40 px-1.5 py-0.5 rounded">【經文】</span>
+                          </label>
+                          <textarea
+                            value={entry.scriptureText}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, scriptureText: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            靈修分享
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【靈修分享】</span>
+                            <span className="text-on-surface-variant font-normal ml-1">(每段落佔一行)</span>
+                          </label>
+                          <textarea
+                            value={entry.content.join('\n')}
+                            rows={5}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, content: e.target.value.split('\n') };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            默想應用問題
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【默想應用】</span>
+                            <span className="text-on-surface-variant font-normal ml-1">(每題佔一行)</span>
+                          </label>
+                          <textarea
+                            value={entry.reflection.join('\n')}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, reflection: e.target.value.split('\n') };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            祈禱回應
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#d8e8c4]/50 px-1.5 py-0.5 rounded">【祈禱回應】</span>
+                          </label>
+                          <textarea
+                            value={entry.prayer}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, prayer: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">主題標籤 (以逗號分隔)</label>
+                            <input
+                              type="text"
+                              value={entry.topics.join(', ')}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, topics: e.target.value.split(',').map(t => t.trim()).filter(Boolean) };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">發佈日期</label>
+                            <input
+                              type="date"
+                              value={entry.dateAdded}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, dateAdded: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -2065,17 +2483,6 @@ ON CONFLICT (email) DO NOTHING;`}
                     <Icon name="smartphone" className="text-xs" />
                     手機
                   </button>
-                  {activeTab !== 'lessons' && (
-                    <button
-                      onClick={() => setPreviewViewport('tablet')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
-                        previewViewport === 'tablet' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
-                      }`}
-                    >
-                      <Icon name="tablet" className="text-xs" />
-                      平板
-                    </button>
-                  )}
                   <button
                     onClick={() => setPreviewViewport('desktop')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
@@ -2092,7 +2499,6 @@ ON CONFLICT (email) DO NOTHING;`}
               <div className="flex-1 overflow-y-auto p-6 flex justify-center items-start">
                 <div className={
                   previewViewport === 'mobile' ? 'w-[375px] h-[720px] rounded-[2.5rem] border-[10px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
-                  previewViewport === 'tablet' ? 'w-[768px] h-[960px] rounded-[2.5rem] border-[12px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
                   'w-full min-h-full bg-surface relative shadow-sm border border-outline-variant/20'
                 }>
                   {previewViewport !== 'desktop' ? (
@@ -2111,10 +2517,9 @@ ON CONFLICT (email) DO NOTHING;`}
                         {activeTab === 'general' && <HomePreview />}
                         {activeTab === 'home-cards' && <HomePreview />}
                         {activeTab === 'journey-steps' && <JourneyPreview />}
-                        {activeTab === 'quiet-time-study' && <LessonPreview lessonId="lesson-quiet-time" />}
+                        {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
                         {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
-                        {activeTab === 'wishlist' && <HomePreview />}
                       </div>
                     </div>
                   ) : (
@@ -2123,10 +2528,9 @@ ON CONFLICT (email) DO NOTHING;`}
                       {activeTab === 'general' && <HomePreview />}
                       {activeTab === 'home-cards' && <HomePreview />}
                       {activeTab === 'journey-steps' && <JourneyPreview />}
-                      {activeTab === 'quiet-time-study' && <LessonPreview lessonId="lesson-quiet-time" />}
+                      {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
                       {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
-                      {activeTab === 'wishlist' && <HomePreview />}
                     </div>
                   )}
                 </div>

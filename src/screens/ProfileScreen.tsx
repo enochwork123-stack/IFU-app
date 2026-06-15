@@ -5,7 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { assetPath } from '../utils/assets';
-import { quietTimeEntries } from '../data/quietTimeData';
+import { useAppContent } from '../context/ContentContext';
 
 interface ProgressStats {
   quietTimes: number;
@@ -15,6 +15,7 @@ interface ProgressStats {
 
 export const ProfileScreen: React.FC = () => {
   const { user, profile, signOut, isAdmin } = useAuth();
+  const { quietTimeEntries } = useAppContent();
   const navigate = useNavigate();
   const [stats, setStats] = useState<ProgressStats>({
     quietTimes: 0,
