@@ -571,18 +571,18 @@ export const LibraryScreen: React.FC = () => {
                       <div>
                         {/* Book & Passage citation header */}
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-extrabold tracking-widest text-secondary uppercase bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full">
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <span className="text-[10px] font-extrabold tracking-widest text-secondary uppercase bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
                               {entry.book} {entry.passage}
                             </span>
                             {user && (
                               completedIds.includes(entry.id) ? (
-                                <span className="text-[9px] font-extrabold tracking-wider bg-green-50 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5 border border-green-200">
+                                <span className="text-[9px] font-extrabold tracking-wider bg-green-50 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5 border border-green-200 whitespace-nowrap shrink-0">
                                   <Icon name="check" className="text-[9px]" />
                                   已讀
                                 </span>
                               ) : (
-                                <span className="text-[9px] font-extrabold tracking-wider bg-surface-container-low text-on-surface-variant/70 px-2 py-0.5 rounded-full border border-outline-variant/30">
+                                <span className="text-[9px] font-extrabold tracking-wider bg-surface-container-low text-on-surface-variant/70 px-2 py-0.5 rounded-full border border-outline-variant/30 whitespace-nowrap shrink-0">
                                   未讀
                                 </span>
                               )
