@@ -61,7 +61,7 @@ export const AdminDashboardScreen: React.FC = () => {
   
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
-  const isPreviewActive = showPreview && activeTab !== 'members';
+  const isPreviewActive = showPreview && activeTab !== 'members' && activeTab !== 'wishlist';
   const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
@@ -70,37 +70,83 @@ export const AdminDashboardScreen: React.FC = () => {
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Wishlist Feature Submission State
+  interface Wish {
+    id: string;
+    title: string;
+    description: string;
+    completed: boolean;
+    createdAt: string;
+  }
+
+  const [wishes, setWishes] = useState<Wish[]>(() => {
+    const saved = localStorage.getItem('ifu:admin_wishes');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing admin wishes:', e);
+      }
+    }
+    return [];
+  });
   const [wishTitle, setWishTitle] = useState('');
   const [wishDesc, setWishDesc] = useState('');
   const [submittingWish, setSubmittingWish] = useState(false);
-  const [wishStatus, setWishStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [wishStatus, setWishStatus] = useState<{ type: 'success' | 'warning' | 'error'; message: string } | null>(null);
+  const [showWishForm, setShowWishForm] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('ifu:admin_wishes', JSON.stringify(wishes));
+  }, [wishes]);
 
   const handleSubmitWish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!wishTitle.trim() || !wishDesc.trim()) return;
+
+    const newWish: Wish = {
+      id: Math.random().toString(36).substring(2, 9),
+      title: wishTitle.trim(),
+      description: wishDesc.trim(),
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Save locally first
+    setWishes(prev => [newWish, ...prev]);
+    setWishTitle('');
+    setWishDesc('');
+    setShowWishForm(false);
 
     try {
       setSubmittingWish(true);
       setWishStatus(null);
       
       const { data, error } = await supabase.functions.invoke('submit-wishlist', {
-        body: { title: wishTitle, description: wishDesc }
+        body: { title: newWish.title, description: newWish.description }
       });
 
       if (error) throw error;
       if (data && data.error) throw new Error(data.error);
 
       setWishStatus({ type: 'success', message: '提交成功！新功能需求已發佈至 GitHub 專案。' });
-      setWishTitle('');
-      setWishDesc('');
     } catch (err: any) {
-      console.error('Error submitting feature wish:', err);
+      console.error('Error submitting feature wish to GitHub:', err);
       setWishStatus({ 
-        type: 'error', 
-        message: '提交失敗：' + (err.message || '請確認已在 Supabase 後台設定 GITHUB_TOKEN Secret。') 
+        type: 'warning', 
+        message: '已儲存於本地！但無法同步至 GitHub Issues：' + (err.message || '請確認已在 Supabase 後台設定 GITHUB_TOKEN Secret。') 
       });
     } finally {
       setSubmittingWish(false);
+    }
+  };
+
+  const handleToggleWish = (id: string) => {
+    setWishes(prev => prev.map(w => w.id === id ? { ...w, completed: !w.completed } : w));
+  };
+
+  const handleRemoveWish = (id: string) => {
+    if (window.confirm('確定要刪除此功能提案嗎？')) {
+      setWishes(prev => prev.filter(w => w.id !== id));
     }
   };
 
@@ -1781,68 +1827,218 @@ ON CONFLICT (email) DO NOTHING;`}
         )}
 
         {activeTab === 'wishlist' && (
-          <div className="max-w-2xl space-y-6">
-            <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
-              <h3 className="font-headline text-lg font-black text-primary border-b border-outline-variant/30 pb-3 flex items-center gap-2">
-                <Icon name="lightbulb" className="text-secondary" />
-                許願池：提交您的功能需求
-              </h3>
-              <p className="text-xs text-on-surface-variant leading-relaxed">
-                管理員人員可以在此提交對本系統的期待或新功能的想法。
-                這些反饋將會呼叫 Supabase Edge Function，利用後端安全儲存的憑證直接在 GitHub Repo 中建立一個專屬 Issue。
-              </p>
+          <div className="space-y-6 max-w-4xl">
+            {/* Header row with + New Issue button */}
+            <div className="flex justify-between items-center pb-2">
+              <div>
+                <h2 className="font-headline text-2xl font-black text-primary flex items-center gap-2">
+                  <Icon name="lightbulb" className="text-secondary text-2xl" />
+                  功能許願池
+                </h2>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  管理員人員可以在此提交對系統的期待或新功能的想法。
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowWishForm(true);
+                  setWishStatus(null);
+                }}
+                className="rounded-full bg-primary px-5 py-3 text-xs font-extrabold tracking-wider text-white shadow-md hover:brightness-105 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Icon name="add" className="text-sm font-black" />
+                新增許願 (New Issue)
+              </button>
+            </div>
 
-              {wishStatus && (
-                <div className={`p-4 rounded-xl text-xs font-bold ${
-                  wishStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                  {wishStatus.message}
+            {wishStatus && (
+              <div className={`p-4 rounded-[1.2rem] text-xs font-bold border animate-fade-in flex items-start gap-2.5 ${
+                wishStatus.type === 'success' 
+                  ? 'bg-green-50 text-green-700 border-green-200' 
+                  : wishStatus.type === 'warning'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
+              }`}>
+                <Icon name={wishStatus.type === 'success' ? 'check_circle' : 'warning'} className="text-base shrink-0 mt-0.5" />
+                <div>{wishStatus.message}</div>
+              </div>
+            )}
+
+            {/* Submission Form Card (rendered conditionally) */}
+            {showWishForm && (
+              <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-md border border-outline-variant/40 space-y-4 animate-slide-down">
+                <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
+                  <h3 className="font-headline text-base font-black text-primary flex items-center gap-2">
+                    <Icon name="edit" className="text-secondary" />
+                    描述您的需求
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowWishForm(false)}
+                    className="text-on-surface-variant hover:text-primary transition p-1"
+                  >
+                    <Icon name="close" className="text-lg" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmitWish} className="space-y-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求標題 (Title)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="請輸入一個簡短的標題 (例如: 增加新課程進度重置功能)"
+                      value={wishTitle}
+                      onChange={(e) => setWishTitle(e.target.value)}
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求詳細描述 (Description)</label>
+                    <textarea
+                      required
+                      rows={5}
+                      placeholder="請詳細說明此功能需求的背景、功能規格，或您想解決的問題..."
+                      value={wishDesc}
+                      onChange={(e) => setWishDesc(e.target.value)}
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 font-sans leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowWishForm(false)}
+                      className="rounded-full border border-outline-variant px-5 py-2.5 text-xs font-bold text-on-surface-variant hover:bg-outline-variant/10 active:scale-95 transition cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingWish}
+                      className="rounded-full bg-primary px-6 py-2.5 text-xs font-extrabold tracking-widest text-white shadow-md hover:brightness-105 active:scale-98 transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {submittingWish ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          正在同步...
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="send" className="text-xs" />
+                          提交需求
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Wishes list container */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold tracking-wider uppercase text-secondary flex items-center gap-1.5">
+                <Icon name="list" className="text-sm" />
+                提案列表 ({wishes.length})
+              </h3>
+
+              {wishes.length === 0 ? (
+                <div className="rounded-[1.8rem] bg-surface-container-low/55 p-12 text-center border border-dashed border-outline-variant/60">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10 text-secondary mb-4">
+                    <Icon name="lightbulb_outline" className="text-3xl" />
+                  </div>
+                  <h4 className="font-headline font-bold text-primary text-base">尚無功能需求</h4>
+                  <p className="text-xs text-on-surface-variant mt-2 max-w-sm mx-auto leading-relaxed">
+                    目前沒有任何已提交的功能提案。點擊右上角的「新增許願」來開始發起第一個提案吧！
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {wishes.map((wish) => (
+                    <div
+                      key={wish.id}
+                      className={`rounded-[1.8rem] p-6 border transition-all duration-300 bg-surface-container-low shadow-sm flex items-start gap-4 ${
+                        wish.completed
+                          ? 'border-outline-variant/30 opacity-70 bg-surface-container-lowest/50'
+                          : 'border-outline-variant/50 hover:shadow-md hover:border-primary/20'
+                      }`}
+                    >
+                      {/* Checkbox button */}
+                      <button
+                        onClick={() => handleToggleWish(wish.id)}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition cursor-pointer mt-0.5 ${
+                          wish.completed
+                            ? 'bg-green-600 border-green-600 text-white'
+                            : 'border-outline-variant hover:border-primary text-transparent hover:text-primary/40'
+                        }`}
+                        title={wish.completed ? '標記為未完成' : '標記為已完成'}
+                      >
+                        <Icon name="check" className="text-sm font-black" />
+                      </button>
+
+                      {/* Content */}
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <h4
+                            className={`font-headline text-base font-black tracking-tight text-primary transition-all duration-300 break-words ${
+                              wish.completed ? 'line-through text-on-surface-variant/75 font-normal' : ''
+                            }`}
+                          >
+                            {wish.title}
+                          </h4>
+                          
+                          {/* Status Badge */}
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border shrink-0 ${
+                              wish.completed
+                                ? 'bg-green-50 border-green-200 text-green-700'
+                                : 'bg-amber-50 border-amber-200 text-amber-700'
+                            }`}
+                          >
+                            {wish.completed ? '已完成' : '處理中'}
+                          </span>
+                        </div>
+
+                        <p
+                          className={`text-xs text-on-surface-variant leading-relaxed whitespace-pre-wrap break-words transition-all duration-300 ${
+                            wish.completed ? 'line-through text-on-surface-variant/45' : ''
+                          }`}
+                        >
+                          {wish.description}
+                        </p>
+
+                        <div className="flex items-center gap-3 pt-2 text-[10px] font-bold text-outline uppercase tracking-wider">
+                          <span className="flex items-center gap-1">
+                            <Icon name="schedule" className="text-xs" />
+                            {new Date(wish.createdAt).toLocaleString('zh-TW', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Icon name="person" className="text-xs" />
+                            管理員
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Delete Action */}
+                      <button
+                        onClick={() => handleRemoveWish(wish.id)}
+                        className="text-on-surface-variant/40 hover:text-red-600 transition p-1.5 rounded-lg hover:bg-red-50 shrink-0 self-start cursor-pointer"
+                        title="刪除提案"
+                      >
+                        <Icon name="delete" className="text-lg" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <form onSubmit={handleSubmitWish} className="space-y-4 pt-2">
-                <div>
-                  <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求標題 (Title)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="請輸入一個簡短的標題 (例如: 增加新課程進度重置功能)"
-                    value={wishTitle}
-                    onChange={(e) => setWishTitle(e.target.value)}
-                    className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求詳細描述 (Description)</label>
-                  <textarea
-                    required
-                    rows={6}
-                    placeholder="請詳細說明此功能需求的背景、功能規格，或您想解決的問題..."
-                    value={wishDesc}
-                    onChange={(e) => setWishDesc(e.target.value)}
-                    className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary font-sans leading-relaxed"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submittingWish}
-                  className="w-full rounded-full bg-primary py-3.5 text-xs font-extrabold tracking-widest text-white shadow-md hover:brightness-105 active:scale-98 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {submittingWish ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      正在同步提交中...
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="send" className="text-sm" />
-                      送出至 GitHub Issues
-                    </>
-                  )}
-                </button>
-              </form>
             </div>
           </div>
         )}
