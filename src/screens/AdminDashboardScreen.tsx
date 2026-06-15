@@ -8,7 +8,7 @@ import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminP
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
-type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media' | 'members';
+type TabType = 'general' | 'home-cards' | 'journey-steps' | 'quiet-time-study' | 'lessons' | 'media' | 'members' | 'wishlist';
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +20,8 @@ export const AdminDashboardScreen: React.FC = () => {
     updateHomeCards,
     updateDiscipleshipSteps,
     updateLessonRoutes,
+    quietTimeStudyItems,
+    updateQuietTimeStudyItems,
     updateCustomText,
     addCardToLesson,
     updateCardInLesson,
@@ -55,6 +57,7 @@ export const AdminDashboardScreen: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>(lessonRoutes[0]?.id || '');
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [adminSidebarOpen, setAdminSidebarOpen] = useState(true);
+  const [lessonsSidebarOpen, setLessonsSidebarOpen] = useState(true);
   
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
@@ -65,6 +68,41 @@ export const AdminDashboardScreen: React.FC = () => {
   const [showImportArea, setShowImportArea] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Wishlist Feature Submission State
+  const [wishTitle, setWishTitle] = useState('');
+  const [wishDesc, setWishDesc] = useState('');
+  const [submittingWish, setSubmittingWish] = useState(false);
+  const [wishStatus, setWishStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleSubmitWish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wishTitle.trim() || !wishDesc.trim()) return;
+
+    try {
+      setSubmittingWish(true);
+      setWishStatus(null);
+      
+      const { data, error } = await supabase.functions.invoke('submit-wishlist', {
+        body: { title: wishTitle, description: wishDesc }
+      });
+
+      if (error) throw error;
+      if (data && data.error) throw new Error(data.error);
+
+      setWishStatus({ type: 'success', message: '提交成功！新功能需求已發佈至 GitHub 專案。' });
+      setWishTitle('');
+      setWishDesc('');
+    } catch (err: any) {
+      console.error('Error submitting feature wish:', err);
+      setWishStatus({ 
+        type: 'error', 
+        message: '提交失敗：' + (err.message || '請確認已在 Supabase 後台設定 GITHUB_TOKEN Secret。') 
+      });
+    } finally {
+      setSubmittingWish(false);
+    }
+  };
 
   // Mock Upload State
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +183,12 @@ export const AdminDashboardScreen: React.FC = () => {
       fetchAdminsAndWhitelist();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'lessons' && previewViewport === 'tablet') {
+      setPreviewViewport('mobile');
+    }
+  }, [activeTab, previewViewport]);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -418,16 +462,20 @@ export const AdminDashboardScreen: React.FC = () => {
           {([
             { tab: 'general',        icon: 'settings',      label: '一般設定 & 標題' },
             { tab: 'home-cards',     icon: 'home',          label: '首頁入口卡片' },
-            { tab: 'journey-steps',  icon: 'route',         label: '培育生命路徑' },
-            { tab: 'lessons',        icon: 'auto_stories',  label: '課程頁面 & 卡片' },
+            { tab: 'journey-steps',    icon: 'route',         label: '培育生命路徑' },
+            { tab: 'quiet-time-study', icon: 'wb_sunny',      label: '每日靈修研讀' },
+            { tab: 'lessons',          icon: 'auto_stories',  label: '課程頁面 & 卡片' },
             { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
             { tab: 'members',        icon: 'group',         label: '成員與權限管理' },
+            { tab: 'wishlist',       icon: 'lightbulb',     label: '功能許願池' },
           ] as const).map(({ tab, icon, label }) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               title={!adminSidebarOpen ? label : undefined}
-              className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-3 py-3 text-sm font-bold transition-all ${
+              className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
+                adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
+              } ${
                 activeTab === tab
                   ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
                   : 'text-on-surface-variant hover:bg-surface-container-low'
@@ -506,17 +554,21 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'general' && '一般設定 & 標題'}
               {activeTab === 'home-cards' && '首頁入口卡片管理'}
               {activeTab === 'journey-steps' && '培育生命路徑管理 (12個靈修培育步驟)'}
+              {activeTab === 'quiet-time-study' && '每日靈修研讀設定'}
               {activeTab === 'lessons' && '課程頁面 & 內容卡片'}
               {activeTab === 'media' && '相片與媒體庫'}
               {activeTab === 'members' && '成員與權限管理'}
+              {activeTab === 'wishlist' && '功能許願池 & 反饋'}
             </h2>
             <p className="mt-1 text-xs text-on-surface-variant">
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
               {activeTab === 'home-cards' && '管理首頁顯示的三大主要培育路徑入口卡片。'}
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
+              {activeTab === 'quiet-time-study' && '修改靈修單元中的研讀題目與關聯聖經經文。'}
               {activeTab === 'lessons' && '編輯特定課程的內文、卡片視覺顏色樣式、大小尺寸以及添加/刪除卡片。'}
               {activeTab === 'media' && '在此上傳相片，系統會自動生成臨時 Base64 以供網站即時展示。'}
               {activeTab === 'members' && '查看註冊會員、調整權限等級、變更管理員身份。'}
+              {activeTab === 'wishlist' && '提交您想要的新功能需求或反饋，系統將通過 Supabase Edge Function 同步至 GitHub Issues。'}
             </p>
           </div>
           
@@ -611,26 +663,110 @@ export const AdminDashboardScreen: React.FC = () => {
         )}
 
         {activeTab === 'home-cards' && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="flex flex-col gap-6 max-w-2xl">
+            <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-[1.8rem] border border-outline-variant/40 shadow-sm">
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">入口卡片列表</span>
+              <button
+                onClick={() => {
+                  const newId = `home-card-${Date.now()}`;
+                  const newCard = {
+                    id: newId,
+                    title: '新入口卡片',
+                    description: '請輸入卡片描述...',
+                    icon: 'explore',
+                    route: '/journey',
+                    accent: 'surface' as const,
+                  };
+                  updateHomeCards([...homeCards, newCard]);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+              >
+                <Icon name="add" className="text-xs" />
+                添加入口卡片
+              </button>
+            </div>
+
             {homeCards.map((card, idx) => (
               <div key={card.id} className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
                 <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-                  <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
-                  <span className="text-xs text-on-surface-variant font-mono">{card.id}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
+                    <span className="text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const nextCards = [...homeCards];
+                        const temp = nextCards[idx];
+                        if (temp) {
+                          nextCards[idx] = nextCards[idx - 1]!;
+                          nextCards[idx - 1] = temp;
+                          updateHomeCards(nextCards);
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                      title="移上"
+                    >
+                      <Icon name="arrow_upward" className="text-xs" />
+                    </button>
+                    <button
+                      disabled={idx === homeCards.length - 1}
+                      onClick={() => {
+                        const nextCards = [...homeCards];
+                        const temp = nextCards[idx];
+                        if (temp) {
+                          nextCards[idx] = nextCards[idx + 1]!;
+                          nextCards[idx + 1] = temp;
+                          updateHomeCards(nextCards);
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                      title="移下"
+                    >
+                      <Icon name="arrow_downward" className="text-xs" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('確定要刪除這張入口卡片嗎？')) {
+                          updateHomeCards(homeCards.filter(c => c.id !== card.id));
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer transition"
+                      title="刪除"
+                    >
+                      <Icon name="delete" className="text-sm" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-secondary">卡片名稱</label>
-                    <input
-                      type="text"
-                      value={card.title}
-                      onChange={(e) => {
-                        const newCards = [...homeCards];
-                        newCards[idx] = { ...card, title: e.target.value };
-                        updateHomeCards(newCards);
-                      }}
-                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">卡片名稱</label>
+                      <input
+                        type="text"
+                        value={card.title}
+                        onChange={(e) => {
+                          const newCards = [...homeCards];
+                          newCards[idx] = { ...card, title: e.target.value };
+                          updateHomeCards(newCards);
+                        }}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">路徑連結 (Route)</label>
+                      <input
+                        type="text"
+                        value={card.route}
+                        onChange={(e) => {
+                          const newCards = [...homeCards];
+                          newCards[idx] = { ...card, route: e.target.value };
+                          updateHomeCards(newCards);
+                        }}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-secondary">描述文字</label>
@@ -815,29 +951,122 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'lessons' && (
-          <div className="flex gap-8 items-start">
-            {/* Left selector sidebar */}
-            <div className="w-64 shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3">
-              <h4 className="px-2 text-xs font-bold text-secondary uppercase tracking-widest">選擇靈修章節</h4>
-              <div className="space-y-1">
-                {lessonRoutes.map((route) => (
-                  <button
-                    key={route.id}
-                    onClick={() => {
-                      setSelectedLessonId(route.id);
-                      setEditingModuleId(null);
-                    }}
-                    className={`w-full flex items-center justify-between rounded-[0.8rem] px-3 py-2.5 text-left text-xs font-bold transition ${
-                      selectedLessonId === route.id
-                        ? 'bg-secondary text-white shadow-sm'
-                        : 'text-on-surface-variant hover:bg-surface-container'
-                    }`}
-                  >
-                    <span className="truncate">{route.title}</span>
-                    <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{route.id.replace('lesson-','')}</span>
-                  </button>
+        {activeTab === 'quiet-time-study' && (
+          <div className="flex flex-col gap-6 max-w-2xl">
+            <div className="rounded-[1.8rem] bg-surface-container-low p-6 border border-outline-variant/40 shadow-sm space-y-4">
+              <h3 className="font-headline text-lg font-black text-primary border-b border-outline-variant/30 pb-3">每日靈修研讀題目設定</h3>
+              
+              <div className="space-y-6">
+                {quietTimeStudyItems.map((item, idx) => (
+                  <div key={idx} className="p-5 bg-white rounded-2xl border border-outline-variant/40 space-y-4 shadow-sm">
+                    <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary-fixed text-[10px] font-extrabold text-on-secondary-fixed">
+                        {item.label}
+                      </span>
+                      <span className="font-headline font-black text-sm text-primary">研讀項目 {item.label}</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-secondary">題目描述 (Title)</label>
+                        <textarea
+                          value={item.title}
+                          rows={2}
+                          onChange={(e) => {
+                            const nextItems = [...quietTimeStudyItems];
+                            nextItems[idx] = { ...item, title: e.target.value };
+                            updateQuietTimeStudyItems(nextItems);
+                          }}
+                          className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary font-sans leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">關聯聖經經文 (Reference)</label>
+                          <input
+                            type="text"
+                            value={item.reference}
+                            onChange={(e) => {
+                              const nextItems = [...quietTimeStudyItems];
+                              nextItems[idx] = { ...item, reference: e.target.value };
+                              updateQuietTimeStudyItems(nextItems);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">圖示類型 (Material Icon)</label>
+                          <input
+                            type="text"
+                            value={item.icon}
+                            onChange={(e) => {
+                              const nextItems = [...quietTimeStudyItems];
+                              nextItems[idx] = { ...item, icon: e.target.value };
+                              updateQuietTimeStudyItems(nextItems);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'lessons' && (
+          <div className="flex gap-8 items-start w-full">
+            {/* Left selector sidebar */}
+            <div className={`shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3 transition-all duration-300 ${lessonsSidebarOpen ? 'w-64' : 'w-16'}`}>
+              <div className="flex items-center justify-between px-2">
+                {lessonsSidebarOpen && (
+                  <h4 className="text-xs font-bold text-secondary uppercase tracking-widest truncate">選擇靈修章節</h4>
+                )}
+                <button
+                  onClick={() => setLessonsSidebarOpen(!lessonsSidebarOpen)}
+                  title={lessonsSidebarOpen ? '收起靈修章節' : '展開靈修章節'}
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition cursor-pointer ${!lessonsSidebarOpen ? 'mx-auto' : ''}`}
+                >
+                  <Icon name={lessonsSidebarOpen ? 'chevron_left' : 'chevron_right'} className="text-sm text-secondary" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {lessonRoutes.map((route) => {
+                  const isSelected = selectedLessonId === route.id;
+                  const shortId = route.id.replace('lesson-', '');
+                  const shortLabel = route.title.substring(0, 2);
+                  return (
+                    <button
+                      key={route.id}
+                      onClick={() => {
+                        setSelectedLessonId(route.id);
+                        setEditingModuleId(null);
+                      }}
+                      title={!lessonsSidebarOpen ? route.title : undefined}
+                      className={`w-full flex items-center rounded-[0.8rem] transition ${
+                        lessonsSidebarOpen 
+                          ? 'justify-between px-3 py-2.5 text-left text-xs' 
+                          : 'justify-center py-2.5 text-[10px]'
+                      } font-bold ${
+                        isSelected
+                          ? 'bg-secondary text-white shadow-sm'
+                          : 'text-on-surface-variant hover:bg-surface-container'
+                      }`}
+                    >
+                      {lessonsSidebarOpen ? (
+                        <>
+                          <span className="truncate">{route.title}</span>
+                          <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{shortId}</span>
+                        </>
+                      ) : (
+                        <span className="truncate">{shortLabel}</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1551,6 +1780,73 @@ ON CONFLICT (email) DO NOTHING;`}
           </div>
         )}
 
+        {activeTab === 'wishlist' && (
+          <div className="max-w-2xl space-y-6">
+            <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
+              <h3 className="font-headline text-lg font-black text-primary border-b border-outline-variant/30 pb-3 flex items-center gap-2">
+                <Icon name="lightbulb" className="text-secondary" />
+                許願池：提交您的功能需求
+              </h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                管理員人員可以在此提交對本系統的期待或新功能的想法。
+                這些反饋將會呼叫 Supabase Edge Function，利用後端安全儲存的憑證直接在 GitHub Repo 中建立一個專屬 Issue。
+              </p>
+
+              {wishStatus && (
+                <div className={`p-4 rounded-xl text-xs font-bold ${
+                  wishStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {wishStatus.message}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitWish} className="space-y-4 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求標題 (Title)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="請輸入一個簡短的標題 (例如: 增加新課程進度重置功能)"
+                    value={wishTitle}
+                    onChange={(e) => setWishTitle(e.target.value)}
+                    className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求詳細描述 (Description)</label>
+                  <textarea
+                    required
+                    rows={6}
+                    placeholder="請詳細說明此功能需求的背景、功能規格，或您想解決的問題..."
+                    value={wishDesc}
+                    onChange={(e) => setWishDesc(e.target.value)}
+                    className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary font-sans leading-relaxed"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submittingWish}
+                  className="w-full rounded-full bg-primary py-3.5 text-xs font-extrabold tracking-widest text-white shadow-md hover:brightness-105 active:scale-98 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {submittingWish ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      正在同步提交中...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="send" className="text-sm" />
+                      送出至 GitHub Issues
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
         </div> {/* Left panel: Form Editor */}
 
         {/* Right panel: Real-time Live Preview */}
@@ -1573,15 +1869,17 @@ ON CONFLICT (email) DO NOTHING;`}
                     <Icon name="smartphone" className="text-xs" />
                     手機
                   </button>
-                  <button
-                    onClick={() => setPreviewViewport('tablet')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
-                      previewViewport === 'tablet' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
-                    }`}
-                  >
-                    <Icon name="tablet" className="text-xs" />
-                    平板
-                  </button>
+                  {activeTab !== 'lessons' && (
+                    <button
+                      onClick={() => setPreviewViewport('tablet')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
+                        previewViewport === 'tablet' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+                      }`}
+                    >
+                      <Icon name="tablet" className="text-xs" />
+                      平板
+                    </button>
+                  )}
                   <button
                     onClick={() => setPreviewViewport('desktop')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
@@ -1617,8 +1915,10 @@ ON CONFLICT (email) DO NOTHING;`}
                         {activeTab === 'general' && <HomePreview />}
                         {activeTab === 'home-cards' && <HomePreview />}
                         {activeTab === 'journey-steps' && <JourneyPreview />}
+                        {activeTab === 'quiet-time-study' && <LessonPreview lessonId="lesson-quiet-time" />}
                         {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
+                        {activeTab === 'wishlist' && <HomePreview />}
                       </div>
                     </div>
                   ) : (
@@ -1627,8 +1927,10 @@ ON CONFLICT (email) DO NOTHING;`}
                       {activeTab === 'general' && <HomePreview />}
                       {activeTab === 'home-cards' && <HomePreview />}
                       {activeTab === 'journey-steps' && <JourneyPreview />}
+                      {activeTab === 'quiet-time-study' && <LessonPreview lessonId="lesson-quiet-time" />}
                       {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
+                      {activeTab === 'wishlist' && <HomePreview />}
                     </div>
                   )}
                 </div>

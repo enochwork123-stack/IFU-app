@@ -343,6 +343,7 @@ interface ContentContextType extends ContentState {
   updateCreationCards: (cards: typeof defaultCreationCards) => void;
   updateGospelSections: (sections: GospelSection[]) => void;
   updateLessonRoutes: (routes: LessonRoute[]) => void;
+  updateQuietTimeStudyItems: (items: typeof defaultQuietTimeStudyItems) => void;
   updateCustomText: (key: string, value: string) => void;
   updateCustomTexts: (texts: CustomScreenTexts) => void;
   
@@ -417,6 +418,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const updateLessonRoutes = (lessonRoutes: LessonRoute[]) => {
     setState((prev) => ({ ...prev, lessonRoutes }));
+  };
+
+  const updateQuietTimeStudyItems = (quietTimeStudyItems: typeof defaultQuietTimeStudyItems) => {
+    setState((prev) => ({ ...prev, quietTimeStudyItems }));
   };
 
   const updateCustomText = (key: string, value: string) => {
@@ -555,6 +560,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCreationCards,
         updateGospelSections,
         updateLessonRoutes,
+        updateQuietTimeStudyItems,
         updateCustomText,
         updateCustomTexts,
         addCardToLesson,

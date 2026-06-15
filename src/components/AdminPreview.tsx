@@ -62,7 +62,7 @@ const ScriptureToggle: React.FC<{ scripture: ScriptureReference }> = ({ scriptur
       {isOpen && (
         <div className="border-t border-outline-variant/50 px-4 pb-5 pt-4">
           <p className="font-headline text-[1.05rem] leading-8 text-primary">
-            {scripture.chinese}
+            {scripture.chinese || (scripture as any).verse}
           </p>
           {scripture.english && (
             <p className="mt-4 text-sm leading-7 text-on-surface-variant">
@@ -363,6 +363,62 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
                       {(mod as any).body}
                     </p>
                   )}
+                  {(mod as any).points && (mod as any).points.length > 0 && (
+                    <ul className="space-y-2 mt-3 text-xs">
+                      {(mod as any).points.map((pt: string, pIdx: number) => (
+                        <li key={pIdx} className="flex items-start gap-2 text-on-surface-variant leading-relaxed">
+                          <Icon name="check_circle" className="text-secondary text-sm shrink-0 mt-0.5" />
+                          <span>{pt}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {mod.kind === 'scripture-reveal' && (
+                <div className="space-y-3">
+                  {mod.title && (
+                    <h3 className={`font-headline text-base font-bold ${cardTheme === 'primary' ? 'text-white' : 'text-primary'}`}>
+                      {mod.title}
+                    </h3>
+                  )}
+                  {mod.scriptures && mod.scriptures.length > 0 && (
+                    <div className="mt-3.5 space-y-2">
+                      {mod.scriptures.map((sc, sIdx) => (
+                        <ScriptureToggle key={sIdx} scripture={sc} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {mod.kind === 'interactive-visual' && (
+                <div className="space-y-3 text-on-surface">
+                  {mod.title && (
+                    <h3 className={`font-headline text-base font-bold ${cardTheme === 'primary' ? 'text-white' : 'text-primary'}`}>
+                      {mod.title}
+                    </h3>
+                  )}
+                  {mod.description && (
+                    <p className={`text-xs leading-6 ${cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>
+                      {mod.description}
+                    </p>
+                  )}
+                  <div className="rounded-[1.5rem] border border-outline-variant/60 bg-surface-container-low p-5 flex flex-col items-center justify-center min-h-[140px] text-center shadow-inner relative overflow-hidden">
+                    <div className="absolute inset-0 bg-radial-gradient(circle_at_center, rgba(121,89,0,0.03), transparent 70%) pointer-events-none" />
+                    <span className="text-[9px] font-bold text-secondary uppercase bg-white px-2 py-0.5 rounded border border-outline-variant/40 font-mono mb-4 z-10">
+                      互動圖表: {mod.visualKind}
+                    </span>
+                    <div className="flex gap-3 items-center justify-center flex-wrap z-10">
+                      {(mod as any).labels?.map((lbl: any, lIdx: number) => (
+                        <div key={lIdx} className="bg-white border border-outline px-3.5 py-1.5 rounded-full text-xs font-bold text-primary shadow-sm flex flex-col">
+                          <span>{lbl.label}</span>
+                          {lbl.description && <span className="text-[9px] font-medium text-secondary tracking-wider uppercase mt-0.5">{lbl.description}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
