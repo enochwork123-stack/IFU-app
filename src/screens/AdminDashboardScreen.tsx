@@ -96,28 +96,45 @@ export const AdminDashboardScreen: React.FC = () => {
       setLoadingMembers(true);
       setMemberError('');
       
-      // Fetch registered admins
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'admin')
-        .order('created_at', { ascending: false });
+      // 1. Fetch registered admins
+      let profilesData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'admin')
+          .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+        if (error) throw error;
+        profilesData = data || [];
+      } catch (profilesError: any) {
+        console.error('Error fetching profiles:', profilesError);
+        setMemberError('無法取得已註冊管理員清單：' + (profilesError.message || '未知錯誤'));
+      }
 
-      // Fetch whitelisted emails
-      const { data: whitelistData, error: whitelistError } = await supabase
-        .from('admin_whitelist')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // 2. Fetch whitelisted emails
+      let whitelistData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('admin_whitelist')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (whitelistError) throw whitelistError;
+        if (error) throw error;
+        whitelistData = data || [];
+      } catch (whitelistError: any) {
+        console.warn('Error fetching admin_whitelist (table may not exist yet):', whitelistError);
+        // We append a helpful setup warning, but don't crash
+        setMemberError(prev => 
+          (prev ? prev + '\n' : '') + 
+          'DatabaseWarning: 尚未建立 admin_whitelist 資料表。未註冊用戶將無法進行預先授權，請執行 Supabase SQL 設定。'
+        );
+      }
 
-      setAdmins(profilesData || []);
-      setWhitelist(whitelistData || []);
+      setAdmins(profilesData);
+      setWhitelist(whitelistData);
     } catch (err: any) {
-      console.error('Error fetching admins/whitelist:', err);
-      setMemberError(err.message || '無法取得管理人員清單');
+      console.error('Unexpected error in fetchAdminsAndWhitelist:', err);
     } finally {
       setLoadingMembers(false);
     }
@@ -138,16 +155,28 @@ export const AdminDashboardScreen: React.FC = () => {
       setSubmittingAdmin(true);
       setMemberError('');
 
-      // 1. Insert into whitelist
-      const { error: whitelistError } = await supabase
-        .from('admin_whitelist')
-        .insert({ email: emailToNormalize });
+      let whitelistSuccess = false;
+      let whitelistDuplicate = false;
+      try {
+        // 1. Try to insert into whitelist
+        const { error: whitelistError } = await supabase
+          .from('admin_whitelist')
+          .insert({ email: emailToNormalize });
 
-      if (whitelistError) {
-        if (whitelistError.code === '23505') {
+        if (whitelistError) {
+          if (whitelistError.code === '23505') {
+            whitelistDuplicate = true;
+          }
+          throw whitelistError;
+        }
+        whitelistSuccess = true;
+      } catch (whitelistError: any) {
+        console.warn('Could not insert into admin_whitelist:', whitelistError);
+        if (whitelistDuplicate) {
           throw new Error('此電子郵件已在管理員名單中！');
         }
-        throw whitelistError;
+        // Notify user about missing table, but attempt role update if registered
+        setMemberError('警告：無法寫入 admin_whitelist（資料表可能尚未建立）。系統將嘗試直接為已註冊帳號進行升級。');
       }
 
       // 2. If the user is already registered in profiles, promote them to admin
@@ -156,20 +185,28 @@ export const AdminDashboardScreen: React.FC = () => {
         .select('id, role')
         .eq('email', emailToNormalize);
 
+      let promoteSuccess = false;
       if (!checkError && existingProfiles && existingProfiles.length > 0) {
         for (const p of existingProfiles) {
           if (p.role !== 'admin') {
-            await supabase
+            const { error: updateError } = await supabase
               .from('profiles')
               .update({ role: 'admin' })
               .eq('id', p.id);
+            if (!updateError) promoteSuccess = true;
+          } else {
+            promoteSuccess = true;
           }
         }
       }
 
-      setNewAdminEmail('');
-      await fetchAdminsAndWhitelist();
-      alert('成功新增管理員！');
+      if (whitelistSuccess || promoteSuccess) {
+        setNewAdminEmail('');
+        await fetchAdminsAndWhitelist();
+        alert(promoteSuccess ? '成功將該註冊用戶設為管理員！' : '已成功加入管理員授權名單！');
+      } else {
+        throw new Error('新增失敗：該電子郵件尚未註冊，且資料庫尚未建立 admin_whitelist 資料表。');
+      }
     } catch (err: any) {
       console.error('Error adding admin:', err);
       setMemberError(err.message || '新增管理員失敗');
@@ -197,13 +234,17 @@ export const AdminDashboardScreen: React.FC = () => {
       setSubmittingAdmin(true);
       setMemberError('');
 
-      // 1. Delete from whitelist
-      const { error: whitelistError } = await supabase
-        .from('admin_whitelist')
-        .delete()
-        .eq('email', email);
+      // 1. Try to delete from whitelist
+      try {
+        const { error: whitelistError } = await supabase
+          .from('admin_whitelist')
+          .delete()
+          .eq('email', email);
 
-      if (whitelistError) throw whitelistError;
+        if (whitelistError) throw whitelistError;
+      } catch (whitelistError: any) {
+        console.warn('Could not delete from admin_whitelist:', whitelistError);
+      }
 
       // 2. If registered, demote to member in profiles
       if (memberId) {
@@ -1310,6 +1351,44 @@ export const AdminDashboardScreen: React.FC = () => {
 
         {activeTab === 'members' && (
           <div className="space-y-8 max-w-4xl">
+            {/* Database warning with copyable SQL if table is missing */}
+            {memberError && (memberError.includes('admin_whitelist') || memberError.includes('DatabaseWarning')) && (
+              <div className="rounded-[1.8rem] bg-amber-50 border border-amber-200 p-6 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 font-bold text-amber-800">
+                  <Icon name="warning" className="text-xl" />
+                  資料庫設定未完成 (Supabase Configuration Required)
+                </div>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  您的 Supabase 資料庫中目前缺少 <code>admin_whitelist</code> 資料表。這會導致無法對未註冊用戶進行預先授權。
+                  請在 <strong>Supabase Dashboard -&gt; SQL Editor</strong> 中執行以下 SQL 語句以完成設定：
+                </p>
+                <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre select-all">
+{`CREATE TABLE IF NOT EXISTS public.admin_whitelist (
+  email text PRIMARY KEY,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.admin_whitelist ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can read admin whitelist"
+  ON public.admin_whitelist FOR SELECT
+  USING (public.is_admin());
+
+CREATE POLICY "Admins can insert into admin whitelist"
+  ON public.admin_whitelist FOR INSERT
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Admins can delete from admin whitelist"
+  ON public.admin_whitelist FOR DELETE
+  USING (public.is_admin());
+
+INSERT INTO public.admin_whitelist (email)
+VALUES ('enochwork123@gmail.com'), ('lawfelix2002@gmail.com')
+ON CONFLICT (email) DO NOTHING;`}
+                </pre>
+              </div>
+            )}
+
             {/* Add Admin form */}
             <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
               <h3 className="font-headline text-xl font-black text-primary">新增管理員人員</h3>
@@ -1317,7 +1396,7 @@ export const AdminDashboardScreen: React.FC = () => {
                 請輸入欲授權之電子郵件。若該用戶已註冊，系統會立即升級其權限；若尚未註冊，該電子郵件將加入授權名單，在其首次登入時自動升級為管理員。
               </p>
 
-              {memberError && (
+              {memberError && !(memberError.includes('admin_whitelist') || memberError.includes('DatabaseWarning')) && (
                 <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-bold text-red-600 animate-fade-in">
                   {memberError}
                 </div>
@@ -1345,7 +1424,7 @@ export const AdminDashboardScreen: React.FC = () => {
 
             {/* Registered Admins */}
             <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
-              <h3 className="font-headline text-xl font-black text-primary">目前在線管理員</h3>
+              <h3 className="font-headline text-xl font-black text-primary">系統管理員列表</h3>
               {loadingMembers ? (
                 <div className="flex justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
