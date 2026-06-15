@@ -237,32 +237,54 @@ export const LibraryScreen: React.FC = () => {
     setDrawnIds([]);
   };
 
-  const handleCompleteQuietTime = async (entry: QuietTimeEntry) => {
+  const handleToggleQuietTime = async (entry: QuietTimeEntry) => {
     if (!user) {
       alert('請先登入以保存您的學習進度！');
       setSelectedEntry(null);
       return;
     }
 
+    const isCompleted = completedIds.includes(entry.id);
+
     try {
-      // Optimistically add to completedIds
-      if (!completedIds.includes(entry.id)) {
+      if (isCompleted) {
+        // Optimistically remove from completedIds
+        setCompletedIds((prev) => prev.filter(id => id !== entry.id));
+
+        const { error } = await supabase
+          .from('user_progress')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('type', 'quiet_time')
+          .eq('reference_id', entry.id);
+
+        if (error) {
+          // Revert optimistic update
+          setCompletedIds((prev) => [...prev, entry.id]);
+          throw error;
+        }
+      } else {
+        // Optimistically add to completedIds
         setCompletedIds((prev) => [...prev, entry.id]);
-      }
 
-      const { error } = await supabase.from('user_progress').insert({
-        user_id: user.id,
-        type: 'quiet_time',
-        reference_id: entry.id,
-        completed_at: new Date().toISOString().split('T')[0],
-      });
+        const { error } = await supabase.from('user_progress').insert({
+          user_id: user.id,
+          type: 'quiet_time',
+          reference_id: entry.id,
+          completed_at: new Date().toISOString().split('T')[0],
+        });
 
-      if (error && error.code !== '23505') {
-        throw error;
+        if (error) {
+          if (error.code !== '23505') {
+            // Revert optimistic update
+            setCompletedIds((prev) => prev.filter(id => id !== entry.id));
+            throw error;
+          }
+        }
       }
     } catch (err) {
-      console.error('Error saving quiet time progress:', err);
-      alert('保存進度失敗，請重試！');
+      console.error('Error toggling quiet time progress:', err);
+      alert('操作失敗，請重試！');
     } finally {
       setSelectedEntry(null);
     }
@@ -902,15 +924,17 @@ export const LibraryScreen: React.FC = () => {
               </span>
               {completedIds.includes(selectedEntry.id) ? (
                 <button
-                  disabled
-                  className="px-6 py-2 bg-green-50 border border-green-200 text-green-700 text-xs font-bold rounded-full flex items-center gap-1 opacity-80"
+                  onClick={() => handleToggleQuietTime(selectedEntry)}
+                  className="group px-6 py-2 bg-green-50 hover:bg-red-50 border border-green-200 hover:border-red-200 text-green-700 hover:text-red-700 text-xs font-bold rounded-full flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                 >
-                  <Icon name="check" className="text-sm font-extrabold" />
-                  已完成 ✓
+                  <Icon name="check" className="text-sm font-extrabold group-hover:hidden" />
+                  <Icon name="close" className="text-sm font-extrabold hidden group-hover:inline" />
+                  <span className="group-hover:hidden">已完成 ✓</span>
+                  <span className="hidden group-hover:inline">取消已完成</span>
                 </button>
               ) : (
                 <button
-                  onClick={() => handleCompleteQuietTime(selectedEntry)}
+                  onClick={() => handleToggleQuietTime(selectedEntry)}
                   className="px-6 py-2 bg-primary hover:bg-[#3e4c31] text-white text-xs font-bold rounded-full transition active:scale-95 cursor-pointer"
                 >
                   已完成靈修

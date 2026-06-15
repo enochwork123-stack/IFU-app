@@ -56,7 +56,7 @@ export function JourneyPager({ previous, next }) {
     checkProgress();
   }, [user, type, referenceId]);
 
-  const handleComplete = async () => {
+  const handleToggleComplete = async () => {
     if (!user) {
       alert('請先登入以保存您的學習進度！');
       navigate('/login');
@@ -67,26 +67,40 @@ export function JourneyPager({ previous, next }) {
 
     try {
       setSubmitting(true);
-      const { error } = await supabase.from('user_progress').insert({
-        user_id: user.id,
-        type: type,
-        reference_id: referenceId,
-        completed_at: new Date().toISOString().split('T')[0],
-      });
+      if (isCompleted) {
+        // Delete the progress record
+        const { error } = await supabase
+          .from('user_progress')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('type', type)
+          .eq('reference_id', referenceId);
 
-      if (error) {
-        // Handle duplicate key error (23505) gracefully
-        if (error.code === '23505') {
-          setIsCompleted(true);
-        } else {
-          throw error;
-        }
+        if (error) throw error;
+        setIsCompleted(false);
       } else {
-        setIsCompleted(true);
+        // Insert the progress record
+        const { error } = await supabase.from('user_progress').insert({
+          user_id: user.id,
+          type: type,
+          reference_id: referenceId,
+          completed_at: new Date().toISOString().split('T')[0],
+        });
+
+        if (error) {
+          // Handle duplicate key error (23505) gracefully
+          if (error.code === '23505') {
+            setIsCompleted(true);
+          } else {
+            throw error;
+          }
+        } else {
+          setIsCompleted(true);
+        }
       }
     } catch (err) {
-      console.error('Error logging progress:', err);
-      alert('保存進度失敗，請重試！');
+      console.error('Error toggling progress:', err);
+      alert('操作失敗，請重試！');
     } finally {
       setSubmitting(false);
     }
@@ -101,15 +115,18 @@ export function JourneyPager({ previous, next }) {
         <div className="flex justify-center w-full">
           {isCompleted ? (
             <button
-              disabled
-              className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-6 py-2.5 text-sm font-bold text-green-700 justify-center whitespace-nowrap"
+              onClick={handleToggleComplete}
+              disabled={submitting}
+              className="group inline-flex items-center gap-2 rounded-full bg-green-50 hover:bg-red-50 border border-green-200 hover:border-red-200 px-6 py-2.5 text-sm font-bold text-green-700 hover:text-red-700 justify-center whitespace-nowrap transition-all active:scale-95 cursor-pointer disabled:opacity-50"
             >
-              <Icon name="check_circle" className="text-[18px]" />
-              本課已完成 ✓
+              <Icon name={submitting ? "autorenew" : "check_circle"} className={`text-[18px] group-hover:hidden ${submitting ? 'animate-spin' : ''}`} />
+              <Icon name="cancel" className="text-[18px] hidden group-hover:inline" />
+              <span className="group-hover:hidden">本課已完成 ✓</span>
+              <span className="hidden group-hover:inline">取消標記已完成</span>
             </button>
           ) : (
             <button
-              onClick={handleComplete}
+              onClick={handleToggleComplete}
               disabled={submitting}
               className="inline-flex items-center gap-2 rounded-full bg-primary-fixed border border-primary/20 px-6 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary/5 active:scale-95 justify-center cursor-pointer shadow-sm disabled:opacity-50 whitespace-nowrap"
             >

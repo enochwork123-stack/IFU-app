@@ -29,14 +29,6 @@ export function HomeScreen() {
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <Link
-              to="/admin"
-              aria-label="管理後台"
-              title="管理後台"
-              className="inline-flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary hover:bg-surface-container-low transition active:scale-95 whitespace-nowrap"
-            >
-              <Icon name="admin_panel_settings" className="text-[16px] sm:text-[20px]" />
-            </Link>
             {user ? (
               <Link
                 to={ROUTE_REGISTRY.PROFILE}
