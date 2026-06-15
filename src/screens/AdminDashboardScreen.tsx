@@ -221,7 +221,7 @@ export const AdminDashboardScreen: React.FC = () => {
       alert('您不能移除系統預設的開發人員管理權限！');
       return;
     }
-    if (memberId && memberId === user?.id) {
+    if ((memberId && memberId === user?.id) || (user?.email && email.toLowerCase() === user.email.toLowerCase())) {
       alert('您不能移除自己的管理員權限！');
       return;
     }
@@ -1475,12 +1475,12 @@ ON CONFLICT (email) DO NOTHING;`}
                                 {member.role}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-right">
+                             <td className="px-6 py-4 text-right">
                               <button
                                 onClick={() => handleRemoveAdmin(member.email, member.id)}
-                                disabled={member.id === user?.id || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)}
+                                disabled={member.id === user?.id || (user?.email && member.email?.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)}
                                 className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
-                                  member.id === user?.id || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)
+                                  member.id === user?.id || (user?.email && member.email?.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)
                                     ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
                                     : 'bg-red-50 text-red-600 hover:bg-red-100/60'
                                 }`}
@@ -1521,12 +1521,12 @@ ON CONFLICT (email) DO NOTHING;`}
                             <td className="px-6 py-4 text-on-surface-variant">
                               {item.created_at ? new Date(item.created_at).toLocaleString('zh-TW') : '未知'}
                             </td>
-                            <td className="px-6 py-4 text-right">
+                             <td className="px-6 py-4 text-right">
                               <button
                                 onClick={() => handleRemoveAdmin(item.email)}
-                                disabled={['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)}
+                                disabled={(user?.email && item.email.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)}
                                 className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
-                                  ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)
+                                  (user?.email && item.email.toLowerCase() === user.email.toLowerCase()) || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)
                                     ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
                                     : 'bg-red-50 text-red-600 hover:bg-red-100/60'
                                 }`}
