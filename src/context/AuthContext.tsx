@@ -23,6 +23,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const ADMIN_EMAILS = ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'];
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -30,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createProfileOnTheFly = async (currentUser: User): Promise<Profile | null> => {
     try {
+      const isSystemAdmin = currentUser.email && ADMIN_EMAILS.includes(currentUser.email);
       const { data, error } = await supabase
         .from('profiles')
         .insert({
@@ -37,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           display_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || 'New disciple',
           avatar_url: currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null,
           email: currentUser.email,
-          role: 'member',
+          role: isSystemAdmin ? 'admin' : 'member',
         })
         .select()
         .single();
@@ -82,6 +85,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!p) {
       console.log('Profile missing. Attempting to create on the fly...');
       p = await createProfileOnTheFly(currentUser);
+    } else {
+      // If the user is an admin by email but their profile in DB is member, promote them
+      const isSystemAdmin = currentUser.email && ADMIN_EMAILS.includes(currentUser.email);
+      if (isSystemAdmin && p.role !== 'admin') {
+        console.log('Promoting admin user to admin role in database...');
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .update({ role: 'admin' })
+            .eq('id', currentUser.id)
+            .select()
+            .single();
+          if (!error && data) {
+            p = data as Profile;
+          } else if (error) {
+            console.error('Failed to promote user to admin in DB:', error);
+          }
+        } catch (err) {
+          console.error('Unexpected error promoting user to admin in DB:', err);
+        }
+      }
     }
     return p;
   };
@@ -115,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user);
         const p = await getOrInitializeProfile(session.user);
@@ -149,7 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
   };
 
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = profile?.role === 'admin' || !!(user?.email && ADMIN_EMAILS.includes(user.email));
 
   return (
     <AuthContext.Provider

@@ -12,7 +12,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false,
 }) => {
-  const { user, profile, loading, isAdmin, signInWithGoogle } = useAuth();
+  const { user, loading, isAdmin, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
