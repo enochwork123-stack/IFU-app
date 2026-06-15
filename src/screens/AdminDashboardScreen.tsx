@@ -37,9 +37,12 @@ export const AdminDashboardScreen: React.FC = () => {
   const [loginError, setLoginError] = useState('');
 
   // Members Management State
-  const [members, setMembers] = useState<any[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [whitelist, setWhitelist] = useState<any[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [submittingAdmin, setSubmittingAdmin] = useState(false);
   const [memberError, setMemberError] = useState('');
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -55,6 +58,7 @@ export const AdminDashboardScreen: React.FC = () => {
   
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
+  const isPreviewActive = showPreview && activeTab !== 'members';
   const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
@@ -87,20 +91,33 @@ export const AdminDashboardScreen: React.FC = () => {
     setIsAuthorized(true);
   };
 
-  const fetchMembers = async () => {
+  const fetchAdminsAndWhitelist = async () => {
     try {
       setLoadingMembers(true);
       setMemberError('');
-      const { data, error } = await supabase
+      
+      // Fetch registered admins
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
+        .select('*')
+        .eq('role', 'admin')
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
+
+      // Fetch whitelisted emails
+      const { data: whitelistData, error: whitelistError } = await supabase
+        .from('admin_whitelist')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setMembers(data || []);
+      if (whitelistError) throw whitelistError;
+
+      setAdmins(profilesData || []);
+      setWhitelist(whitelistData || []);
     } catch (err: any) {
-      console.error('Error fetching members:', err);
-      setMemberError(err.message || '無法取得成員清單');
+      console.error('Error fetching admins/whitelist:', err);
+      setMemberError(err.message || '無法取得管理人員清單');
     } finally {
       setLoadingMembers(false);
     }
@@ -108,30 +125,117 @@ export const AdminDashboardScreen: React.FC = () => {
 
   useEffect(() => {
     if (activeTab === 'members') {
-      fetchMembers();
+      fetchAdminsAndWhitelist();
     }
   }, [activeTab]);
 
-  const handleToggleRole = async (memberId: string, currentRole: string) => {
-    if (memberId === user?.id) {
-      alert('您不能修改自己的管理員權限！');
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailToNormalize = newAdminEmail.trim().toLowerCase();
+    if (!emailToNormalize) return;
+
+    try {
+      setSubmittingAdmin(true);
+      setMemberError('');
+
+      // 1. Insert into whitelist
+      const { error: whitelistError } = await supabase
+        .from('admin_whitelist')
+        .insert({ email: emailToNormalize });
+
+      if (whitelistError) {
+        if (whitelistError.code === '23505') {
+          throw new Error('此電子郵件已在管理員名單中！');
+        }
+        throw whitelistError;
+      }
+
+      // 2. If the user is already registered in profiles, promote them to admin
+      const { data: existingProfiles, error: checkError } = await supabase
+        .from('profiles')
+        .select('id, role')
+        .eq('email', emailToNormalize);
+
+      if (!checkError && existingProfiles && existingProfiles.length > 0) {
+        for (const p of existingProfiles) {
+          if (p.role !== 'admin') {
+            await supabase
+              .from('profiles')
+              .update({ role: 'admin' })
+              .eq('id', p.id);
+          }
+        }
+      }
+
+      setNewAdminEmail('');
+      await fetchAdminsAndWhitelist();
+      alert('成功新增管理員！');
+    } catch (err: any) {
+      console.error('Error adding admin:', err);
+      setMemberError(err.message || '新增管理員失敗');
+    } finally {
+      setSubmittingAdmin(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (email: string, memberId?: string) => {
+    const defaultDevs = ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'];
+    if (defaultDevs.includes(email)) {
+      alert('您不能移除系統預設的開發人員管理權限！');
       return;
     }
-    try {
-      const newRole = currentRole === 'admin' ? 'member' : 'admin';
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', memberId);
+    if (memberId && memberId === user?.id) {
+      alert('您不能移除自己的管理員權限！');
+      return;
+    }
 
-      if (error) throw error;
-      
-      setMembers(prev =>
-        prev.map(m => (m.id === memberId ? { ...m, role: newRole } : m))
-      );
+    if (!confirm(`確定要移除管理員 ${email} 嗎？`)) {
+      return;
+    }
+
+    try {
+      setSubmittingAdmin(true);
+      setMemberError('');
+
+      // 1. Delete from whitelist
+      const { error: whitelistError } = await supabase
+        .from('admin_whitelist')
+        .delete()
+        .eq('email', email);
+
+      if (whitelistError) throw whitelistError;
+
+      // 2. If registered, demote to member in profiles
+      if (memberId) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ role: 'member' })
+          .eq('id', memberId);
+
+        if (profileError) throw profileError;
+      } else {
+        const { data: registeredUsers } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email);
+
+        if (registeredUsers && registeredUsers.length > 0) {
+          for (const u of registeredUsers) {
+            await supabase
+              .from('profiles')
+              .update({ role: 'member' })
+              .eq('id', u.id);
+          }
+        }
+      }
+
+      await fetchAdminsAndWhitelist();
+      alert('成功移除管理員權限！');
     } catch (err: any) {
-      console.error('Error updating member role:', err);
-      alert('更新權限失敗：' + err.message);
+      console.error('Error removing admin:', err);
+      setMemberError(err.message || '移除管理員失敗');
+    } finally {
+      setSubmittingAdmin(false);
     }
   };
 
@@ -371,17 +475,19 @@ export const AdminDashboardScreen: React.FC = () => {
           
           <div className="flex items-center gap-3">
             {/* Real-time Preview Toggle */}
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                showPreview
-                  ? 'border-primary bg-primary/8 text-primary shadow-sm'
-                  : 'border-outline-variant hover:bg-surface-container'
-              }`}
-            >
-              <Icon name="chrome_reader_mode" className="text-base text-primary" />
-              {showPreview ? '隱藏實時預覽' : '顯示實時預覽'}
-            </button>
+            {activeTab !== 'members' && (
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                  showPreview
+                    ? 'border-primary bg-primary/8 text-primary shadow-sm'
+                    : 'border-outline-variant hover:bg-surface-container'
+                }`}
+              >
+                <Icon name="chrome_reader_mode" className="text-base text-primary" />
+                {showPreview ? '隱藏實時預覽' : '顯示實時預覽'}
+              </button>
+            )}
 
             <div className="flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-xs font-bold text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -393,7 +499,7 @@ export const AdminDashboardScreen: React.FC = () => {
         {/* Split pane content area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left panel: Form Editor */}
-          <div className={`h-full overflow-y-auto px-10 py-8 ${showPreview ? 'w-[50%]' : 'w-full'}`}>
+          <div className={`h-full overflow-y-auto px-10 py-8 ${isPreviewActive ? 'w-[50%]' : 'w-full'}`}>
 
         {/* Tab Contents */}
         {activeTab === 'general' && (
@@ -1204,18 +1310,42 @@ export const AdminDashboardScreen: React.FC = () => {
 
         {activeTab === 'members' && (
           <div className="space-y-8 max-w-4xl">
+            {/* Add Admin form */}
             <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
-              <h3 className="font-headline text-xl font-black text-primary">註冊成員與權限管理</h3>
+              <h3 className="font-headline text-xl font-black text-primary">新增管理員人員</h3>
               <p className="text-xs text-on-surface-variant leading-relaxed">
-                此處顯示所有已註冊的用戶清單。身為管理員，您可以將其他成員提升為管理員，或取消其管理員權限。
+                請輸入欲授權之電子郵件。若該用戶已註冊，系統會立即升級其權限；若尚未註冊，該電子郵件將加入授權名單，在其首次登入時自動升級為管理員。
               </p>
 
               {memberError && (
-                <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-bold text-red-600">
+                <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-bold text-red-600 animate-fade-in">
                   {memberError}
                 </div>
               )}
 
+              <form onSubmit={handleAddAdmin} className="flex gap-4 max-w-lg">
+                <input
+                  type="email"
+                  required
+                  placeholder="例如: disciple@example.com"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  className="flex-1 rounded-[1rem] border border-outline-variant bg-white p-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingAdmin}
+                  className="rounded-full bg-primary px-6 py-3 text-xs font-extrabold tracking-wider text-white hover:brightness-105 active:scale-95 transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Icon name="person_add" className="text-sm" />
+                  授權並新增
+                </button>
+              </form>
+            </div>
+
+            {/* Registered Admins */}
+            <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+              <h3 className="font-headline text-xl font-black text-primary">目前在線管理員</h3>
               {loadingMembers ? (
                 <div className="flex justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
@@ -1228,19 +1358,19 @@ export const AdminDashboardScreen: React.FC = () => {
                         <th className="px-6 py-4">頭像</th>
                         <th className="px-6 py-4">顯示名稱</th>
                         <th className="px-6 py-4">電子郵件</th>
-                        <th className="px-6 py-4">權限等級</th>
+                        <th className="px-6 py-4">權限</th>
                         <th className="px-6 py-4 text-right">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-outline-variant/20 text-sm">
-                      {members.length === 0 ? (
+                      {admins.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant font-medium">
-                            尚無註冊會員
+                            尚無已註冊的管理員
                           </td>
                         </tr>
                       ) : (
-                        members.map((member) => (
+                        admins.map((member) => (
                           <tr key={member.id} className="hover:bg-surface-container-lowest transition-colors">
                             <td className="px-6 py-4">
                               {member.avatar_url ? (
@@ -1262,29 +1392,21 @@ export const AdminDashboardScreen: React.FC = () => {
                               {member.email || 'Google 登錄用戶'}
                             </td>
                             <td className="px-6 py-4">
-                              <span
-                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border ${
-                                  member.role === 'admin'
-                                    ? 'bg-red-50 border-red-200 text-red-600'
-                                    : 'bg-green-50 border-green-200 text-green-700'
-                                }`}
-                              >
+                              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border bg-red-50 border-red-200 text-red-600">
                                 {member.role}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">
                               <button
-                                onClick={() => handleToggleRole(member.id, member.role)}
-                                disabled={member.id === user?.id}
+                                onClick={() => handleRemoveAdmin(member.email, member.id)}
+                                disabled={member.id === user?.id || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)}
                                 className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
-                                  member.id === user?.id
+                                  member.id === user?.id || ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(member.email)
                                     ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
-                                    : member.role === 'admin'
-                                    ? 'bg-red-50 text-red-600 hover:bg-red-100/60'
-                                    : 'bg-primary/5 text-primary hover:bg-primary/10'
+                                    : 'bg-red-50 text-red-600 hover:bg-red-100/60'
                                 }`}
                               >
-                                {member.role === 'admin' ? '取消管理員' : '設為管理員'}
+                                取消管理員
                               </button>
                             </td>
                           </tr>
@@ -1295,13 +1417,59 @@ export const AdminDashboardScreen: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Whitelisted but not yet registered admins */}
+            {!loadingMembers && whitelist.filter(w => !admins.some(a => a.email && a.email.toLowerCase() === w.email.toLowerCase())).length > 0 && (
+              <div className="rounded-[2rem] bg-surface-container-low p-8 border border-outline-variant/50 shadow-sm space-y-6">
+                <h3 className="font-headline text-xl font-black text-primary">待註冊管理員授權名單</h3>
+                <div className="overflow-x-auto rounded-2xl border border-outline-variant/40 bg-white">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container-low border-b border-outline-variant/30 text-xs font-extrabold uppercase tracking-wider text-secondary">
+                        <th className="px-6 py-4">電子郵件</th>
+                        <th className="px-6 py-4">授權時間</th>
+                        <th className="px-6 py-4 text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/20 text-sm">
+                      {whitelist
+                        .filter(w => !admins.some(a => a.email && a.email.toLowerCase() === w.email.toLowerCase()))
+                        .map((item) => (
+                          <tr key={item.email} className="hover:bg-surface-container-lowest transition-colors">
+                            <td className="px-6 py-4 font-bold text-primary">
+                              {item.email}
+                            </td>
+                            <td className="px-6 py-4 text-on-surface-variant">
+                              {item.created_at ? new Date(item.created_at).toLocaleString('zh-TW') : '未知'}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => handleRemoveAdmin(item.email)}
+                                disabled={['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold tracking-wider transition cursor-pointer ${
+                                  ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(item.email)
+                                    ? 'bg-outline-variant/10 text-outline-variant cursor-not-allowed'
+                                    : 'bg-red-50 text-red-600 hover:bg-red-100/60'
+                                }`}
+                              >
+                                取消授權
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         </div> {/* Left panel: Form Editor */}
 
         {/* Right panel: Real-time Live Preview */}
-          {showPreview && (
+          {isPreviewActive && (
             <div className="w-[50%] h-full bg-surface-container-low/65 border-l border-outline-variant/40 flex flex-col overflow-hidden">
               {/* Toolbar */}
               <div className="bg-surface-container/70 px-6 py-3 border-b border-outline-variant/30 flex justify-between items-center shrink-0">
@@ -1366,7 +1534,6 @@ export const AdminDashboardScreen: React.FC = () => {
                         {activeTab === 'journey-steps' && <JourneyPreview />}
                         {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
-                        {activeTab === 'members' && <HomePreview />}
                       </div>
                     </div>
                   ) : (
@@ -1377,7 +1544,6 @@ export const AdminDashboardScreen: React.FC = () => {
                       {activeTab === 'journey-steps' && <JourneyPreview />}
                       {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
-                      {activeTab === 'members' && <HomePreview />}
                     </div>
                   )}
                 </div>
