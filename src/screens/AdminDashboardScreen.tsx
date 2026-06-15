@@ -4,11 +4,11 @@ import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
-import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
+import { HomePreview, JourneyPreview, LessonPreview, QuietTimeLibraryPreview } from '../components/AdminPreview';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
-type TabType = 'general' | 'home-cards' | 'journey-steps' | 'lessons' | 'media' | 'members';
+type TabType = 'general' | 'home-cards' | 'journey-steps' | 'quiet-time-study' | 'lessons' | 'media' | 'members' | 'wishlist';
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +20,8 @@ export const AdminDashboardScreen: React.FC = () => {
     updateHomeCards,
     updateDiscipleshipSteps,
     updateLessonRoutes,
+    quietTimeEntries,
+    updateQuietTimeEntries,
     updateCustomText,
     addCardToLesson,
     updateCardInLesson,
@@ -55,16 +57,127 @@ export const AdminDashboardScreen: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>(lessonRoutes[0]?.id || '');
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [adminSidebarOpen, setAdminSidebarOpen] = useState(true);
-  
+  const [lessonsSidebarOpen, setLessonsSidebarOpen] = useState(true);
+
+  // Quiet Time Entries Editor State
+  const [showQtForm, setShowQtForm] = useState(false);
+  const [expandedQtId, setExpandedQtId] = useState<string | null>(null);
+  interface QtFormData {
+    id: string;
+    title: string;
+    book: string;
+    passage: string;
+    scriptureText: string;
+    content: string[]; // stored as array, edited as multiline textarea
+    reflection: string[];
+    prayer: string;
+    topics: string[];
+    dateAdded: string;
+  }
+  const emptyQtForm: QtFormData = {
+    id: '',
+    title: '',
+    book: '',
+    passage: '',
+    scriptureText: '',
+    content: [''],
+    reflection: [''],
+    prayer: '',
+    topics: [],
+    dateAdded: new Date().toISOString().slice(0, 10),
+  };
+  const [qtFormData, setQtFormData] = useState<QtFormData>(emptyQtForm);
+
   // Real-time Preview State
   const [showPreview, setShowPreview] = useState(true);
-  const isPreviewActive = showPreview && activeTab !== 'members';
-  const [previewViewport, setPreviewViewport] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
+  const isPreviewActive = showPreview && activeTab !== 'members' && activeTab !== 'wishlist';
+  const [previewViewport, setPreviewViewport] = useState<'mobile' | 'desktop'>('mobile');
 
   // Import JSON Modal/State
   const [showImportArea, setShowImportArea] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Wishlist Feature Submission State
+  interface Wish {
+    id: string;
+    title: string;
+    description: string;
+    completed: boolean;
+    createdAt: string;
+  }
+
+  const [wishes, setWishes] = useState<Wish[]>(() => {
+    const saved = localStorage.getItem('ifu:admin_wishes');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing admin wishes:', e);
+      }
+    }
+    return [];
+  });
+  const [wishTitle, setWishTitle] = useState('');
+  const [wishDesc, setWishDesc] = useState('');
+  const [submittingWish, setSubmittingWish] = useState(false);
+  const [wishStatus, setWishStatus] = useState<{ type: 'success' | 'warning' | 'error'; message: string } | null>(null);
+  const [showWishForm, setShowWishForm] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('ifu:admin_wishes', JSON.stringify(wishes));
+  }, [wishes]);
+
+  const handleSubmitWish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wishTitle.trim() || !wishDesc.trim()) return;
+
+    const newWish: Wish = {
+      id: Math.random().toString(36).substring(2, 9),
+      title: wishTitle.trim(),
+      description: wishDesc.trim(),
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Save locally first
+    setWishes(prev => [newWish, ...prev]);
+    setWishTitle('');
+    setWishDesc('');
+    setShowWishForm(false);
+
+    try {
+      setSubmittingWish(true);
+      setWishStatus(null);
+      
+      const { data, error } = await supabase.functions.invoke('submit-wishlist', {
+        body: { title: newWish.title, description: newWish.description }
+      });
+
+      if (error) throw error;
+      if (data && data.error) throw new Error(data.error);
+
+      setWishStatus({ type: 'success', message: '提交成功！新功能需求已發佈至 GitHub 專案。' });
+    } catch (err: any) {
+      console.error('Error submitting feature wish to GitHub:', err);
+      setWishStatus({ 
+        type: 'warning', 
+        message: '已儲存於本地！但無法同步至 GitHub Issues：' + (err.message || '請確認已在 Supabase 後台設定 GITHUB_TOKEN Secret。') 
+      });
+    } finally {
+      setSubmittingWish(false);
+    }
+  };
+
+  const handleToggleWish = (id: string) => {
+    setWishes(prev => prev.map(w => w.id === id ? { ...w, completed: !w.completed } : w));
+  };
+
+  const handleRemoveWish = (id: string) => {
+    if (window.confirm('確定要刪除此功能提案嗎？')) {
+      setWishes(prev => prev.filter(w => w.id !== id));
+    }
+  };
 
   // Mock Upload State
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +258,7 @@ export const AdminDashboardScreen: React.FC = () => {
       fetchAdminsAndWhitelist();
     }
   }, [activeTab]);
+
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -414,29 +528,70 @@ export const AdminDashboardScreen: React.FC = () => {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1.5 p-3 overflow-hidden">
-          {([
-            { tab: 'general',        icon: 'settings',      label: '一般設定 & 標題' },
-            { tab: 'home-cards',     icon: 'home',          label: '首頁入口卡片' },
-            { tab: 'journey-steps',  icon: 'route',         label: '培育生命路徑' },
-            { tab: 'lessons',        icon: 'auto_stories',  label: '課程頁面 & 卡片' },
-            { tab: 'media',          icon: 'photo_library', label: '相片與媒體庫' },
-            { tab: 'members',        icon: 'group',         label: '成員與權限管理' },
-          ] as const).map(({ tab, icon, label }) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              title={!adminSidebarOpen ? label : undefined}
-              className={`flex w-full items-center gap-3.5 rounded-[1.2rem] px-3 py-3 text-sm font-bold transition-all ${
-                activeTab === tab
-                  ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
-                  : 'text-on-surface-variant hover:bg-surface-container-low'
-              }`}
-            >
-              <Icon name={icon} className="text-xl shrink-0" />
-              {adminSidebarOpen && <span className="truncate">{label}</span>}
-            </button>
-          ))}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3">
+          {/* Group 1: Web Page Content */}
+          {adminSidebarOpen && (
+            <p className="mb-1.5 mt-1 px-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-secondary/55">
+              網頁內容管理
+            </p>
+          )}
+          <div className="space-y-1.5">
+            {([
+              { tab: 'general',          icon: 'settings',     label: '一般設定 & 標題' },
+              { tab: 'home-cards',       icon: 'home',         label: '首頁入口卡片' },
+              { tab: 'journey-steps',    icon: 'route',        label: '培育生命路徑' },
+              { tab: 'quiet-time-study', icon: 'wb_sunny',     label: '每日靈修研讀' },
+              { tab: 'lessons',          icon: 'auto_stories', label: '課程頁面 & 卡片' },
+            ] as const).map(({ tab, icon, label }) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                title={!adminSidebarOpen ? label : undefined}
+                className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
+                  adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
+                } ${
+                  activeTab === tab
+                    ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
+                    : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                <Icon name={icon} className="text-xl shrink-0" />
+                {adminSidebarOpen && <span className="truncate">{label}</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="mx-1 my-3 h-px bg-outline-variant/30" />
+
+          {/* Group 2: Platform Management */}
+          {adminSidebarOpen && (
+            <p className="mb-1.5 px-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-secondary/55">
+              平台管理
+            </p>
+          )}
+          <div className="space-y-1.5">
+            {([
+              { tab: 'media',    icon: 'photo_library', label: '相片與媒體庫' },
+              { tab: 'members',  icon: 'group',         label: '成員與權限管理' },
+              { tab: 'wishlist', icon: 'lightbulb',     label: '功能許願池' },
+            ] as const).map(({ tab, icon, label }) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                title={!adminSidebarOpen ? label : undefined}
+                className={`flex w-full items-center rounded-[1.2rem] py-3 text-sm font-bold transition-all ${
+                  adminSidebarOpen ? 'px-3 gap-3.5 justify-start' : 'px-0 justify-center'
+                } ${
+                  activeTab === tab
+                    ? 'bg-primary text-white shadow-[0_8px_20px_rgba(40,53,28,0.15)]'
+                    : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                <Icon name={icon} className="text-xl shrink-0" />
+                {adminSidebarOpen && <span className="truncate">{label}</span>}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Action buttons at footer of sidebar */}
@@ -506,23 +661,27 @@ export const AdminDashboardScreen: React.FC = () => {
               {activeTab === 'general' && '一般設定 & 標題'}
               {activeTab === 'home-cards' && '首頁入口卡片管理'}
               {activeTab === 'journey-steps' && '培育生命路徑管理 (12個靈修培育步驟)'}
+              {activeTab === 'quiet-time-study' && '每日靈修研讀設定'}
               {activeTab === 'lessons' && '課程頁面 & 內容卡片'}
               {activeTab === 'media' && '相片與媒體庫'}
               {activeTab === 'members' && '成員與權限管理'}
+              {activeTab === 'wishlist' && '功能許願池 & 反饋'}
             </h2>
             <p className="mt-1 text-xs text-on-surface-variant">
               {activeTab === 'general' && '修改網站全域的標題、副標題和腳本引導文字。'}
               {activeTab === 'home-cards' && '管理首頁顯示的三大主要培育路徑入口卡片。'}
               {activeTab === 'journey-steps' && '調整12個靈修課程的順序、圖示、名稱與解鎖狀態。'}
+              {activeTab === 'quiet-time-study' && '管理每日靈修卡片的新增、編輯與刪除。所有變更即時同步至自修學習頁面。'}
               {activeTab === 'lessons' && '編輯特定課程的內文、卡片視覺顏色樣式、大小尺寸以及添加/刪除卡片。'}
               {activeTab === 'media' && '在此上傳相片，系統會自動生成臨時 Base64 以供網站即時展示。'}
               {activeTab === 'members' && '查看註冊會員、調整權限等級、變更管理員身份。'}
+              {activeTab === 'wishlist' && '提交您想要的新功能需求或反饋，系統將通過 Supabase Edge Function 同步至 GitHub Issues。'}
             </p>
           </div>
           
           <div className="flex items-center gap-3">
             {/* Real-time Preview Toggle */}
-            {activeTab !== 'members' && (
+            {activeTab !== 'members' && activeTab !== 'wishlist' && (
               <button
                 onClick={() => setShowPreview(!showPreview)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
@@ -611,26 +770,110 @@ export const AdminDashboardScreen: React.FC = () => {
         )}
 
         {activeTab === 'home-cards' && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="flex flex-col gap-6 max-w-2xl">
+            <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-[1.8rem] border border-outline-variant/40 shadow-sm">
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">入口卡片列表</span>
+              <button
+                onClick={() => {
+                  const newId = `home-card-${Date.now()}`;
+                  const newCard = {
+                    id: newId,
+                    title: '新入口卡片',
+                    description: '請輸入卡片描述...',
+                    icon: 'explore',
+                    route: '/journey',
+                    accent: 'surface' as const,
+                  };
+                  updateHomeCards([...homeCards, newCard]);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+              >
+                <Icon name="add" className="text-xs" />
+                添加入口卡片
+              </button>
+            </div>
+
             {homeCards.map((card, idx) => (
               <div key={card.id} className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
                 <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-                  <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
-                  <span className="text-xs text-on-surface-variant font-mono">{card.id}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
+                    <span className="text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const nextCards = [...homeCards];
+                        const temp = nextCards[idx];
+                        if (temp) {
+                          nextCards[idx] = nextCards[idx - 1]!;
+                          nextCards[idx - 1] = temp;
+                          updateHomeCards(nextCards);
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                      title="移上"
+                    >
+                      <Icon name="arrow_upward" className="text-xs" />
+                    </button>
+                    <button
+                      disabled={idx === homeCards.length - 1}
+                      onClick={() => {
+                        const nextCards = [...homeCards];
+                        const temp = nextCards[idx];
+                        if (temp) {
+                          nextCards[idx] = nextCards[idx + 1]!;
+                          nextCards[idx + 1] = temp;
+                          updateHomeCards(nextCards);
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                      title="移下"
+                    >
+                      <Icon name="arrow_downward" className="text-xs" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('確定要刪除這張入口卡片嗎？')) {
+                          updateHomeCards(homeCards.filter(c => c.id !== card.id));
+                        }
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer transition"
+                      title="刪除"
+                    >
+                      <Icon name="delete" className="text-sm" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-secondary">卡片名稱</label>
-                    <input
-                      type="text"
-                      value={card.title}
-                      onChange={(e) => {
-                        const newCards = [...homeCards];
-                        newCards[idx] = { ...card, title: e.target.value };
-                        updateHomeCards(newCards);
-                      }}
-                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">卡片名稱</label>
+                      <input
+                        type="text"
+                        value={card.title}
+                        onChange={(e) => {
+                          const newCards = [...homeCards];
+                          newCards[idx] = { ...card, title: e.target.value };
+                          updateHomeCards(newCards);
+                        }}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">路徑連結 (Route)</label>
+                      <input
+                        type="text"
+                        value={card.route}
+                        onChange={(e) => {
+                          const newCards = [...homeCards];
+                          newCards[idx] = { ...card, route: e.target.value };
+                          updateHomeCards(newCards);
+                        }}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-secondary">描述文字</label>
@@ -815,29 +1058,479 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'lessons' && (
-          <div className="flex gap-8 items-start">
-            {/* Left selector sidebar */}
-            <div className="w-64 shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3">
-              <h4 className="px-2 text-xs font-bold text-secondary uppercase tracking-widest">選擇靈修章節</h4>
-              <div className="space-y-1">
-                {lessonRoutes.map((route) => (
+        {activeTab === 'quiet-time-study' && (
+          <div className="flex flex-col gap-6 max-w-2xl">
+            {/* Header bar */}
+            <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-[1.8rem] border border-outline-variant/40 shadow-sm">
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">
+                每日靈修卡片 ({quietTimeEntries.length} 篇)
+              </span>
+              <button
+                onClick={() => {
+                  setQtFormData({ ...emptyQtForm, id: `qt-${Date.now()}` });
+                  setShowQtForm(true);
+                  setExpandedQtId(null);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+              >
+                <Icon name="add" className="text-xs" />
+                新增靈修卡片
+              </button>
+            </div>
+
+            {/* Add New Card Form */}
+            {showQtForm && (
+              <div className="rounded-[1.8rem] bg-white p-6 border-2 border-primary/20 shadow-md space-y-4">
+                <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+                  <h3 className="font-headline text-base font-black text-primary flex items-center gap-2">
+                    <Icon name="add_circle" className="text-secondary text-base" />
+                    新增每日靈修卡片
+                  </h3>
                   <button
-                    key={route.id}
-                    onClick={() => {
-                      setSelectedLessonId(route.id);
-                      setEditingModuleId(null);
-                    }}
-                    className={`w-full flex items-center justify-between rounded-[0.8rem] px-3 py-2.5 text-left text-xs font-bold transition ${
-                      selectedLessonId === route.id
-                        ? 'bg-secondary text-white shadow-sm'
-                        : 'text-on-surface-variant hover:bg-surface-container'
+                    onClick={() => setShowQtForm(false)}
+                    className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant transition cursor-pointer"
+                  >
+                    <Icon name="close" className="text-sm" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">靈修標題</label>
+                    <input
+                      type="text"
+                      value={qtFormData.title}
+                      onChange={(e) => setQtFormData({ ...qtFormData, title: e.target.value })}
+                      placeholder="例如：活在基督裡"
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">聖經書卷 (Book)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.book}
+                        onChange={(e) => setQtFormData({ ...qtFormData, book: e.target.value })}
+                        placeholder="例如：約翰福音"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">章節 (Passage)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.passage}
+                        onChange={(e) => setQtFormData({ ...qtFormData, passage: e.target.value })}
+                        placeholder="例如：15:4-5"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      中文經文引文
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#ffdfa0]/40 px-1.5 py-0.5 rounded">【經文】</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.scriptureText}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, scriptureText: e.target.value })}
+                      placeholder="請輸入中文聖經引文..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      靈修分享
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【靈修分享】</span>
+                      <span className="text-on-surface-variant font-normal ml-1">(每段落佔一行)</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.content.join('\n')}
+                      rows={5}
+                      onChange={(e) => setQtFormData({ ...qtFormData, content: e.target.value.split('\n') })}
+                      placeholder="請輸入靈修分享內容，每個段落佔一行..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      默想應用問題
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【默想應用】</span>
+                      <span className="text-on-surface-variant font-normal ml-1">(每題佔一行)</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.reflection.join('\n')}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, reflection: e.target.value.split('\n') })}
+                      placeholder="請輸入反思問題，每題佔一行..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary">
+                      祈禱回應
+                      <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#d8e8c4]/50 px-1.5 py-0.5 rounded">【祈禱回應】</span>
+                    </label>
+                    <textarea
+                      value={qtFormData.prayer}
+                      rows={3}
+                      onChange={(e) => setQtFormData({ ...qtFormData, prayer: e.target.value })}
+                      placeholder="請輸入禱告文..."
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white font-sans leading-relaxed resize-y"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">主題標籤 (以逗號分隔)</label>
+                      <input
+                        type="text"
+                        value={qtFormData.topics.join(', ')}
+                        onChange={(e) => setQtFormData({ ...qtFormData, topics: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                        placeholder="例如：信心, 禱告, 感恩"
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-secondary">發佈日期</label>
+                      <input
+                        type="date"
+                        value={qtFormData.dateAdded}
+                        onChange={(e) => setQtFormData({ ...qtFormData, dateAdded: e.target.value })}
+                        className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-surface-container-low p-2.5 text-sm outline-none focus:border-primary focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2 border-t border-outline-variant/20">
+                    <button
+                      onClick={() => setShowQtForm(false)}
+                      className="rounded-full border border-outline-variant px-5 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-container transition cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!qtFormData.title.trim()) return;
+                        const newEntry = {
+                          id: qtFormData.id,
+                          title: qtFormData.title.trim(),
+                          book: qtFormData.book.trim(),
+                          passage: qtFormData.passage.trim(),
+                          scriptureText: qtFormData.scriptureText.trim(),
+                          content: qtFormData.content.filter(p => p.trim()),
+                          reflection: qtFormData.reflection.filter(r => r.trim()),
+                          prayer: qtFormData.prayer.trim(),
+                          topics: qtFormData.topics,
+                          dateAdded: qtFormData.dateAdded,
+                        };
+                        updateQuietTimeEntries([newEntry, ...quietTimeEntries]);
+                        setShowQtForm(false);
+                      }}
+                      className="rounded-full bg-primary px-6 py-2 text-xs font-bold text-white hover:brightness-105 transition cursor-pointer shadow-sm"
+                    >
+                      儲存並新增
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {quietTimeEntries.length === 0 && !showQtForm && (
+              <div className="rounded-[1.8rem] border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
+                <Icon name="wb_sunny" className="text-[48px] text-outline/30 mx-auto block" />
+                <p className="mt-4 font-headline text-base font-bold text-primary">尚無每日靈修卡片</p>
+                <p className="mt-2 text-xs text-on-surface-variant">點擊右上角「新增靈修卡片」開始新增。</p>
+              </div>
+            )}
+
+            {/* Entries List */}
+            <div className="space-y-3">
+              {quietTimeEntries.map((entry, idx) => {
+                const isExpanded = expandedQtId === entry.id;
+                return (
+                  <div
+                    key={entry.id}
+                    className={`rounded-[1.8rem] border transition shadow-sm ${
+                      isExpanded
+                        ? 'border-primary ring-2 ring-primary/5 bg-surface-container-low'
+                        : 'border-outline-variant/40 bg-surface-container-low/75'
                     }`}
                   >
-                    <span className="truncate">{route.title}</span>
-                    <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{route.id.replace('lesson-','')}</span>
-                  </button>
-                ))}
+                    {/* Entry header row */}
+                    <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-secondary border border-outline-variant/50 shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <span className="inline-block text-[10px] font-extrabold tracking-widest text-secondary bg-[#ffdfa0]/50 px-2 py-0.5 rounded-full">
+                            {entry.book} {entry.passage}
+                          </span>
+                          <p className="font-headline font-black text-sm text-primary mt-1 truncate">
+                            {entry.title || '(無標題)'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setExpandedQtId(isExpanded ? null : entry.id)}
+                          className="flex h-8 items-center gap-1 px-3 rounded-full border border-outline-variant bg-white text-xs font-bold text-on-surface hover:bg-surface-container cursor-pointer transition"
+                        >
+                          <Icon name={isExpanded ? 'done' : 'edit'} className="text-sm text-primary" />
+                          {isExpanded ? '完成' : '編輯'}
+                        </button>
+                        <button
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const next = [...quietTimeEntries];
+                            [next[idx], next[idx - 1]] = [next[idx - 1]!, next[idx]!];
+                            updateQuietTimeEntries(next);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                          title="移上"
+                        >
+                          <Icon name="arrow_upward" className="text-xs" />
+                        </button>
+                        <button
+                          disabled={idx === quietTimeEntries.length - 1}
+                          onClick={() => {
+                            const next = [...quietTimeEntries];
+                            [next[idx], next[idx + 1]] = [next[idx + 1]!, next[idx]!];
+                            updateQuietTimeEntries(next);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container disabled:opacity-40 cursor-pointer transition"
+                          title="移下"
+                        >
+                          <Icon name="arrow_downward" className="text-xs" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('確定要刪除這篇靈修卡片嗎？此操作將同步從自修學習頁面移除。')) {
+                              updateQuietTimeEntries(quietTimeEntries.filter(e => e.id !== entry.id));
+                              if (expandedQtId === entry.id) setExpandedQtId(null);
+                            }
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50 cursor-pointer transition"
+                          title="刪除"
+                        >
+                          <Icon name="delete" className="text-sm" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Inline Edit Form */}
+                    {isExpanded && (
+                      <div className="px-6 pb-6 pt-2 space-y-4 bg-white/60 rounded-b-[1.8rem] border-t border-outline-variant/20">
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">靈修標題</label>
+                          <input
+                            type="text"
+                            value={entry.title}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, title: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">聖經書卷 (Book)</label>
+                            <input
+                              type="text"
+                              value={entry.book}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, book: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">章節 (Passage)</label>
+                            <input
+                              type="text"
+                              value={entry.passage}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, passage: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            中文經文引文
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#ffdfa0]/40 px-1.5 py-0.5 rounded">【經文】</span>
+                          </label>
+                          <textarea
+                            value={entry.scriptureText}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, scriptureText: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            靈修分享
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【靈修分享】</span>
+                            <span className="text-on-surface-variant font-normal ml-1">(每段落佔一行)</span>
+                          </label>
+                          <textarea
+                            value={entry.content.join('\n')}
+                            rows={5}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, content: e.target.value.split('\n') };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            默想應用問題
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-surface-container px-1.5 py-0.5 rounded">【默想應用】</span>
+                            <span className="text-on-surface-variant font-normal ml-1">(每題佔一行)</span>
+                          </label>
+                          <textarea
+                            value={entry.reflection.join('\n')}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, reflection: e.target.value.split('\n') };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-secondary">
+                            祈禱回應
+                            <span className="ml-1.5 text-[10px] font-normal text-outline bg-[#d8e8c4]/50 px-1.5 py-0.5 rounded">【祈禱回應】</span>
+                          </label>
+                          <textarea
+                            value={entry.prayer}
+                            rows={3}
+                            onChange={(e) => {
+                              const next = [...quietTimeEntries];
+                              next[idx] = { ...entry, prayer: e.target.value };
+                              updateQuietTimeEntries(next);
+                            }}
+                            className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary font-sans leading-relaxed resize-y"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">主題標籤 (以逗號分隔)</label>
+                            <input
+                              type="text"
+                              value={entry.topics.join(', ')}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, topics: e.target.value.split(',').map(t => t.trim()).filter(Boolean) };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-secondary">發佈日期</label>
+                            <input
+                              type="date"
+                              value={entry.dateAdded}
+                              onChange={(e) => {
+                                const next = [...quietTimeEntries];
+                                next[idx] = { ...entry, dateAdded: e.target.value };
+                                updateQuietTimeEntries(next);
+                              }}
+                              className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-sm outline-none focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'lessons' && (
+          <div className="flex gap-8 items-start w-full">
+            {/* Left selector sidebar */}
+            <div className={`shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3 transition-all duration-300 ${lessonsSidebarOpen ? 'w-64' : 'w-16'}`}>
+              <div className="flex items-center justify-between px-2">
+                {lessonsSidebarOpen && (
+                  <h4 className="text-xs font-bold text-secondary uppercase tracking-widest truncate">選擇靈修章節</h4>
+                )}
+                <button
+                  onClick={() => setLessonsSidebarOpen(!lessonsSidebarOpen)}
+                  title={lessonsSidebarOpen ? '收起靈修章節' : '展開靈修章節'}
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition cursor-pointer ${!lessonsSidebarOpen ? 'mx-auto' : ''}`}
+                >
+                  <Icon name={lessonsSidebarOpen ? 'chevron_left' : 'chevron_right'} className="text-sm text-secondary" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {lessonRoutes.map((route) => {
+                  const isSelected = selectedLessonId === route.id;
+                  const shortId = route.id.replace('lesson-', '');
+                  const shortLabel = route.title.substring(0, 2);
+                  return (
+                    <button
+                      key={route.id}
+                      onClick={() => {
+                        setSelectedLessonId(route.id);
+                        setEditingModuleId(null);
+                      }}
+                      title={!lessonsSidebarOpen ? route.title : undefined}
+                      className={`w-full flex items-center rounded-[0.8rem] transition ${
+                        lessonsSidebarOpen 
+                          ? 'justify-between px-3 py-2.5 text-left text-xs' 
+                          : 'justify-center py-2.5 text-[10px]'
+                      } font-bold ${
+                        isSelected
+                          ? 'bg-secondary text-white shadow-sm'
+                          : 'text-on-surface-variant hover:bg-surface-container'
+                      }`}
+                    >
+                      {lessonsSidebarOpen ? (
+                        <>
+                          <span className="truncate">{route.title}</span>
+                          <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{shortId}</span>
+                        </>
+                      ) : (
+                        <span className="truncate">{shortLabel}</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1551,6 +2244,223 @@ ON CONFLICT (email) DO NOTHING;`}
           </div>
         )}
 
+        {activeTab === 'wishlist' && (
+          <div className="space-y-6 max-w-4xl">
+            {/* Header row with + New Issue button */}
+            <div className="flex justify-between items-center pb-2">
+              <div>
+                <h2 className="font-headline text-2xl font-black text-primary flex items-center gap-2">
+                  <Icon name="lightbulb" className="text-secondary text-2xl" />
+                  功能許願池
+                </h2>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  管理員人員可以在此提交對系統的期待或新功能的想法。
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowWishForm(true);
+                  setWishStatus(null);
+                }}
+                className="rounded-full bg-primary px-5 py-3 text-xs font-extrabold tracking-wider text-white shadow-md hover:brightness-105 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Icon name="add" className="text-sm font-black" />
+                新增許願 (New Issue)
+              </button>
+            </div>
+
+            {wishStatus && (
+              <div className={`p-4 rounded-[1.2rem] text-xs font-bold border animate-fade-in flex items-start gap-2.5 ${
+                wishStatus.type === 'success' 
+                  ? 'bg-green-50 text-green-700 border-green-200' 
+                  : wishStatus.type === 'warning'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
+              }`}>
+                <Icon name={wishStatus.type === 'success' ? 'check_circle' : 'warning'} className="text-base shrink-0 mt-0.5" />
+                <div>{wishStatus.message}</div>
+              </div>
+            )}
+
+            {/* Submission Form Card (rendered conditionally) */}
+            {showWishForm && (
+              <div className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-md border border-outline-variant/40 space-y-4 animate-slide-down">
+                <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
+                  <h3 className="font-headline text-base font-black text-primary flex items-center gap-2">
+                    <Icon name="edit" className="text-secondary" />
+                    描述您的需求
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowWishForm(false)}
+                    className="text-on-surface-variant hover:text-primary transition p-1"
+                  >
+                    <Icon name="close" className="text-lg" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmitWish} className="space-y-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求標題 (Title)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="請輸入一個簡短的標題 (例如: 增加新課程進度重置功能)"
+                      value={wishTitle}
+                      onChange={(e) => setWishTitle(e.target.value)}
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-wider">需求詳細描述 (Description)</label>
+                    <textarea
+                      required
+                      rows={5}
+                      placeholder="請詳細說明此功能需求的背景、功能規格，或您想解決的問題..."
+                      value={wishDesc}
+                      onChange={(e) => setWishDesc(e.target.value)}
+                      className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 font-sans leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowWishForm(false)}
+                      className="rounded-full border border-outline-variant px-5 py-2.5 text-xs font-bold text-on-surface-variant hover:bg-outline-variant/10 active:scale-95 transition cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingWish}
+                      className="rounded-full bg-primary px-6 py-2.5 text-xs font-extrabold tracking-widest text-white shadow-md hover:brightness-105 active:scale-98 transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {submittingWish ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          正在同步...
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="send" className="text-xs" />
+                          提交需求
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Wishes list container */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold tracking-wider uppercase text-secondary flex items-center gap-1.5">
+                <Icon name="list" className="text-sm" />
+                提案列表 ({wishes.length})
+              </h3>
+
+              {wishes.length === 0 ? (
+                <div className="rounded-[1.8rem] bg-surface-container-low/55 p-12 text-center border border-dashed border-outline-variant/60">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10 text-secondary mb-4">
+                    <Icon name="lightbulb_outline" className="text-3xl" />
+                  </div>
+                  <h4 className="font-headline font-bold text-primary text-base">尚無功能需求</h4>
+                  <p className="text-xs text-on-surface-variant mt-2 max-w-sm mx-auto leading-relaxed">
+                    目前沒有任何已提交的功能提案。點擊右上角的「新增許願」來開始發起第一個提案吧！
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {wishes.map((wish) => (
+                    <div
+                      key={wish.id}
+                      className={`rounded-[1.8rem] p-6 border transition-all duration-300 bg-surface-container-low shadow-sm flex items-start gap-4 ${
+                        wish.completed
+                          ? 'border-outline-variant/30 opacity-70 bg-surface-container-lowest/50'
+                          : 'border-outline-variant/50 hover:shadow-md hover:border-primary/20'
+                      }`}
+                    >
+                      {/* Checkbox button */}
+                      <button
+                        onClick={() => handleToggleWish(wish.id)}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition cursor-pointer mt-0.5 ${
+                          wish.completed
+                            ? 'bg-green-600 border-green-600 text-white'
+                            : 'border-outline-variant hover:border-primary text-transparent hover:text-primary/40'
+                        }`}
+                        title={wish.completed ? '標記為未完成' : '標記為已完成'}
+                      >
+                        <Icon name="check" className="text-sm font-black" />
+                      </button>
+
+                      {/* Content */}
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <h4
+                            className={`font-headline text-base font-black tracking-tight text-primary transition-all duration-300 break-words ${
+                              wish.completed ? 'line-through text-on-surface-variant/75 font-normal' : ''
+                            }`}
+                          >
+                            {wish.title}
+                          </h4>
+                          
+                          {/* Status Badge */}
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border shrink-0 ${
+                              wish.completed
+                                ? 'bg-green-50 border-green-200 text-green-700'
+                                : 'bg-amber-50 border-amber-200 text-amber-700'
+                            }`}
+                          >
+                            {wish.completed ? '已完成' : '處理中'}
+                          </span>
+                        </div>
+
+                        <p
+                          className={`text-xs text-on-surface-variant leading-relaxed whitespace-pre-wrap break-words transition-all duration-300 ${
+                            wish.completed ? 'line-through text-on-surface-variant/45' : ''
+                          }`}
+                        >
+                          {wish.description}
+                        </p>
+
+                        <div className="flex items-center gap-3 pt-2 text-[10px] font-bold text-outline uppercase tracking-wider">
+                          <span className="flex items-center gap-1">
+                            <Icon name="schedule" className="text-xs" />
+                            {new Date(wish.createdAt).toLocaleString('zh-TW', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Icon name="person" className="text-xs" />
+                            管理員
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Delete Action */}
+                      <button
+                        onClick={() => handleRemoveWish(wish.id)}
+                        className="text-on-surface-variant/40 hover:text-red-600 transition p-1.5 rounded-lg hover:bg-red-50 shrink-0 self-start cursor-pointer"
+                        title="刪除提案"
+                      >
+                        <Icon name="delete" className="text-lg" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         </div> {/* Left panel: Form Editor */}
 
         {/* Right panel: Real-time Live Preview */}
@@ -1574,15 +2484,6 @@ ON CONFLICT (email) DO NOTHING;`}
                     手機
                   </button>
                   <button
-                    onClick={() => setPreviewViewport('tablet')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
-                      previewViewport === 'tablet' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
-                    }`}
-                  >
-                    <Icon name="tablet" className="text-xs" />
-                    平板
-                  </button>
-                  <button
                     onClick={() => setPreviewViewport('desktop')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition-all cursor-pointer ${
                       previewViewport === 'desktop' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
@@ -1598,7 +2499,6 @@ ON CONFLICT (email) DO NOTHING;`}
               <div className="flex-1 overflow-y-auto p-6 flex justify-center items-start">
                 <div className={
                   previewViewport === 'mobile' ? 'w-[375px] h-[720px] rounded-[2.5rem] border-[10px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
-                  previewViewport === 'tablet' ? 'w-[768px] h-[960px] rounded-[2.5rem] border-[12px] border-slate-900 shadow-[0_24px_50px_rgba(0,0,0,0.15)] bg-surface overflow-hidden relative flex flex-col shrink-0' :
                   'w-full min-h-full bg-surface relative shadow-sm border border-outline-variant/20'
                 }>
                   {previewViewport !== 'desktop' ? (
@@ -1617,6 +2517,7 @@ ON CONFLICT (email) DO NOTHING;`}
                         {activeTab === 'general' && <HomePreview />}
                         {activeTab === 'home-cards' && <HomePreview />}
                         {activeTab === 'journey-steps' && <JourneyPreview />}
+                        {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
                         {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
                       </div>
@@ -1627,6 +2528,7 @@ ON CONFLICT (email) DO NOTHING;`}
                       {activeTab === 'general' && <HomePreview />}
                       {activeTab === 'home-cards' && <HomePreview />}
                       {activeTab === 'journey-steps' && <JourneyPreview />}
+                      {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
                       {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
                     </div>

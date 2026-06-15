@@ -8,6 +8,8 @@ import {
   quietTimeStudyItems as defaultQuietTimeStudyItems,
   lessonRoutes as rawDefaultLessonRoutes,
 } from '../data/appContent';
+import { quietTimeEntries as defaultQuietTimeEntries } from '../data/quietTimeData';
+import type { QuietTimeEntry } from '../types/quietTime';
 import type {
   HomeCard,
   JourneyStep,
@@ -333,6 +335,7 @@ interface ContentState {
   faithDefinitions: typeof defaultFaithDefinitions;
   assuranceGospelSections: GospelSection[];
   quietTimeStudyItems: typeof defaultQuietTimeStudyItems;
+  quietTimeEntries: QuietTimeEntry[];
   lessonRoutes: LessonRoute[];
   customScreenTexts: CustomScreenTexts;
 }
@@ -343,6 +346,8 @@ interface ContentContextType extends ContentState {
   updateCreationCards: (cards: typeof defaultCreationCards) => void;
   updateGospelSections: (sections: GospelSection[]) => void;
   updateLessonRoutes: (routes: LessonRoute[]) => void;
+  updateQuietTimeStudyItems: (items: typeof defaultQuietTimeStudyItems) => void;
+  updateQuietTimeEntries: (entries: QuietTimeEntry[]) => void;
   updateCustomText: (key: string, value: string) => void;
   updateCustomTexts: (texts: CustomScreenTexts) => void;
   
@@ -374,6 +379,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           faithDefinitions: parsed.faithDefinitions || defaultFaithDefinitions,
           assuranceGospelSections: parsed.assuranceGospelSections || defaultAssuranceGospelSections,
           quietTimeStudyItems: parsed.quietTimeStudyItems || defaultQuietTimeStudyItems,
+          quietTimeEntries: parsed.quietTimeEntries || defaultQuietTimeEntries,
           lessonRoutes: (parsed.lessonRoutes && parsed.lessonRoutes.length >= defaultEnrichedLessonRoutes.length)
             ? parsed.lessonRoutes
             : defaultEnrichedLessonRoutes,
@@ -390,6 +396,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       faithDefinitions: defaultFaithDefinitions,
       assuranceGospelSections: defaultAssuranceGospelSections,
       quietTimeStudyItems: defaultQuietTimeStudyItems,
+      quietTimeEntries: defaultQuietTimeEntries,
       lessonRoutes: defaultEnrichedLessonRoutes,
       customScreenTexts: DEFAULT_CUSTOM_TEXTS,
     };
@@ -417,6 +424,14 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const updateLessonRoutes = (lessonRoutes: LessonRoute[]) => {
     setState((prev) => ({ ...prev, lessonRoutes }));
+  };
+
+  const updateQuietTimeStudyItems = (quietTimeStudyItems: typeof defaultQuietTimeStudyItems) => {
+    setState((prev) => ({ ...prev, quietTimeStudyItems }));
+  };
+
+  const updateQuietTimeEntries = (quietTimeEntries: QuietTimeEntry[]) => {
+    setState((prev) => ({ ...prev, quietTimeEntries }));
   };
 
   const updateCustomText = (key: string, value: string) => {
@@ -511,6 +526,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       faithDefinitions: defaultFaithDefinitions,
       assuranceGospelSections: defaultAssuranceGospelSections,
       quietTimeStudyItems: defaultQuietTimeStudyItems,
+      quietTimeEntries: defaultQuietTimeEntries,
       lessonRoutes: defaultEnrichedLessonRoutes,
       customScreenTexts: DEFAULT_CUSTOM_TEXTS,
     });
@@ -536,6 +552,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         faithDefinitions: parsed.faithDefinitions || defaultFaithDefinitions,
         assuranceGospelSections: parsed.assuranceGospelSections || defaultAssuranceGospelSections,
         quietTimeStudyItems: parsed.quietTimeStudyItems || defaultQuietTimeStudyItems,
+        quietTimeEntries: parsed.quietTimeEntries || defaultQuietTimeEntries,
         lessonRoutes: parsed.lessonRoutes || defaultEnrichedLessonRoutes,
         customScreenTexts: { ...DEFAULT_CUSTOM_TEXTS, ...(parsed.customScreenTexts || {}) },
       });
@@ -555,6 +572,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCreationCards,
         updateGospelSections,
         updateLessonRoutes,
+        updateQuietTimeStudyItems,
+        updateQuietTimeEntries,
         updateCustomText,
         updateCustomTexts,
         addCardToLesson,

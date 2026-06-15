@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
-import { quietTimeEntries } from '../data/quietTimeData';
 import { QuietTimeEntry } from '../types/quietTime';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useAppContent } from '../context/ContentContext';
 
 export const LibraryScreen: React.FC = () => {
+  const { quietTimeEntries } = useAppContent();
   // Navigation / View modes
   const [viewMode, setViewMode] = useState<'directory' | 'deck'>('directory');
 
