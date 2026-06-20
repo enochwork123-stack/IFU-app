@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { SavedAnswer, FillInTheBlank } from '../components/primitives';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
@@ -51,111 +52,7 @@ const spiritualGrowthScriptures = {
   },
 } satisfies Record<string, Scripture>;
 
-interface SavedAnswerProps {
-  storageKey: string;
-  placeholder?: string;
-  rows?: number;
-}
 
-const SavedAnswer: React.FC<SavedAnswerProps> = ({
-  storageKey,
-  placeholder = '在這裡輸入你的答案...',
-  rows = 4,
-}) => {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [answer]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const nextAnswer = event.target.value;
-    setAnswer(nextAnswer);
-    window.localStorage.setItem(storageName, nextAnswer);
-  };
-
-  return (
-    <label className="mt-4 block">
-      <span className="sr-only">你的答案</span>
-      <textarea
-        ref={textareaRef}
-        value={answer}
-        onChange={handleChange}
-        rows={rows}
-        className="min-h-24 w-full resize-none overflow-y-hidden rounded-2xl border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
-      />
-      <span className="mt-1 block text-right text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
-      </span>
-    </label>
-  );
-};
-
-interface FillInTheBlankProps {
-  storageKey: string;
-  prefixText: string;
-  placeholder?: string;
-}
-
-const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
-  storageKey,
-  prefixText,
-  placeholder = '填入答案...',
-}) => {
-  const [value, setValue] = useState('');
-  const storageName = `ifu:${storageKey}`;
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    setValue(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [value]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const nextValue = event.target.value;
-    setValue(nextValue);
-    window.localStorage.setItem(storageName, nextValue);
-  };
-
-  return (
-    <div className="flex flex-col gap-2 mt-3 p-3 rounded-xl bg-surface border border-outline-variant/30 w-full overflow-hidden">
-      <span className="font-body text-sm text-primary font-bold block break-words">
-        {prefixText}
-      </span>
-      <div className="flex flex-col gap-1 w-full">
-        <textarea
-          ref={textareaRef}
-          rows={2}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          className="w-full overflow-y-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest p-2 text-base text-on-surface outline-none transition focus:border-secondary focus:bg-white resize-none"
-        />
-        <span className="text-[9px] font-bold tracking-[0.1em] text-on-surface-variant/45 text-right block pr-1">
-          已自動儲存
-        </span>
-      </div>
-    </div>
-  );
-};
 
 interface ScriptureToggleProps {
   scripture: Scripture;
