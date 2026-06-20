@@ -2,30 +2,7 @@ import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
-
-function SavedAnswer({ storageKey }) {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  function handleChange(event) {
-    setAnswer(event.target.value);
-    window.localStorage.setItem(storageName, event.target.value);
-  }
-
-  return (
-    <textarea
-      value={answer}
-      onChange={handleChange}
-      rows={3}
-      className="mt-4 min-h-24 w-full resize-y rounded-[1.2rem] border border-outline-variant bg-white/70 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:ring-4 focus:ring-secondary/10"
-      placeholder="在這裡輸入你的答案..."
-    />
-  );
-}
+import { SavedAnswer } from '../components/primitives';
 
 function ArticleSection({ title, children }) {
   return (
