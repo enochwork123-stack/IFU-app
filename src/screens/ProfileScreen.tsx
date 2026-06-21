@@ -133,6 +133,9 @@ export const ProfileScreen: React.FC = () => {
               src={profile?.avatar_url || assetPath('assets/default_avatar.png')}
               alt={profile?.display_name || 'User'}
               className="h-16 w-16 rounded-full object-cover border-2 border-white/20 bg-white/10"
+              onError={(e) => {
+                e.currentTarget.src = assetPath('assets/default_avatar.png');
+              }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">

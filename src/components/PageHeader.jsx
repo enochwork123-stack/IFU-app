@@ -57,6 +57,9 @@ export function PageHeader({
                 src={profile?.avatar_url || assetPath('assets/default_avatar.png')}
                 alt="avatar"
                 className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = assetPath('assets/default_avatar.png');
+                }}
               />
             </Link>
           ) : (

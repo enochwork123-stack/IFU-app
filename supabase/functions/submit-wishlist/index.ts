@@ -43,14 +43,15 @@ serve(async (req) => {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
     const isSystemAdmin = ['enochwork123@gmail.com', 'lawfelix2002@gmail.com'].includes(user.email ?? '')
     const isAdmin = profile?.role === 'admin' || isSystemAdmin
+    const isMember = profile?.role === 'member' || (!isAdmin && !!user.id)
 
-    if (profileError || !isAdmin) {
+    if (!isAdmin && !isMember) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: Admins only', details: profileError }),
+        JSON.stringify({ error: 'Unauthorized', details: profileError }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -74,7 +75,8 @@ serve(async (req) => {
       )
     }
 
-    const issueBody = `### Submitted by Admin: ${user.email}\n\n${description}`
+    const submitterType = isAdmin ? 'Admin' : 'Member'
+    const issueBody = `### Submitted by ${submitterType}: ${user.email}\n\n${description}`
     
     const githubResponse = await fetch('https://api.github.com/repos/enochwork123-stack/IFU-app/issues', {
       method: 'POST',
