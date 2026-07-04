@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { assetPath } from '../utils/assets';
 import { useAppContent } from '../context/ContentContext';
+import { StorageToggle } from '../components/StorageToggle';
 
 interface ProgressStats {
   quietTimes: number;
@@ -199,6 +200,9 @@ export const ProfileScreen: React.FC = () => {
             </article>
           ))}
         </section>
+
+        {/* Storage Toggle Section */}
+        <StorageToggle />
 
         {/* Details & Actions List */}
         <section className="rounded-[1.8rem] bg-surface-container-lowest p-6 shadow-[0_16px_38px_rgba(40,53,28,0.06)] border border-outline-variant/30 flex flex-col gap-5">

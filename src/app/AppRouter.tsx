@@ -63,6 +63,7 @@ import { ROUTE_REGISTRY } from './routes';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 import { AuthProvider } from '../context/AuthContext';
+import { StorageProvider } from '../context/StorageContext';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -274,9 +275,11 @@ const router = createBrowserRouter([
 
 export const AppRouter: React.FC = () => (
   <AuthProvider>
-    <ContentProvider>
-      <RouterProvider router={router} />
-    </ContentProvider>
+    <StorageProvider>
+      <ContentProvider>
+        <RouterProvider router={router} />
+      </ContentProvider>
+    </StorageProvider>
   </AuthProvider>
 );
 export default AppRouter;
