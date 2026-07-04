@@ -101,10 +101,11 @@ const router = createBrowserRouter([
         path: ROUTE_REGISTRY.JOURNEY,
         element: <JourneyScreen />,
       },
-      {
-        path: ROUTE_REGISTRY.LIBRARY,
-        element: <LibraryScreen />,
-      },
+      // PONYTAIL_ARCHIVE: Library / Quiet Time Cards Page
+      // {
+      //   path: ROUTE_REGISTRY.LIBRARY,
+      //   element: <LibraryScreen />,
+      // },
       {
         path: ROUTE_REGISTRY.CREATION,
         element: <CreationScreen />,

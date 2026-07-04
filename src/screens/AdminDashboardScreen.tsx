@@ -540,9 +540,10 @@ export const AdminDashboardScreen: React.FC = () => {
               { tab: 'general',          icon: 'settings',     label: '一般設定 & 標題' },
               { tab: 'home-cards',       icon: 'home',         label: '首頁入口卡片' },
               { tab: 'journey-steps',    icon: 'route',        label: '培育生命路徑' },
-              { tab: 'quiet-time-study', icon: 'wb_sunny',     label: '每日靈修研讀' },
+              // PONYTAIL_ARCHIVE: Quiet Time Cards admin tab
+              // { tab: 'quiet-time-study', icon: 'wb_sunny',     label: '每日靈修研讀' },
               { tab: 'lessons',          icon: 'auto_stories', label: '課程頁面 & 卡片' },
-            ] as const).map(({ tab, icon, label }) => (
+            ] as const).filter(t => t.tab !== ('quiet-time-study' as any)).map(({ tab, icon, label }) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}

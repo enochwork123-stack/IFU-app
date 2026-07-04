@@ -165,14 +165,17 @@ export const ProfileScreen: React.FC = () => {
           )}
         </section>
 
+        {/* PONYTAIL_ARCHIVE: Change grid-cols-3 to grid-cols-2 when Library is archived */}
         {/* Stats Section */}
-        <section className="grid grid-cols-3 gap-3">
+        <section className="grid grid-cols-2 gap-3">
           {[
+            /* PONYTAIL_ARCHIVE: Quiet Time Cards statistics
             {
               label: '靈修卡片',
               value: loadingStats ? '...' : `${stats.quietTimes}/${quietTimeEntries.length}`,
               icon: 'auto_stories',
             },
+            */
             {
               label: '栽培進度',
               value: loadingStats ? '...' : `${stats.discipleshipSteps}/12`,
