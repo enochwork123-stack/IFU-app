@@ -16,7 +16,7 @@ function accentClass(accent) {
 
 export function HomeScreen() {
   const { homeCards, customScreenTexts } = useAppContent();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
 
   return (
     <>
@@ -29,13 +29,15 @@ export function HomeScreen() {
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold text-secondary hover:bg-surface-container-low transition active:scale-95"
-            >
-              <Icon name="admin_panel_settings" className="text-[12px] sm:text-sm" />
-              管理後台
-            </Link>
+            {isAdmin ? (
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-1 sm:px-3.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold text-secondary hover:bg-surface-container-low transition active:scale-95"
+              >
+                <Icon name="admin_panel_settings" className="text-[12px] sm:text-sm" />
+                管理後台
+              </Link>
+            ) : null}
             <Link
               to={user ? ROUTE_REGISTRY.PROFILE : ROUTE_REGISTRY.LOGIN}
               className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-lowest px-2 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95"

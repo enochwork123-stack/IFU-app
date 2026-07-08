@@ -160,6 +160,7 @@ The lesson screens should become step-by-step guided experiences instead of loos
 - [ ] Model saved answer blocks with stable storage keys.
 - [ ] Keep localStorage persistence behind a reusable typed hook after review.
 - [x] Add a versioned JSON export/import path for learner-entered `ifu:` answer keys so users can back up and restore 初信栽培 responses outside browser storage.
+- [x] Restore Supabase-backed Google login admin gating so `管理後台` only appears for admin users, and restore admin whitelist management for granting/removing administrator rights.
 - [ ] Preserve click-to-expand scripture panels.
 - [ ] Preserve textarea response blocks under every reflection prompt.
 - [ ] Preserve expandable appendices for short reference material.
@@ -237,6 +238,7 @@ Goal: turn raw Notion Markdown exports into IFU-shaped content without introduci
 - Public lesson assets should be referenced through `assetPath()` so images and PDFs resolve in both root-hosted and `/IFU-app`-prefixed deployments.
 - Text-heavy gospel diagrams should be maintained as project-owned SVG assets instead of generated bitmap screenshots, because SVG preserves exact Chinese labels, responsive scaling, and single-image composition.
 - React Router navigation preserves scroll state in the app's custom route viewport unless explicitly reset; page-to-page lesson navigation should scroll that viewport to top on pathname changes.
+- Admin access depends on Supabase `profiles.role`, `public.is_admin()`, and `admin_whitelist`; the seeded system administrators are `enochwork123@gmail.com` and `lawfelix2002@gmail.com`.
 
 ## Legacy Screen File Log
 

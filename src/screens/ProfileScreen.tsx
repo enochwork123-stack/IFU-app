@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { ROUTE_REGISTRY } from '../app/routes';
 
 export const ProfileScreen: React.FC = () => {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = React.useState('');
 
@@ -89,6 +89,17 @@ export const ProfileScreen: React.FC = () => {
             </article>
           ))}
         </section>
+
+        {isAdmin ? (
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary py-3.5 text-sm font-extrabold text-white transition hover:brightness-105 active:scale-[0.99]"
+          >
+            <Icon name="admin_panel_settings" className="text-base" />
+            進入管理後台
+          </button>
+        ) : null}
 
         {errorMessage ? (
           <p className="rounded-xl bg-red-50 p-3 text-sm font-bold leading-6 text-red-700">

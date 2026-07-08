@@ -66,6 +66,7 @@ import { ROUTE_REGISTRY } from './routes';
 import { AuthProvider } from '../context/AuthContext';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const AppLayout: React.FC = () => {
   const location = useLocation();
@@ -266,7 +267,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminDashboardScreen />,
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminDashboardScreen />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '*',
