@@ -159,6 +159,7 @@ The lesson screens should become step-by-step guided experiences instead of loos
 - [ ] Model scripture reveal panels as typed modules.
 - [ ] Model saved answer blocks with stable storage keys.
 - [ ] Keep localStorage persistence behind a reusable typed hook after review.
+- [x] Add a versioned JSON export/import path for learner-entered `ifu:` answer keys so users can back up and restore 初信栽培 responses outside browser storage.
 - [ ] Preserve click-to-expand scripture panels.
 - [ ] Preserve textarea response blocks under every reflection prompt.
 - [ ] Preserve expandable appendices for short reference material.

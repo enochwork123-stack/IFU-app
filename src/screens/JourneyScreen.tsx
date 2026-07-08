@@ -9,9 +9,13 @@ export const JourneyScreen: React.FC = () => {
 
   return (
     <div className="p-6">
-      <header className="mb-8">
-        <h1 className="font-serif text-3xl text-[#3e4c31]">{customScreenTexts['journey:title'] || '門徒之路'}</h1>
-        <p className="font-medium text-[#c68a4c]">{customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}</p>
+      <header className="mb-8 pr-28">
+        <h1 className="font-serif text-3xl text-[#3e4c31]">
+          {customScreenTexts['journey:title'] || '門徒之路'}
+        </h1>
+        <p className="font-medium text-[#c68a4c]">
+          {customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}
+        </p>
       </header>
 
       <div className="relative">

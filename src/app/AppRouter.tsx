@@ -6,6 +6,7 @@ import {
   RouterProvider,
   useLocation,
 } from 'react-router-dom';
+import { LearnerAnswerBackupControls } from '../components/content/LearnerAnswerBackupControls';
 import { AreYouSavedScreen } from '../screens/AreYouSavedScreen';
 import { AssuranceFaithVsSuperstitionScreen } from '../screens/AssuranceFaithVsSuperstitionScreen';
 import {
@@ -66,6 +67,9 @@ import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 const AppLayout: React.FC = () => {
   const location = useLocation();
   const routeViewportRef = React.useRef<HTMLElement | null>(null);
+  const showsLearnerAnswerBackup =
+    location.pathname === ROUTE_REGISTRY.JOURNEY ||
+    location.pathname.startsWith(`${ROUTE_REGISTRY.JOURNEY}/`);
 
   React.useEffect(() => {
     routeViewportRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -79,6 +83,13 @@ const AppLayout: React.FC = () => {
       >
         <Outlet />
       </main>
+      {showsLearnerAnswerBackup ? (
+        <div className="pointer-events-none absolute right-4 top-20 z-[80]">
+          <div className="pointer-events-auto">
+            <LearnerAnswerBackupControls />
+          </div>
+        </div>
+      ) : null}
       <BottomNav />
     </ShellFrame>
   );
