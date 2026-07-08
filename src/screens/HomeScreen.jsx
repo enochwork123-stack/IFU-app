@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ROUTE_REGISTRY } from '../app/routes';
 import { useAppContent } from '../context/ContentContext';
+import { useAuth } from '../context/AuthContext';
 
 function accentClass(accent) {
   if (accent === 'secondary') {
@@ -15,6 +16,7 @@ function accentClass(accent) {
 
 export function HomeScreen() {
   const { homeCards, customScreenTexts } = useAppContent();
+  const { user, profile } = useAuth();
 
   return (
     <>
@@ -34,10 +36,21 @@ export function HomeScreen() {
               <Icon name="admin_panel_settings" className="text-[12px] sm:text-sm" />
               管理後台
             </Link>
-            <button className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-lowest px-2 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95">
-              <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary" />
-              登錄
-            </button>
+            <Link
+              to={user ? ROUTE_REGISTRY.PROFILE : ROUTE_REGISTRY.LOGIN}
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-lowest px-2 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold text-on-surface shadow-[0_8px_22px_rgba(40,53,28,0.08)] ring-1 ring-[rgba(40,53,28,0.06)] transition-all active:scale-95"
+            >
+              {profile?.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt=""
+                  className="h-4 w-4 rounded-full object-cover sm:h-5 sm:w-5"
+                />
+              ) : (
+                <span className="h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 rounded-full bg-secondary" />
+              )}
+              {user ? profile?.displayName || '個人檔案' : '登錄'}
+            </Link>
           </div>
         </div>
         <div className="h-px bg-[rgba(40,53,28,0.05)]" />
@@ -105,4 +118,3 @@ export function HomeScreen() {
     </>
   );
 }
-

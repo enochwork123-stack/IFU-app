@@ -4,6 +4,8 @@ export const ROUTE_REGISTRY = {
   HOME: '/',
   JOURNEY: '/journey',
   LIBRARY: '/library',
+  LOGIN: '/login',
+  PROFILE: '/profile',
   CREATION: '/journey/creation',
   PROBLEM: '/journey/problem',
   BRIDGE: '/journey/bridge',

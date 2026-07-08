@@ -60,7 +60,10 @@ import { WitnessingScreen } from '../screens/WitnessingScreen';
 import { PersonalTestimonyScreen } from '../screens/PersonalTestimonyScreen';
 import { LifeGoalScreen } from '../screens/LifeGoalScreen';
 import { SpiritualGrowthScreen } from '../screens/SpiritualGrowthScreen';
+import { LoginScreen } from '../screens/LoginScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 import { ROUTE_REGISTRY } from './routes';
+import { AuthProvider } from '../context/AuthContext';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 
@@ -110,6 +113,14 @@ const router = createBrowserRouter([
       {
         path: ROUTE_REGISTRY.LIBRARY,
         element: <LibraryScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.LOGIN,
+        element: <LoginScreen />,
+      },
+      {
+        path: ROUTE_REGISTRY.PROFILE,
+        element: <ProfileScreen />,
       },
       {
         path: ROUTE_REGISTRY.CREATION,
@@ -264,8 +275,10 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRouter: React.FC = () => (
-  <ContentProvider>
-    <RouterProvider router={router} />
-  </ContentProvider>
+  <AuthProvider>
+    <ContentProvider>
+      <RouterProvider router={router} />
+    </ContentProvider>
+  </AuthProvider>
 );
 export default AppRouter;
