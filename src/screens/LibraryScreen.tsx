@@ -121,12 +121,12 @@ export const LibraryScreen: React.FC = () => {
   const allBooks = useMemo(() => {
     const books = quietTimeEntries.map((entry) => entry.book);
     return Array.from(new Set(books));
-  }, []);
+  }, [quietTimeEntries]);
 
   const allTopics = useMemo(() => {
     const topics = quietTimeEntries.flatMap((entry) => entry.topics);
     return Array.from(new Set(topics));
-  }, []);
+  }, [quietTimeEntries]);
 
   // Directory filter & sort logic
   const filteredEntries = useMemo(() => {
@@ -196,7 +196,7 @@ export const LibraryScreen: React.FC = () => {
     });
 
     return result;
-  }, [searchQuery, selectedBook, selectedTopic, sortBy, starredOnly, starredIds, completedIds]);
+  }, [quietTimeEntries, searchQuery, selectedBook, selectedTopic, sortBy, starredOnly, starredIds, completedIds]);
 
   // Deck Mode: Draw a random card
   const handleDrawCard = () => {

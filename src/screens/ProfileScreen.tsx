@@ -15,7 +15,7 @@ interface ProgressStats {
 
 export const ProfileScreen: React.FC = () => {
   const { user, profile, signOut, isAdmin } = useAuth();
-  const { quietTimeEntries } = useAppContent();
+  const { quietTimeEntries, discipleshipSteps } = useAppContent();
   const navigate = useNavigate();
   const [stats, setStats] = useState<ProgressStats>({
     quietTimes: 0,
@@ -77,7 +77,8 @@ export const ProfileScreen: React.FC = () => {
         setLoadingStats(true);
         const { data, error } = await supabase
           .from('user_progress')
-          .select('type, reference_id, completed_at');
+          .select('type, reference_id, completed_at')
+          .eq('user_id', user.id);
 
         if (!error && data) {
           // Count unique quiet times completed
@@ -87,15 +88,20 @@ export const ProfileScreen: React.FC = () => {
               .map((log) => log.reference_id)
           );
 
-          const counts = data.reduce(
-            (acc, curr) => {
-              if (curr.type === 'bible_study') acc.bibleStudies++;
-              else if (curr.type === 'discipleship_step') acc.discipleshipSteps++;
-              return acc;
-            },
-            { quietTimes: uniqueQuietTimes.size, bibleStudies: 0, discipleshipSteps: 0 }
+          // Only count the 12 real journey steps — gospel pages (creation/problem/
+          // bridge/response) are also stored as discipleship_step but are not steps.
+          const stepIds = new Set(discipleshipSteps.map((s) => s.id));
+          const uniqueSteps = new Set(
+            data
+              .filter((log) => log.type === 'discipleship_step' && stepIds.has(log.reference_id))
+              .map((log) => log.reference_id)
           );
-          setStats(counts);
+          const bibleStudies = data.filter((log) => log.type === 'bible_study').length;
+          setStats({
+            quietTimes: uniqueQuietTimes.size,
+            bibleStudies,
+            discipleshipSteps: uniqueSteps.size,
+          });
 
           const qtLogs = data.filter(log => log.type === 'quiet_time');
           const calculatedStreak = calculateQuietTimeStreak(qtLogs);
@@ -109,7 +115,7 @@ export const ProfileScreen: React.FC = () => {
     };
 
     fetchStats();
-  }, [user]);
+  }, [user, discipleshipSteps]);
 
   const handleSignOut = async () => {
     try {

@@ -42,7 +42,7 @@ export const JourneyScreen: React.FC = () => {
   }, [user]);
 
   // Derive step statuses based on completedSteps array
-  const dynamicSteps = discipleshipSteps
+  const dynamicSteps = [...discipleshipSteps]
     .sort((a, b) => a.order - b.order)
     .map((step, index, sortedSteps) => {
       if (!user) {

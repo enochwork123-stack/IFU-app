@@ -32,11 +32,8 @@ export const AdminDashboardScreen: React.FC = () => {
     importConfig,
   } = useAppContent();
 
-  // Authentication State
-  const { isAdmin, user } = useAuth();
-  const [isAuthorized, setIsAuthorized] = useState(isAdmin);
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  // Authentication State — access is enforced by <ProtectedRoute requireAdmin> on /admin
+  const { user } = useAuth();
 
   // Members Management State
   const [admins, setAdmins] = useState<any[]>([]);
@@ -45,12 +42,6 @@ export const AdminDashboardScreen: React.FC = () => {
   const [submittingAdmin, setSubmittingAdmin] = useState(false);
   const [memberError, setMemberError] = useState('');
   const [loadingMembers, setLoadingMembers] = useState(false);
-
-  useEffect(() => {
-    if (isAdmin) {
-      setIsAuthorized(true);
-    }
-  }, [isAdmin]);
 
   // UI Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('general');
@@ -189,20 +180,6 @@ export const AdminDashboardScreen: React.FC = () => {
     { name: 'creation-free-will.png', url: assetPath('assets/creation-free-will.png') },
     { name: 'creation-relationship.png', url: assetPath('assets/creation-relationship.png') },
   ]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'admin123') {
-      setIsAuthorized(true);
-      setLoginError('');
-    } else {
-      setLoginError('密碼錯誤，請重試！');
-    }
-  };
-
-  const handleBypass = () => {
-    setIsAuthorized(true);
-  };
 
   const fetchAdminsAndWhitelist = async () => {
     try {
@@ -447,61 +424,6 @@ export const AdminDashboardScreen: React.FC = () => {
       reader.readAsDataURL(file);
     }, 1200);
   };
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-12">
-        <div className="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-surface-container-lowest p-8 shadow-[0_28px_72px_rgba(40,53,28,0.14)] border border-outline-variant/60">
-          <div className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/8 text-primary">
-              <Icon name="admin_panel_settings" className="text-3xl" />
-            </div>
-            <h1 className="mt-5 font-headline text-2xl font-black text-primary">
-              IFU 管理後台登錄
-            </h1>
-            <p className="mt-2 text-sm text-on-surface-variant">
-              請輸入管理員密碼以進行網站內容變更。
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="mt-8 space-y-5">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-[0.16em] text-secondary">
-                密碼
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="請輸入密碼 (預設為 admin123)"
-                className="mt-2 w-full rounded-[1.2rem] border border-outline-variant bg-surface-container-low/60 p-4 text-base text-on-surface outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
-                required
-              />
-              {loginError && (
-                <p className="mt-2 text-xs font-bold text-red-600">{loginError}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-primary py-4 text-sm font-extrabold tracking-[0.16em] text-white shadow-[0_12px_24px_rgba(40,53,28,0.2)] hover:brightness-105 active:scale-98 transition"
-            >
-              進入管理系統
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleBypass}
-              className="text-xs font-extrabold tracking-[0.12em] text-secondary hover:underline cursor-pointer"
-            >
-              開發人員快速通道 (免密碼)
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const activeLesson = lessonRoutes.find((r) => r.id === selectedLessonId);
 
@@ -944,7 +866,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
-                  {discipleshipSteps
+                  {[...discipleshipSteps]
                     .sort((a, b) => a.order - b.order)
                     .map((step, idx) => (
                       <tr key={step.id} className="hover:bg-white/40 transition">
@@ -1023,11 +945,11 @@ export const AdminDashboardScreen: React.FC = () => {
                             <button
                               disabled={idx === 0}
                               onClick={() => {
-                                const nextSteps = [...discipleshipSteps];
-                                const currentStep = nextSteps[idx]!;
-                                const prevStep = nextSteps[idx - 1]!;
-                                currentStep.order = idx;
-                                prevStep.order = idx + 1;
+                                const nextSteps = discipleshipSteps.map((s) => {
+                                  if (s.id === step.id) return { ...s, order: idx };
+                                  if (s.order === idx) return { ...s, order: idx + 1 };
+                                  return s;
+                                });
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-outline-variant hover:bg-surface-container shadow-sm disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
@@ -1037,11 +959,11 @@ export const AdminDashboardScreen: React.FC = () => {
                             <button
                               disabled={idx === discipleshipSteps.length - 1}
                               onClick={() => {
-                                const nextSteps = [...discipleshipSteps];
-                                const currentStep = nextSteps[idx]!;
-                                const nextStep = nextSteps[idx + 1]!;
-                                currentStep.order = idx + 2;
-                                nextStep.order = idx + 1;
+                                const nextSteps = discipleshipSteps.map((s) => {
+                                  if (s.id === step.id) return { ...s, order: idx + 2 };
+                                  if (s.order === idx + 2) return { ...s, order: idx + 1 };
+                                  return s;
+                                });
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-outline-variant hover:bg-surface-container shadow-sm disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
