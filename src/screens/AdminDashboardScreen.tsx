@@ -4,15 +4,54 @@ import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
-import { HomePreview, JourneyPreview, LessonPreview, QuietTimeLibraryPreview } from '../components/AdminPreview';
+import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { SalvationAssuranceScreen } from './SalvationAssuranceScreen';
+import { QuietTimeScreen } from './QuietTimeScreen';
+import { LibraryScreen } from './LibraryScreen';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'quiet-time-study' | 'lessons' | 'media' | 'members' | 'wishlist';
 
 // Lessons whose user-facing screens actually render from ContentContext lessonRoutes.
+// Their previews reuse the real screen component so preview and user page cannot drift.
 // All other lesson screens are still hard-coded, so admin edits to them do not reach users.
-const SYNCED_LESSON_IDS = new Set(['lesson-salvation-assurance', 'lesson-quiet-time']);
+const REAL_LESSON_SCREENS: Record<string, React.FC> = {
+  'lesson-salvation-assurance': SalvationAssuranceScreen,
+  'lesson-quiet-time': QuietTimeScreen,
+};
+const SYNCED_LESSON_IDS = new Set(Object.keys(REAL_LESSON_SCREENS));
+
+// Hosts a REAL user screen inside the admin preview frame. Link clicks are
+// swallowed so navigation stays on the admin page; translateZ(0) re-roots
+// position:fixed overlays (e.g. the gospel appendix modal) so they open inside
+// the preview frame instead of covering the admin UI.
+const RealScreenPreview: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div
+    className="min-h-full w-full bg-surface [transform:translateZ(0)]"
+    onClickCapture={(e) => {
+      const anchor = (e.target as HTMLElement).closest('a');
+      if (anchor) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }}
+  >
+    {children}
+  </div>
+);
+
+const LessonLivePreview: React.FC<{ lessonId: string }> = ({ lessonId }) => {
+  const RealScreen = REAL_LESSON_SCREENS[lessonId];
+  if (RealScreen) {
+    return (
+      <RealScreenPreview>
+        <RealScreen />
+      </RealScreenPreview>
+    );
+  }
+  return <LessonPreview lessonId={lessonId} />;
+};
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -2465,8 +2504,12 @@ ON CONFLICT (email) DO NOTHING;`}
                         {activeTab === 'general' && <HomePreview />}
                         {activeTab === 'home-cards' && <HomePreview />}
                         {activeTab === 'journey-steps' && <JourneyPreview />}
-                        {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
-                        {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                        {activeTab === 'quiet-time-study' && (
+                          <RealScreenPreview>
+                            <LibraryScreen />
+                          </RealScreenPreview>
+                        )}
+                        {activeTab === 'lessons' && <LessonLivePreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
                       </div>
                     </div>
@@ -2476,8 +2519,12 @@ ON CONFLICT (email) DO NOTHING;`}
                       {activeTab === 'general' && <HomePreview />}
                       {activeTab === 'home-cards' && <HomePreview />}
                       {activeTab === 'journey-steps' && <JourneyPreview />}
-                      {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
-                      {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                      {activeTab === 'quiet-time-study' && (
+                        <RealScreenPreview>
+                          <LibraryScreen />
+                        </RealScreenPreview>
+                      )}
+                      {activeTab === 'lessons' && <LessonLivePreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
                     </div>
                   )}
