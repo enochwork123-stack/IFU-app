@@ -10,6 +10,10 @@ import { supabase } from '../lib/supabase';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'quiet-time-study' | 'lessons' | 'media' | 'members' | 'wishlist';
 
+// Lessons whose user-facing screens actually render from ContentContext lessonRoutes.
+// All other lesson screens are still hard-coded, so admin edits to them do not reach users.
+const SYNCED_LESSON_IDS = new Set(['lesson-salvation-assurance', 'lesson-quiet-time']);
+
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -83,6 +87,14 @@ export const AdminDashboardScreen: React.FC = () => {
   const [showPreview, setShowPreview] = useState(true);
   const isPreviewActive = showPreview && activeTab !== 'members' && activeTab !== 'wishlist';
   const [previewViewport, setPreviewViewport] = useState<'mobile' | 'desktop'>('mobile');
+
+  // Auto-collapse the lesson selector when the split preview is open, so the
+  // editing pane keeps a usable width on narrower windows (user can re-expand).
+  useEffect(() => {
+    if (activeTab === 'lessons' && isPreviewActive) {
+      setLessonsSidebarOpen(false);
+    }
+  }, [activeTab, isPreviewActive]);
 
   // Import JSON Modal/State
   const [showImportArea, setShowImportArea] = useState(false);
@@ -717,10 +729,10 @@ export const AdminDashboardScreen: React.FC = () => {
 
             {homeCards.map((card, idx) => (
               <div key={card.id} className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
-                <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
-                    <span className="text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-headline text-lg font-black text-primary whitespace-nowrap">入口卡片 #{idx + 1}</span>
+                    <span className="truncate text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -1404,7 +1416,7 @@ export const AdminDashboardScreen: React.FC = () => {
         )}
 
         {activeTab === 'lessons' && (
-          <div className="flex gap-8 items-start w-full">
+          <div className="flex gap-4 items-start w-full">
             {/* Left selector sidebar */}
             <div className={`shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3 transition-all duration-300 ${lessonsSidebarOpen ? 'w-64' : 'w-16'}`}>
               <div className="flex items-center justify-between px-2">
@@ -1445,7 +1457,12 @@ export const AdminDashboardScreen: React.FC = () => {
                       {lessonsSidebarOpen ? (
                         <>
                           <span className="truncate">{route.title}</span>
-                          <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{shortId}</span>
+                          <span className="flex items-center gap-1 ml-1 shrink-0">
+                            {!SYNCED_LESSON_IDS.has(route.id) && (
+                              <Icon name="sync_disabled" className="text-[11px] opacity-70" />
+                            )}
+                            <span className="text-[9px] opacity-70 font-mono">{shortId}</span>
+                          </span>
                         </>
                       ) : (
                         <span className="truncate">{shortLabel}</span>
@@ -1457,11 +1474,20 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
 
             {/* Editing Pane */}
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 min-w-0 space-y-6">
               {activeLesson ? (
                 <>
+                  {!SYNCED_LESSON_IDS.has(activeLesson.id) && (
+                    <div className="flex items-start gap-2.5 rounded-[1.2rem] bg-amber-50 border border-amber-200 p-4 text-xs font-bold text-amber-800 leading-relaxed">
+                      <Icon name="sync_disabled" className="text-base shrink-0 mt-0.5" />
+                      <span>
+                        注意：此課程的前台頁面目前是靜態版本（尚未接入內容管理系統）。在此處的修改只會反映在右側預覽，
+                        <span className="underline">不會</span>顯示在用戶實際看到的頁面上。
+                      </span>
+                    </div>
+                  )}
                   <div className="rounded-[1.8rem] bg-surface-container-low p-6 border border-outline-variant/40 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-3">
                       <h3 className="font-headline text-lg font-black text-primary">
                         頁面基本資訊: {activeLesson.title}
                       </h3>
@@ -1470,7 +1496,7 @@ export const AdminDashboardScreen: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-secondary">標題</label>
                         <input
@@ -1500,10 +1526,10 @@ export const AdminDashboardScreen: React.FC = () => {
 
                   {/* Modules list (Cards List) */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-headline text-lg font-black text-primary">內容卡片排序與編輯</h3>
-                      
-                      <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-headline text-lg font-black text-primary whitespace-nowrap">內容卡片排序與編輯</h3>
+
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => {
                             const newId = `new-card-${Date.now()}`;
@@ -1520,7 +1546,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             addCardToLesson(activeLesson.id, activeLesson.modules.length, newModule);
                             setEditingModuleId(newId);
                           }}
-                          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+                          className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
                         >
                           <Icon name="add" className="text-sm" />
                           添加 Body Card (白底)
@@ -1542,7 +1568,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             addCardToLesson(activeLesson.id, activeLesson.modules.length, newModule);
                             setEditingModuleId(newId);
                           }}
-                          className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+                          className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-secondary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
                         >
                           <Icon name="add" className="text-sm" />
                           添加 Header Card (綠底)
@@ -1563,7 +1589,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             }`}
                           >
                             {/* Card Header bar */}
-                            <div className="flex items-center justify-between p-5 border-b border-outline-variant/20">
+                            <div className="flex flex-wrap items-center justify-between gap-2 p-5 border-b border-outline-variant/20">
                               <div className="flex items-center gap-3">
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-secondary border border-outline-variant/50">
                                   {idx + 1}
@@ -1635,7 +1661,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             {/* Card Edit Fields */}
                             {isEditing && (
                               <div className="p-6 space-y-4 bg-white/70 rounded-b-[2rem] border-t border-outline-variant/20">
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                                   <div>
                                     <label className="block text-xs font-bold text-secondary">卡片類型樣式</label>
                                     <select
@@ -1721,7 +1747,7 @@ export const AdminDashboardScreen: React.FC = () => {
                                         className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none resize-y"
                                       />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                       <div>
                                         <label className="block text-xs font-bold text-secondary">問題編號</label>
                                         <input
