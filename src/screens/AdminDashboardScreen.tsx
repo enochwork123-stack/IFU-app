@@ -4,11 +4,54 @@ import { useAppContent } from '../context/ContentContext';
 import { Icon } from '../components/Icon';
 import type { StudyModule, ScriptureReference } from '../types/content';
 import { assetPath } from '../utils/assets';
-import { HomePreview, JourneyPreview, LessonPreview, QuietTimeLibraryPreview } from '../components/AdminPreview';
+import { HomePreview, JourneyPreview, LessonPreview } from '../components/AdminPreview';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { SalvationAssuranceScreen } from './SalvationAssuranceScreen';
+import { QuietTimeScreen } from './QuietTimeScreen';
+import { LibraryScreen } from './LibraryScreen';
 
 type TabType = 'general' | 'home-cards' | 'journey-steps' | 'quiet-time-study' | 'lessons' | 'media' | 'members' | 'wishlist';
+
+// Lessons whose user-facing screens actually render from ContentContext lessonRoutes.
+// Their previews reuse the real screen component so preview and user page cannot drift.
+// All other lesson screens are still hard-coded, so admin edits to them do not reach users.
+const REAL_LESSON_SCREENS: Record<string, React.FC> = {
+  'lesson-salvation-assurance': SalvationAssuranceScreen,
+  'lesson-quiet-time': QuietTimeScreen,
+};
+const SYNCED_LESSON_IDS = new Set(Object.keys(REAL_LESSON_SCREENS));
+
+// Hosts a REAL user screen inside the admin preview frame. Link clicks are
+// swallowed so navigation stays on the admin page; translateZ(0) re-roots
+// position:fixed overlays (e.g. the gospel appendix modal) so they open inside
+// the preview frame instead of covering the admin UI.
+const RealScreenPreview: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div
+    className="min-h-full w-full bg-surface [transform:translateZ(0)]"
+    onClickCapture={(e) => {
+      const anchor = (e.target as HTMLElement).closest('a');
+      if (anchor) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }}
+  >
+    {children}
+  </div>
+);
+
+const LessonLivePreview: React.FC<{ lessonId: string }> = ({ lessonId }) => {
+  const RealScreen = REAL_LESSON_SCREENS[lessonId];
+  if (RealScreen) {
+    return (
+      <RealScreenPreview>
+        <RealScreen />
+      </RealScreenPreview>
+    );
+  }
+  return <LessonPreview lessonId={lessonId} />;
+};
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -32,11 +75,8 @@ export const AdminDashboardScreen: React.FC = () => {
     importConfig,
   } = useAppContent();
 
-  // Authentication State
-  const { isAdmin, user } = useAuth();
-  const [isAuthorized, setIsAuthorized] = useState(isAdmin);
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  // Authentication State — access is enforced by <ProtectedRoute requireAdmin> on /admin
+  const { user } = useAuth();
 
   // Members Management State
   const [admins, setAdmins] = useState<any[]>([]);
@@ -45,12 +85,6 @@ export const AdminDashboardScreen: React.FC = () => {
   const [submittingAdmin, setSubmittingAdmin] = useState(false);
   const [memberError, setMemberError] = useState('');
   const [loadingMembers, setLoadingMembers] = useState(false);
-
-  useEffect(() => {
-    if (isAdmin) {
-      setIsAuthorized(true);
-    }
-  }, [isAdmin]);
 
   // UI Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('general');
@@ -92,6 +126,14 @@ export const AdminDashboardScreen: React.FC = () => {
   const [showPreview, setShowPreview] = useState(true);
   const isPreviewActive = showPreview && activeTab !== 'members' && activeTab !== 'wishlist';
   const [previewViewport, setPreviewViewport] = useState<'mobile' | 'desktop'>('mobile');
+
+  // Auto-collapse the lesson selector when the split preview is open, so the
+  // editing pane keeps a usable width on narrower windows (user can re-expand).
+  useEffect(() => {
+    if (activeTab === 'lessons' && isPreviewActive) {
+      setLessonsSidebarOpen(false);
+    }
+  }, [activeTab, isPreviewActive]);
 
   // Import JSON Modal/State
   const [showImportArea, setShowImportArea] = useState(false);
@@ -189,20 +231,6 @@ export const AdminDashboardScreen: React.FC = () => {
     { name: 'creation-free-will.png', url: assetPath('assets/creation-free-will.png') },
     { name: 'creation-relationship.png', url: assetPath('assets/creation-relationship.png') },
   ]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'admin123') {
-      setIsAuthorized(true);
-      setLoginError('');
-    } else {
-      setLoginError('密碼錯誤，請重試！');
-    }
-  };
-
-  const handleBypass = () => {
-    setIsAuthorized(true);
-  };
 
   const fetchAdminsAndWhitelist = async () => {
     try {
@@ -447,61 +475,6 @@ export const AdminDashboardScreen: React.FC = () => {
       reader.readAsDataURL(file);
     }, 1200);
   };
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-12">
-        <div className="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-surface-container-lowest p-8 shadow-[0_28px_72px_rgba(40,53,28,0.14)] border border-outline-variant/60">
-          <div className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/8 text-primary">
-              <Icon name="admin_panel_settings" className="text-3xl" />
-            </div>
-            <h1 className="mt-5 font-headline text-2xl font-black text-primary">
-              IFU 管理後台登錄
-            </h1>
-            <p className="mt-2 text-sm text-on-surface-variant">
-              請輸入管理員密碼以進行網站內容變更。
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="mt-8 space-y-5">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-[0.16em] text-secondary">
-                密碼
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="請輸入密碼 (預設為 admin123)"
-                className="mt-2 w-full rounded-[1.2rem] border border-outline-variant bg-surface-container-low/60 p-4 text-base text-on-surface outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
-                required
-              />
-              {loginError && (
-                <p className="mt-2 text-xs font-bold text-red-600">{loginError}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-primary py-4 text-sm font-extrabold tracking-[0.16em] text-white shadow-[0_12px_24px_rgba(40,53,28,0.2)] hover:brightness-105 active:scale-98 transition"
-            >
-              進入管理系統
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleBypass}
-              className="text-xs font-extrabold tracking-[0.12em] text-secondary hover:underline cursor-pointer"
-            >
-              開發人員快速通道 (免密碼)
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const activeLesson = lessonRoutes.find((r) => r.id === selectedLessonId);
 
@@ -795,10 +768,10 @@ export const AdminDashboardScreen: React.FC = () => {
 
             {homeCards.map((card, idx) => (
               <div key={card.id} className="rounded-[1.8rem] bg-surface-container-low p-6 shadow-sm border border-outline-variant/40 space-y-4">
-                <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-headline text-lg font-black text-primary">入口卡片 #{idx + 1}</span>
-                    <span className="text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-headline text-lg font-black text-primary whitespace-nowrap">入口卡片 #{idx + 1}</span>
+                    <span className="truncate text-xs text-on-surface-variant font-mono bg-white px-2 py-0.5 rounded border border-outline-variant/30">{card.id}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -944,7 +917,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
-                  {discipleshipSteps
+                  {[...discipleshipSteps]
                     .sort((a, b) => a.order - b.order)
                     .map((step, idx) => (
                       <tr key={step.id} className="hover:bg-white/40 transition">
@@ -1023,11 +996,11 @@ export const AdminDashboardScreen: React.FC = () => {
                             <button
                               disabled={idx === 0}
                               onClick={() => {
-                                const nextSteps = [...discipleshipSteps];
-                                const currentStep = nextSteps[idx]!;
-                                const prevStep = nextSteps[idx - 1]!;
-                                currentStep.order = idx;
-                                prevStep.order = idx + 1;
+                                const nextSteps = discipleshipSteps.map((s) => {
+                                  if (s.id === step.id) return { ...s, order: idx };
+                                  if (s.order === idx) return { ...s, order: idx + 1 };
+                                  return s;
+                                });
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-outline-variant hover:bg-surface-container shadow-sm disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
@@ -1037,11 +1010,11 @@ export const AdminDashboardScreen: React.FC = () => {
                             <button
                               disabled={idx === discipleshipSteps.length - 1}
                               onClick={() => {
-                                const nextSteps = [...discipleshipSteps];
-                                const currentStep = nextSteps[idx]!;
-                                const nextStep = nextSteps[idx + 1]!;
-                                currentStep.order = idx + 2;
-                                nextStep.order = idx + 1;
+                                const nextSteps = discipleshipSteps.map((s) => {
+                                  if (s.id === step.id) return { ...s, order: idx + 2 };
+                                  if (s.order === idx + 2) return { ...s, order: idx + 1 };
+                                  return s;
+                                });
                                 updateDiscipleshipSteps(nextSteps);
                               }}
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-outline-variant hover:bg-surface-container shadow-sm disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
@@ -1482,7 +1455,7 @@ export const AdminDashboardScreen: React.FC = () => {
         )}
 
         {activeTab === 'lessons' && (
-          <div className="flex gap-8 items-start w-full">
+          <div className="flex gap-4 items-start w-full">
             {/* Left selector sidebar */}
             <div className={`shrink-0 rounded-[1.8rem] bg-surface-container-low p-4 border border-outline-variant/40 space-y-3 transition-all duration-300 ${lessonsSidebarOpen ? 'w-64' : 'w-16'}`}>
               <div className="flex items-center justify-between px-2">
@@ -1523,7 +1496,12 @@ export const AdminDashboardScreen: React.FC = () => {
                       {lessonsSidebarOpen ? (
                         <>
                           <span className="truncate">{route.title}</span>
-                          <span className="text-[9px] opacity-70 font-mono ml-1 shrink-0">{shortId}</span>
+                          <span className="flex items-center gap-1 ml-1 shrink-0">
+                            {!SYNCED_LESSON_IDS.has(route.id) && (
+                              <Icon name="sync_disabled" className="text-[11px] opacity-70" />
+                            )}
+                            <span className="text-[9px] opacity-70 font-mono">{shortId}</span>
+                          </span>
                         </>
                       ) : (
                         <span className="truncate">{shortLabel}</span>
@@ -1535,11 +1513,20 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
 
             {/* Editing Pane */}
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 min-w-0 space-y-6">
               {activeLesson ? (
                 <>
+                  {!SYNCED_LESSON_IDS.has(activeLesson.id) && (
+                    <div className="flex items-start gap-2.5 rounded-[1.2rem] bg-amber-50 border border-amber-200 p-4 text-xs font-bold text-amber-800 leading-relaxed">
+                      <Icon name="sync_disabled" className="text-base shrink-0 mt-0.5" />
+                      <span>
+                        注意：此課程的前台頁面目前是靜態版本（尚未接入內容管理系統）。在此處的修改只會反映在右側預覽，
+                        <span className="underline">不會</span>顯示在用戶實際看到的頁面上。
+                      </span>
+                    </div>
+                  )}
                   <div className="rounded-[1.8rem] bg-surface-container-low p-6 border border-outline-variant/40 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-3">
                       <h3 className="font-headline text-lg font-black text-primary">
                         頁面基本資訊: {activeLesson.title}
                       </h3>
@@ -1548,7 +1535,7 @@ export const AdminDashboardScreen: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-secondary">標題</label>
                         <input
@@ -1578,10 +1565,10 @@ export const AdminDashboardScreen: React.FC = () => {
 
                   {/* Modules list (Cards List) */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-headline text-lg font-black text-primary">內容卡片排序與編輯</h3>
-                      
-                      <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-headline text-lg font-black text-primary whitespace-nowrap">內容卡片排序與編輯</h3>
+
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => {
                             const newId = `new-card-${Date.now()}`;
@@ -1598,7 +1585,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             addCardToLesson(activeLesson.id, activeLesson.modules.length, newModule);
                             setEditingModuleId(newId);
                           }}
-                          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+                          className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
                         >
                           <Icon name="add" className="text-sm" />
                           添加 Body Card (白底)
@@ -1620,7 +1607,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             addCardToLesson(activeLesson.id, activeLesson.modules.length, newModule);
                             setEditingModuleId(newId);
                           }}
-                          className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
+                          className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-secondary px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 active:scale-95 cursor-pointer"
                         >
                           <Icon name="add" className="text-sm" />
                           添加 Header Card (綠底)
@@ -1641,7 +1628,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             }`}
                           >
                             {/* Card Header bar */}
-                            <div className="flex items-center justify-between p-5 border-b border-outline-variant/20">
+                            <div className="flex flex-wrap items-center justify-between gap-2 p-5 border-b border-outline-variant/20">
                               <div className="flex items-center gap-3">
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-secondary border border-outline-variant/50">
                                   {idx + 1}
@@ -1713,7 +1700,7 @@ export const AdminDashboardScreen: React.FC = () => {
                             {/* Card Edit Fields */}
                             {isEditing && (
                               <div className="p-6 space-y-4 bg-white/70 rounded-b-[2rem] border-t border-outline-variant/20">
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                                   <div>
                                     <label className="block text-xs font-bold text-secondary">卡片類型樣式</label>
                                     <select
@@ -1799,7 +1786,7 @@ export const AdminDashboardScreen: React.FC = () => {
                                         className="mt-1.5 w-full rounded-[0.8rem] border border-outline-variant bg-white p-2.5 text-xs outline-none resize-y"
                                       />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                       <div>
                                         <label className="block text-xs font-bold text-secondary">問題編號</label>
                                         <input
@@ -2517,8 +2504,12 @@ ON CONFLICT (email) DO NOTHING;`}
                         {activeTab === 'general' && <HomePreview />}
                         {activeTab === 'home-cards' && <HomePreview />}
                         {activeTab === 'journey-steps' && <JourneyPreview />}
-                        {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
-                        {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                        {activeTab === 'quiet-time-study' && (
+                          <RealScreenPreview>
+                            <LibraryScreen />
+                          </RealScreenPreview>
+                        )}
+                        {activeTab === 'lessons' && <LessonLivePreview lessonId={selectedLessonId} />}
                         {activeTab === 'media' && <HomePreview />}
                       </div>
                     </div>
@@ -2528,8 +2519,12 @@ ON CONFLICT (email) DO NOTHING;`}
                       {activeTab === 'general' && <HomePreview />}
                       {activeTab === 'home-cards' && <HomePreview />}
                       {activeTab === 'journey-steps' && <JourneyPreview />}
-                      {activeTab === 'quiet-time-study' && <QuietTimeLibraryPreview />}
-                      {activeTab === 'lessons' && <LessonPreview lessonId={selectedLessonId} />}
+                      {activeTab === 'quiet-time-study' && (
+                        <RealScreenPreview>
+                          <LibraryScreen />
+                        </RealScreenPreview>
+                      )}
+                      {activeTab === 'lessons' && <LessonLivePreview lessonId={selectedLessonId} />}
                       {activeTab === 'media' && <HomePreview />}
                     </div>
                   )}
