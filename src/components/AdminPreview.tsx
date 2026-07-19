@@ -791,11 +791,6 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
 
               {mod.kind === 'scripture-reveal' && (
                 <div className="space-y-3">
-                  {mod.title && (
-                    <h3 className={`font-headline text-base font-bold ${cardTheme === 'primary' ? 'text-white' : 'text-primary'}`}>
-                      {mod.title}
-                    </h3>
-                  )}
                   {mod.scriptures && mod.scriptures.length > 0 && (
                     <div className="mt-3.5 space-y-2">
                       {mod.scriptures.map((sc, sIdx) => (
@@ -808,11 +803,6 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
 
               {mod.kind === 'interactive-visual' && (
                 <div className="space-y-3 text-on-surface">
-                  {mod.title && (
-                    <h3 className={`font-headline text-base font-bold ${cardTheme === 'primary' ? 'text-white' : 'text-primary'}`}>
-                      {mod.title}
-                    </h3>
-                  )}
                   {mod.description && (
                     <p className={`text-xs leading-6 ${cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>
                       {mod.description}
