@@ -63,6 +63,7 @@ import { ROUTE_REGISTRY } from './routes';
 import { ContentProvider } from '../context/ContentContext';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 import { AuthProvider } from '../context/AuthContext';
+import { StorageProvider } from '../context/StorageContext';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -100,10 +101,11 @@ const router = createBrowserRouter([
         path: ROUTE_REGISTRY.JOURNEY,
         element: <JourneyScreen />,
       },
-      {
-        path: ROUTE_REGISTRY.LIBRARY,
-        element: <LibraryScreen />,
-      },
+      // PONYTAIL_ARCHIVE: Library / Quiet Time Cards Page
+      // {
+      //   path: ROUTE_REGISTRY.LIBRARY,
+      //   element: <LibraryScreen />,
+      // },
       {
         path: ROUTE_REGISTRY.CREATION,
         element: <CreationScreen />,
@@ -274,9 +276,11 @@ const router = createBrowserRouter([
 
 export const AppRouter: React.FC = () => (
   <AuthProvider>
-    <ContentProvider>
-      <RouterProvider router={router} />
-    </ContentProvider>
+    <StorageProvider>
+      <ContentProvider>
+        <RouterProvider router={router} />
+      </ContentProvider>
+    </StorageProvider>
   </AuthProvider>
 );
 export default AppRouter;

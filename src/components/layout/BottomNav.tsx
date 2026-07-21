@@ -64,12 +64,14 @@ export const BottomNav: React.FC = () => {
         ROUTE_REGISTRY.WITNESSING,
       ],
     },
+    /* PONYTAIL_ARCHIVE: Library / Quiet Time Cards tab
     {
       label: '自修學習',
       icon: 'menu_book',
       path: ROUTE_REGISTRY.LIBRARY,
       activeExactPaths: [ROUTE_REGISTRY.LIBRARY],
     },
+    */
   ];
 
   return (

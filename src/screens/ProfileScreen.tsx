@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { assetPath } from '../utils/assets';
 import { useAppContent } from '../context/ContentContext';
+import { StorageToggle } from '../components/StorageToggle';
 
 interface ProgressStats {
   quietTimes: number;
@@ -170,14 +171,17 @@ export const ProfileScreen: React.FC = () => {
           )}
         </section>
 
+        {/* PONYTAIL_ARCHIVE: Change grid-cols-3 to grid-cols-2 when Library is archived */}
         {/* Stats Section */}
-        <section className="grid grid-cols-3 gap-3">
+        <section className="grid grid-cols-2 gap-3">
           {[
+            /* PONYTAIL_ARCHIVE: Quiet Time Cards statistics
             {
               label: '靈修卡片',
               value: loadingStats ? '...' : `${stats.quietTimes}/${quietTimeEntries.length}`,
               icon: 'auto_stories',
             },
+            */
             {
               label: '栽培進度',
               value: loadingStats ? '...' : `${stats.discipleshipSteps}/12`,
@@ -205,6 +209,9 @@ export const ProfileScreen: React.FC = () => {
             </article>
           ))}
         </section>
+
+        {/* Storage Toggle Section */}
+        <StorageToggle />
 
         {/* Details & Actions List */}
         <section className="rounded-[1.8rem] bg-surface-container-lowest p-6 shadow-[0_16px_38px_rgba(40,53,28,0.06)] border border-outline-variant/30 flex flex-col gap-5">
