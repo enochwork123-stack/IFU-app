@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { SavedAnswer } from '../components/primitives';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
@@ -49,56 +50,7 @@ const lifeGoalScriptures = {
   },
 } satisfies Record<string, Scripture>;
 
-interface SavedAnswerProps {
-  storageKey: string;
-  placeholder?: string;
-  rows?: number;
-}
 
-const SavedAnswer: React.FC<SavedAnswerProps> = ({
-  storageKey,
-  placeholder = '在這裡輸入你的答案...',
-  rows = 4,
-}) => {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [answer]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const nextAnswer = event.target.value;
-    setAnswer(nextAnswer);
-    window.localStorage.setItem(storageName, nextAnswer);
-  };
-
-  return (
-    <label className="mt-4 block">
-      <span className="sr-only">你的答案</span>
-      <textarea
-        ref={textareaRef}
-        value={answer}
-        onChange={handleChange}
-        rows={rows}
-        className="min-h-24 w-full resize-none overflow-y-hidden rounded-2xl border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
-      />
-      <span className="mt-1 block text-right text-[10px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
-      </span>
-    </label>
-  );
-};
 
 interface ScriptureToggleProps {
   scripture: Scripture;

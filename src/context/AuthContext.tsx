@@ -86,24 +86,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Profile missing. Attempting to create on the fly...');
       p = await createProfileOnTheFly(currentUser);
     } else {
-      // If the user is an admin by email but their profile in DB is member, promote them
       const isSystemAdmin = currentUser.email && ADMIN_EMAILS.includes(currentUser.email);
-      if (isSystemAdmin && p.role !== 'admin') {
-        console.log('Promoting admin user to admin role in database...');
+      const googleAvatar = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null;
+      const googleName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || null;
+      
+      const needsSync = (googleAvatar && p.avatar_url !== googleAvatar) || (googleName && p.display_name !== googleName);
+      
+      if (needsSync || (isSystemAdmin && p.role !== 'admin')) {
+        console.log('Syncing user profile with latest Google metadata...');
+        const updates: Record<string, any> = {};
+        if (isSystemAdmin && p.role !== 'admin') {
+          updates.role = 'admin';
+        }
+        if (googleAvatar && p.avatar_url !== googleAvatar) {
+          updates.avatar_url = googleAvatar;
+        }
+        if (googleName && p.display_name !== googleName) {
+          updates.display_name = googleName;
+        }
         try {
           const { data, error } = await supabase
             .from('profiles')
-            .update({ role: 'admin' })
+            .update(updates)
             .eq('id', currentUser.id)
             .select()
             .single();
           if (!error && data) {
             p = data as Profile;
           } else if (error) {
-            console.error('Failed to promote user to admin in DB:', error);
+            console.error('Failed to sync profile in DB:', error);
           }
         } catch (err) {
-          console.error('Unexpected error promoting user to admin in DB:', err);
+          console.error('Unexpected error syncing profile in DB:', err);
         }
       }
     }

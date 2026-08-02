@@ -147,77 +147,151 @@ export const AdminDashboardScreen: React.FC = () => {
     description: string;
     completed: boolean;
     createdAt: string;
+    userId?: string | null;
+    profile?: {
+      display_name: string | null;
+      email: string | null;
+      role: string | null;
+    } | null;
   }
 
-  const [wishes, setWishes] = useState<Wish[]>(() => {
-    const saved = localStorage.getItem('ifu:admin_wishes');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing admin wishes:', e);
-      }
-    }
-    return [];
-  });
+  const [wishes, setWishes] = useState<Wish[]>([]);
   const [wishTitle, setWishTitle] = useState('');
   const [wishDesc, setWishDesc] = useState('');
   const [submittingWish, setSubmittingWish] = useState(false);
   const [wishStatus, setWishStatus] = useState<{ type: 'success' | 'warning' | 'error'; message: string } | null>(null);
   const [showWishForm, setShowWishForm] = useState(false);
+  const [loadingWishes, setLoadingWishes] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('ifu:admin_wishes', JSON.stringify(wishes));
-  }, [wishes]);
+  const fetchWishes = async () => {
+    try {
+      setLoadingWishes(true);
+      const { data, error } = await supabase
+        .from('feature_wishes')
+        .select('*, profiles(display_name, email, role)')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mappedWishes: Wish[] = (data || []).map((w: any) => ({
+        id: w.id,
+        title: w.title,
+        description: w.description,
+        completed: w.completed,
+        createdAt: w.created_at,
+        userId: w.user_id,
+        profile: w.profiles
+      }));
+
+      setWishes(mappedWishes);
+    } catch (err: any) {
+      console.error('Error fetching wishes:', err);
+      setWishStatus({ type: 'error', message: '讀取許願池失敗：' + (err.message || '未知錯誤') });
+    } finally {
+      setLoadingWishes(false);
+    }
+  };
 
   const handleSubmitWish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!wishTitle.trim() || !wishDesc.trim()) return;
 
-    const newWish: Wish = {
-      id: Math.random().toString(36).substring(2, 9),
-      title: wishTitle.trim(),
-      description: wishDesc.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save locally first
-    setWishes(prev => [newWish, ...prev]);
-    setWishTitle('');
-    setWishDesc('');
-    setShowWishForm(false);
-
     try {
       setSubmittingWish(true);
       setWishStatus(null);
-      
-      const { data, error } = await supabase.functions.invoke('submit-wishlist', {
-        body: { title: newWish.title, description: newWish.description }
-      });
 
-      if (error) throw error;
-      if (data && data.error) throw new Error(data.error);
+      // 1. Insert wish to Supabase database table
+      const { data: dbData, error: dbError } = await supabase
+        .from('feature_wishes')
+        .insert({
+          title: wishTitle.trim(),
+          description: wishDesc.trim(),
+          user_id: user ? user.id : null
+        })
+        .select('*, profiles(display_name, email, role)')
+        .single();
 
-      setWishStatus({ type: 'success', message: '提交成功！新功能需求已發佈至 GitHub 專案。' });
+      if (dbError) throw dbError;
+
+      // 2. Invoke the Edge Function to sync with GitHub
+      let githubSynced = false;
+      try {
+        const { data, error } = await supabase.functions.invoke('submit-wishlist', {
+          body: { title: wishTitle.trim(), description: wishDesc.trim() }
+        });
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        githubSynced = true;
+      } catch (gitErr: any) {
+        console.warn('Could not sync wish to GitHub Issues directly:', gitErr);
+      }
+
+      // 3. Create the mapped wish to append to local state
+      const newWish: Wish = {
+        id: dbData.id,
+        title: dbData.title,
+        description: dbData.description,
+        completed: dbData.completed,
+        createdAt: dbData.created_at,
+        userId: dbData.user_id,
+        profile: dbData.profiles
+      };
+
+      setWishes(prev => [newWish, ...prev]);
+      setWishTitle('');
+      setWishDesc('');
+      setShowWishForm(false);
+
+      if (githubSynced) {
+        setWishStatus({ type: 'success', message: '提交成功！新功能需求已儲存並同步至 GitHub 專案。' });
+      } else {
+        setWishStatus({ 
+          type: 'warning', 
+          message: '需求已成功儲存至資料庫！但暫時無法同步至 GitHub Issues。' 
+        });
+      }
     } catch (err: any) {
-      console.error('Error submitting feature wish to GitHub:', err);
+      console.error('Error submitting feature wish:', err);
       setWishStatus({ 
-        type: 'warning', 
-        message: '已儲存於本地！但無法同步至 GitHub Issues：' + (err.message || '請確認已在 Supabase 後台設定 GITHUB_TOKEN Secret。') 
+        type: 'error', 
+        message: '提交失敗：' + (err.message || '未知錯誤') 
       });
     } finally {
       setSubmittingWish(false);
     }
   };
 
-  const handleToggleWish = (id: string) => {
-    setWishes(prev => prev.map(w => w.id === id ? { ...w, completed: !w.completed } : w));
+  const handleToggleWish = async (id: string, currentCompleted: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('feature_wishes')
+        .update({ completed: !currentCompleted })
+        .eq('id', id);
+      
+      if (error) throw error;
+
+      setWishes(prev => prev.map(w => w.id === id ? { ...w, completed: !w.completed } : w));
+    } catch (err: any) {
+      console.error('Error toggling wish status:', err);
+      alert('更新失敗：' + (err.message || '未知錯誤'));
+    }
   };
 
-  const handleRemoveWish = (id: string) => {
+  const handleRemoveWish = async (id: string) => {
     if (window.confirm('確定要刪除此功能提案嗎？')) {
-      setWishes(prev => prev.filter(w => w.id !== id));
+      try {
+        const { error } = await supabase
+          .from('feature_wishes')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        setWishes(prev => prev.filter(w => w.id !== id));
+      } catch (err: any) {
+        console.error('Error deleting wish:', err);
+        alert('刪除失敗：' + (err.message || '未知錯誤'));
+      }
     }
   };
 
@@ -284,6 +358,8 @@ export const AdminDashboardScreen: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'members') {
       fetchAdminsAndWhitelist();
+    } else if (activeTab === 'wishlist') {
+      fetchWishes();
     }
   }, [activeTab]);
 
@@ -2348,7 +2424,12 @@ ON CONFLICT (email) DO NOTHING;`}
                 提案列表 ({wishes.length})
               </h3>
 
-              {wishes.length === 0 ? (
+              {loadingWishes ? (
+                <div className="rounded-[1.8rem] bg-surface-container-low/55 p-12 text-center border border-dashed border-outline-variant/60 flex flex-col items-center justify-center space-y-4">
+                  <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs text-on-surface-variant font-bold">載入功能提案中...</p>
+                </div>
+              ) : wishes.length === 0 ? (
                 <div className="rounded-[1.8rem] bg-surface-container-low/55 p-12 text-center border border-dashed border-outline-variant/60">
                   <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10 text-secondary mb-4">
                     <Icon name="lightbulb_outline" className="text-3xl" />
@@ -2371,7 +2452,7 @@ ON CONFLICT (email) DO NOTHING;`}
                     >
                       {/* Checkbox button */}
                       <button
-                        onClick={() => handleToggleWish(wish.id)}
+                        onClick={() => handleToggleWish(wish.id, wish.completed)}
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition cursor-pointer mt-0.5 ${
                           wish.completed
                             ? 'bg-green-600 border-green-600 text-white'
@@ -2427,7 +2508,9 @@ ON CONFLICT (email) DO NOTHING;`}
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <Icon name="person" className="text-xs" />
-                            管理員
+                            {wish.profile 
+                              ? `${wish.profile.display_name || '未命名用戶'} (${wish.profile.role === 'admin' ? '管理員' : '一般用戶'})` 
+                              : '匿名用戶'}
                           </span>
                         </div>
                       </div>
