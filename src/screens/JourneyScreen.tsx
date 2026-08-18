@@ -4,6 +4,8 @@ import { JourneyStepCard } from '../components/content/JourneyStepCard';
 import { useAppContent } from '../context/ContentContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { Icon } from '../components/Icon';
+import { AnswerBackupModal } from '../components/AnswerBackupModal';
 
 export const JourneyScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ export const JourneyScreen: React.FC = () => {
   const { user } = useAuth();
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -68,9 +71,19 @@ export const JourneyScreen: React.FC = () => {
 
   return (
     <div className="p-6">
-      <header className="mb-8">
-        <h1 className="font-serif text-3xl text-[#3e4c31]">{customScreenTexts['journey:title'] || '門徒之路'}</h1>
-        <p className="font-medium text-[#c68a4c]">{customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}</p>
+      <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-serif text-3xl text-[#3e4c31]">{customScreenTexts['journey:title'] || '門徒之路'}</h1>
+          <p className="font-medium text-[#c68a4c]">{customScreenTexts['journey:subtitle'] || 'Discipleship Journey'}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsBackupOpen(true)}
+          className="inline-flex items-center self-start sm:self-auto gap-2 rounded-2xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-xs font-bold text-primary shadow-xs transition hover:border-secondary/50 hover:bg-surface-container active:scale-95 cursor-pointer"
+        >
+          <Icon name="save" className="text-[18px] text-secondary" />
+          <span>作答備份與載入</span>
+        </button>
       </header>
 
       <div className="relative">
@@ -90,8 +103,14 @@ export const JourneyScreen: React.FC = () => {
           ))
         )}
       </div>
+
+      <AnswerBackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+      />
     </div>
   );
 };
 
 export default JourneyScreen;
+

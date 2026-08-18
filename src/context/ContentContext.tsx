@@ -74,9 +74,10 @@ const enrichDefaultRoutes = (routes: LessonRoute[]): LessonRoute[] => {
           },
           {
             id: 'salvation-q2-intro',
-            kind: 'content-section',
+            kind: 'reflection-prompt',
+            number: '2',
             title: '哥林多後書 5:17 說：',
-            body: '當你接受耶穌基督救恩的那一刻,你的新生命就已經開始了。請記下以下經文如何描述你新生命的狀況。',
+            prompt: '當你接受耶穌基督救恩的那一刻，你的新生命就已經開始了。請記下以下經文如何描述你新生命的狀況。',
             scriptures: [
               {
                 book: '哥林多後書',
@@ -85,6 +86,8 @@ const enrichDefaultRoutes = (routes: LessonRoute[]): LessonRoute[] => {
                 english: 'So if anyone is in Christ, there is a new creation: everything old has passed away; see, everything has become new!'
               }
             ],
+            storageKey: 'assurance-q2-2cor-5-17',
+            responseMode: 'textarea',
             visual: { accent: 'surface', surface: 'elevated', imageStyle: 'max-w-2xl', eyebrow: 'min-h-auto' }
           },
           {

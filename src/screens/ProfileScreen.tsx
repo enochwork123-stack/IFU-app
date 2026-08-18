@@ -6,6 +6,13 @@ import { Icon } from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { assetPath } from '../utils/assets';
 import { useAppContent } from '../context/ContentContext';
+import { AnswerBackupModal } from '../components/AnswerBackupModal';
+import {
+  isCloudSyncEnabled,
+  setCloudSyncEnabled,
+  uploadAllLocalAnswersToSupabase,
+  deleteUserAnswersFromSupabase,
+} from '../utils/answerSync';
 
 interface ProgressStats {
   quietTimes: number;
@@ -24,6 +31,73 @@ export const ProfileScreen: React.FC = () => {
   });
   const [streak, setStreak] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [cloudSync, setCloudSync] = useState<boolean>(isCloudSyncEnabled());
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleToggleCloudSync = () => {
+    const nextVal = !cloudSync;
+    setCloudSync(nextVal);
+    setCloudSyncEnabled(nextVal);
+    setSyncMessage({
+      type: 'success',
+      text: nextVal ? '已啟用雲端端對端加密同步。' : '已關閉雲端同步，作答僅保存在本機。',
+    });
+    setTimeout(() => setSyncMessage(null), 4000);
+  };
+
+  const handleManualSync = async () => {
+    if (!user) {
+      alert('請先登入以同步作答紀錄！');
+      return;
+    }
+    setIsSyncing(true);
+    setSyncMessage(null);
+    try {
+      const count = await uploadAllLocalAnswersToSupabase(user.id);
+      setSyncMessage({
+        type: 'success',
+        text: `🎉 成功加密同步 ${count} 筆作答至 Supabase 雲端！`,
+      });
+    } catch (err: any) {
+      setSyncMessage({
+        type: 'error',
+        text: `同步失敗：${err?.message || '請確認網路或資料庫連線'}`,
+      });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
+  };
+
+  const handleDeleteCloudAnswers = async () => {
+    if (!user) return;
+    if (
+      !window.confirm(
+        '確定要清除存放在 Supabase 雲端的加密作答紀錄嗎？\n（您在此瀏覽器本機的作答不會被刪除）'
+      )
+    ) {
+      return;
+    }
+    setIsSyncing(true);
+    setSyncMessage(null);
+    try {
+      await deleteUserAnswersFromSupabase(user.id);
+      setSyncMessage({
+        type: 'success',
+        text: '已成功清除 Supabase 雲端的所有加密作答備份。',
+      });
+    } catch (err: any) {
+      setSyncMessage({
+        type: 'error',
+        text: `清除失敗：${err?.message || '未知錯誤'}`,
+      });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
+  };
 
   const calculateQuietTimeStreak = (qtLogs: { completed_at: string }[]): number => {
     if (qtLogs.length === 0) return 0;
@@ -240,6 +314,93 @@ export const ProfileScreen: React.FC = () => {
 
           <div className="h-px bg-outline-variant/40 my-1" />
 
+          {/* Cloud Encrypted Sync Setting */}
+          <div className="flex flex-col gap-3 py-1">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-primary">雲端端對端加密同步 (E2EE)</p>
+                  {cloudSync ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">
+                      <Icon name="lock" className="text-[12px]" />
+                      已加密保護
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-2 py-0.5 text-[10px] font-bold text-on-surface-variant">
+                      僅限本機
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                  登入時自動將作答紀錄以 AES-256 加密儲存至 Supabase 雲端（他人與管理者皆無法看見原文）。
+                  關閉後將停止上傳至雲端，作答僅保留於本機瀏覽器。
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={cloudSync}
+                onClick={handleToggleCloudSync}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  cloudSync ? 'bg-primary' : 'bg-surface-container-high'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    cloudSync ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {user && cloudSync && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  disabled={isSyncing}
+                  onClick={handleManualSync}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/20 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  <Icon name="sync" className={`text-[14px] ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? '同步中...' : '立即同步至雲端'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCloudAnswers}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/70 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition active:scale-95 cursor-pointer"
+                >
+                  <Icon name="delete" className="text-[14px]" />
+                  <span>清除雲端作答</span>
+                </button>
+              </div>
+            )}
+            {syncMessage && (
+              <p className={`text-xs font-medium ${syncMessage.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
+                {syncMessage.text}
+              </p>
+            )}
+          </div>
+
+          <div className="h-px bg-outline-variant/40 my-1" />
+
+          {/* Data Backup & Restore */}
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <p className="text-sm font-bold text-primary">學習手冊與檔案備份</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">匯出 PDF / Word / JSON 學習手冊或還原檔案</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsBackupOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-secondary/30 bg-secondary/10 px-3.5 py-2 text-xs font-bold text-secondary hover:bg-secondary/20 transition active:scale-95 cursor-pointer"
+            >
+              <Icon name="save" className="text-[16px]" />
+              <span>手冊與載入</span>
+            </button>
+          </div>
+
+          <div className="h-px bg-outline-variant/40 my-1" />
+
           <button
             onClick={handleSignOut}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-3.5 text-sm font-extrabold text-red-600 border border-red-100 hover:bg-red-100/40 active:scale-98 transition"
@@ -249,8 +410,14 @@ export const ProfileScreen: React.FC = () => {
           </button>
         </section>
       </main>
+
+      <AnswerBackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+      />
     </>
   );
 };
 
 export default ProfileScreen;
+

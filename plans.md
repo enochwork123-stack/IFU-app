@@ -41,6 +41,8 @@ This is the living project-local plan for the IFU React application. It tracks d
 - [x] Added desktop-only content canvas and image-ratio handling so web view photos render consistently without changing mobile layout behavior.
 - [x] Planned project-owned SVG replacements for the gospel separation, bridge, and out-of-death-into-life visuals so Chinese labels stay exact and image placement is deterministic.
 - [x] Planned route-level scroll reset against the single route viewport so pager navigation opens each lesson at the top.
+- [x] Implemented Discipleship Answers Save & Load feature with JSON backup, complete PDF & Word workbook export (including all 12 lesson scriptures, questions, and answers), and fixed 2Cor 5:17 answer textarea.
+- [x] Implemented Supabase Client-Side End-to-End Encrypted (AES-GCM-256) auto-upload and cross-device answer sync with user opt-in/opt-out toggle in account settings.
 - [ ] Continue Lesson Engine phase: gradually render typed `StudyModule` content instead of duplicating lesson markup in legacy JSX.
 
 ## Baseline Snapshot

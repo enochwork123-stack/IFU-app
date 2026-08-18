@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from './Icon';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { AnswerBackupModal } from './AnswerBackupModal';
 
 /**
  * @param {object} props
@@ -16,6 +17,7 @@ export function JourneyPager({ previous, next }) {
   
   const [isCompleted, setIsCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
 
   // Parse path segments to dynamically identify step/lesson type and reference ID
   const segments = location.pathname.split('/').filter(Boolean);
@@ -110,11 +112,12 @@ export function JourneyPager({ previous, next }) {
 
   return (
     <div className="flex flex-col gap-4 pt-4 w-full items-center">
-      {/* Complete Button - Centered above previous/next buttons */}
-      {hasCompletionButton && (
-        <div className="flex justify-center w-full">
-          {isCompleted ? (
+      {/* Action Buttons Row */}
+      <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+        {hasCompletionButton && (
+          isCompleted ? (
             <button
+              type="button"
               onClick={handleToggleComplete}
               disabled={submitting}
               className="group inline-flex items-center gap-2 rounded-full bg-green-50 hover:bg-red-50 border border-green-200 hover:border-red-200 px-6 py-2.5 text-sm font-bold text-green-700 hover:text-red-700 justify-center whitespace-nowrap transition-all active:scale-95 cursor-pointer disabled:opacity-50"
@@ -126,6 +129,7 @@ export function JourneyPager({ previous, next }) {
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleToggleComplete}
               disabled={submitting}
               className="inline-flex items-center gap-2 rounded-full bg-primary-fixed border border-primary/20 px-6 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary/5 active:scale-95 justify-center cursor-pointer shadow-sm disabled:opacity-50 whitespace-nowrap"
@@ -133,9 +137,20 @@ export function JourneyPager({ previous, next }) {
               <Icon name={submitting ? "autorenew" : "done_all"} className={`text-[18px] ${submitting ? 'animate-spin' : ''}`} />
               {user ? '標記本課已完成' : '登入後可記錄進度'}
             </button>
-          )}
-        </div>
-      )}
+          )
+        )}
+
+        {/* Save and Load Answers Button */}
+        <button
+          type="button"
+          onClick={() => setIsBackupOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2.5 text-xs font-bold text-on-surface-variant transition hover:border-secondary/40 hover:bg-surface-container hover:text-primary active:scale-95 cursor-pointer shadow-xs whitespace-nowrap"
+          title="備份或還原各單元的筆記與問答快取"
+        >
+          <Icon name="save" className="text-[16px] text-secondary" />
+          <span>儲存 / 載入答案</span>
+        </button>
+      </div>
 
       {/* Navigation Row - Page Before and Next Page */}
       <div className="flex items-center justify-between gap-4 w-full">
@@ -160,7 +175,14 @@ export function JourneyPager({ previous, next }) {
           </Link>
         ) : null}
       </div>
+
+      {/* Backup and Load Modal */}
+      <AnswerBackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+      />
     </div>
   );
 }
+
 

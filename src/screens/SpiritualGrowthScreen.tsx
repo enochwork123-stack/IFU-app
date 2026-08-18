@@ -68,6 +68,12 @@ const SavedAnswer: React.FC<SavedAnswerProps> = ({
 
   useEffect(() => {
     setAnswer(window.localStorage.getItem(storageName) ?? '');
+
+    const handleUpdate = () => {
+      setAnswer(window.localStorage.getItem(storageName) ?? '');
+    };
+    window.addEventListener('ifu-answers-updated', handleUpdate);
+    return () => window.removeEventListener('ifu-answers-updated', handleUpdate);
   }, [storageName]);
 
   useEffect(() => {
@@ -119,6 +125,12 @@ const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
 
   useEffect(() => {
     setValue(window.localStorage.getItem(storageName) ?? '');
+
+    const handleUpdate = () => {
+      setValue(window.localStorage.getItem(storageName) ?? '');
+    };
+    window.addEventListener('ifu-answers-updated', handleUpdate);
+    return () => window.removeEventListener('ifu-answers-updated', handleUpdate);
   }, [storageName]);
 
   useEffect(() => {

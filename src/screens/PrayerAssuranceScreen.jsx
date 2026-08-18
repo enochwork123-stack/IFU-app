@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
+import { SavedAnswer } from '../components/SavedAnswer';
 
 const prayerScriptures = {
   psalm628: {
@@ -105,37 +106,6 @@ const extensionBPrompts = [
   'Note the biblical examples of intercessory prayer. How does this contrast with how we have prayed for one another?',
   'Does this reading convict, challenge or encourage you in any way about praying to God? Why?',
 ];
-
-function SavedAnswer({ storageKey, placeholder = '在這裡輸入你的答案...' }) {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  function handleChange(event) {
-    const nextAnswer = event.target.value;
-    setAnswer(nextAnswer);
-    window.localStorage.setItem(storageName, nextAnswer);
-  }
-
-  return (
-    <label className="mt-5 block">
-      <span className="sr-only">你的答案</span>
-      <textarea
-        value={answer}
-        onChange={handleChange}
-        rows={4}
-        className="min-h-28 w-full resize-y rounded-[1.25rem] border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder={placeholder}
-      />
-      <span className="mt-2 block text-right text-[11px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
-      </span>
-    </label>
-  );
-}
 
 function ScriptureToggle({ scriptureKey }) {
   const [isOpen, setIsOpen] = useState(false);

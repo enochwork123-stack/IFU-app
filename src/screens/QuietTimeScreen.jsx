@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { useAppContent } from '../context/ContentContext';
+import { SavedAnswer } from '../components/SavedAnswer';
 
 const oldTestamentBooks =
   '創 創世紀 Genesis; 出 出埃及記 Exodus; 利 利未記 Leviticus; 民 民數記 Numbers; 申 申命記 Deuteronomy; 書 約書亞記 Joshua; 士 士師記 Judges; 得 路得記 Ruth; 撒上 撒母耳記上 1 Samuel; 撒下 撒母耳記下 2 Samuel; 王上 列王記上 1 Kings; 王下 列王記下 2 Kings; 代上 歷代志上 1 Chronicles; 代下 歷代志下 2 Chronicles; 拉 以斯拉記 Ezra; 尼 尼希米記 Nehemiah; 斯 以斯帖記 Esther; 伯 約伯記 Job; 詩 詩篇 Psalms; 箴 箴言 Proverbs; 傳 傳道書 Ecclesiastes; 歌 雅歌 Song of Songs; 賽 以賽亞書 Isaiah; 耶 耶利米書 Jeremiah; 哀 耶利米哀歌 Lamentations; 結 以西結書 Ezekiel; 但 但以理書 Daniel; 何 何西阿書 Hosea; 珥 約珥書 Joel; 摩 阿摩司書 Amos; 俄 俄巴底亞書 Obadiah; 拿 約拿書 Jonah; 彌 彌迦書 Micah; 鴻 那鴻書 Nahum; 哈 哈巴谷書 Habakkuk; 番 西番雅書 Zephaniah; 該 哈該書 Haggai; 亞 撒迦利亞 Zechariah; 瑪 瑪拉基書 Malachi';
@@ -25,36 +26,6 @@ function parseBookRows(bookList) {
 
 const oldTestamentRows = parseBookRows(oldTestamentBooks);
 const newTestamentRows = parseBookRows(newTestamentBooks);
-
-function SavedAnswer({ storageKey }) {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  function handleChange(event) {
-    setAnswer(event.target.value);
-    window.localStorage.setItem(storageName, event.target.value);
-  }
-
-  return (
-    <label className="mt-5 block">
-      <span className="sr-only">你的答案</span>
-      <textarea
-        value={answer}
-        onChange={handleChange}
-        rows={4}
-        className="min-h-28 w-full resize-y rounded-[1.25rem] border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder="在這裡輸入你的答案..."
-      />
-      <span className="mt-2 block text-right text-[11px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
-      </span>
-    </label>
-  );
-}
 
 function ScriptureToggle({ scripture }) {
   const [isOpen, setIsOpen] = useState(false);

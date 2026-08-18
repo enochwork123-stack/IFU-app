@@ -2049,7 +2049,8 @@ export const AdminDashboardScreen: React.FC = () => {
                   請在 <strong>Supabase Dashboard -&gt; SQL Editor</strong> 中執行以下 SQL 語句以完成設定：
                 </p>
                 <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre select-all">
-{`CREATE TABLE IF NOT EXISTS public.admin_whitelist (
+{`-- 1. 管理員白名單表
+CREATE TABLE IF NOT EXISTS public.admin_whitelist (
   email text PRIMARY KEY,
   created_at timestamptz DEFAULT now()
 );
@@ -2070,7 +2071,26 @@ CREATE POLICY "Admins can delete from admin whitelist"
 
 INSERT INTO public.admin_whitelist (email)
 VALUES ('enochwork123@gmail.com'), ('lawfelix2002@gmail.com')
-ON CONFLICT (email) DO NOTHING;`}
+ON CONFLICT (email) DO NOTHING;
+
+-- 2. 門徒作答端對端加密雲端儲存表 (E2EE)
+CREATE TABLE IF NOT EXISTS public.user_answers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  storage_key text NOT NULL,
+  encrypted_content text NOT NULL,
+  iv text NOT NULL,
+  updated_at timestamptz DEFAULT now() NOT NULL,
+  UNIQUE (user_id, storage_key)
+);
+
+ALTER TABLE public.user_answers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own answers"
+  ON public.user_answers
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);`}
                 </pre>
               </div>
             )}

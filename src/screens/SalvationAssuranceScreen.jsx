@@ -5,37 +5,7 @@ import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { ScriptureCard } from '../components/ScriptureCard';
 import { useAppContent } from '../context/ContentContext';
-
-function SavedAnswer({ storageKey }) {
-  const [answer, setAnswer] = useState('');
-  const storageName = `ifu:${storageKey}`;
-
-  useEffect(() => {
-    setAnswer(window.localStorage.getItem(storageName) ?? '');
-  }, [storageName]);
-
-  function handleChange(event) {
-    const nextAnswer = event.target.value;
-    setAnswer(nextAnswer);
-    window.localStorage.setItem(storageName, nextAnswer);
-  }
-
-  return (
-    <label className="mt-5 block">
-      <span className="sr-only">你的答案</span>
-      <textarea
-        value={answer}
-        onChange={handleChange}
-        rows={4}
-        className="min-h-28 w-full resize-y rounded-[1.25rem] border border-outline-variant bg-surface-container-low/55 p-4 text-base leading-7 text-on-surface outline-none transition focus:border-secondary focus:bg-white focus:ring-4 focus:ring-secondary/10"
-        placeholder="在這裡輸入你的答案..."
-      />
-      <span className="mt-2 block text-right text-[11px] font-bold tracking-[0.12em] text-on-surface-variant/55">
-        已自動儲存
-      </span>
-    </label>
-  );
-}
+import { SavedAnswer } from '../components/SavedAnswer';
 
 function ScriptureToggle({ scripture }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -213,6 +183,9 @@ export function SalvationAssuranceScreen() {
                           <ScriptureToggle key={sIdx} scripture={sc} />
                         ))}
                       </div>
+                    )}
+                    {(mod.storageKey || mod.id === 'salvation-q2-intro') && (
+                      <SavedAnswer storageKey={mod.storageKey || 'assurance-q2-2cor-5-17'} />
                     )}
                   </div>
                 )}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { pullAndMergeAnswersFromSupabase } from '../utils/answerSync';
 
 export interface Profile {
   id: string;
@@ -113,11 +114,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadSession = async () => {
     try {
       setLoading(true);
+      if (!isSupabaseConfigured) {
+        const savedMock = window.localStorage.getItem('ifu:mock_auth_user');
+        if (savedMock) {
+          try {
+            const parsed = JSON.parse(savedMock);
+            setUser(parsed);
+            setProfile({
+              id: parsed.id,
+              display_name: parsed.user_metadata?.full_name || '同行中的門徒 (Demo)',
+              avatar_url: null,
+              role: 'admin',
+              language: 'ZH',
+              created_at: parsed.created_at || new Date().toISOString(),
+            });
+          } catch {}
+        }
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
         const p = await getOrInitializeProfile(session.user);
         setProfile(p);
+        // Silently pull and decrypt any remote answers
+        pullAndMergeAnswersFromSupabase(session.user.id).catch((err) =>
+          console.warn('Background answer sync error:', err)
+        );
       } else {
         setUser(null);
         setProfile(null);
@@ -130,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshProfile = async () => {
-    if (user) {
+    if (user && isSupabaseConfigured) {
       const p = await getOrInitializeProfile(user);
       if (p) setProfile(p);
     }
@@ -139,11 +163,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     loadSession();
 
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user);
         const p = await getOrInitializeProfile(session.user);
         setProfile(p);
+        // Silently pull and decrypt any remote answers
+        pullAndMergeAnswersFromSupabase(session.user.id).catch((err) =>
+          console.warn('Background answer sync error:', err)
+        );
       } else {
         setUser(null);
         setProfile(null);
@@ -157,6 +190,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!isSupabaseConfigured) {
+      const mockUser: User = {
+        id: 'demo-user-12345',
+        email: 'disciple@example.com',
+        app_metadata: {},
+        user_metadata: { full_name: '同行中的門徒' },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      } as User;
+      setUser(mockUser);
+      setProfile({
+        id: 'demo-user-12345',
+        display_name: '同行中的門徒 (Demo)',
+        avatar_url: null,
+        role: 'admin',
+        language: 'ZH',
+        created_at: new Date().toISOString(),
+      });
+      window.localStorage.setItem('ifu:mock_auth_user', JSON.stringify(mockUser));
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -167,6 +222,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    if (!isSupabaseConfigured) {
+      window.localStorage.removeItem('ifu:mock_auth_user');
+      setUser(null);
+      setProfile(null);
+      return;
+    }
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setUser(null);
