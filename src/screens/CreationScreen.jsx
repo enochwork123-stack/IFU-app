@@ -12,7 +12,7 @@ export function CreationScreen() {
 
   return (
     <>
-      <PageHeader title="神的創造" backTo="/journey" />
+      <PageHeader title="神的創造" backTo="/" />
 
       <main className="px-6 pb-36 pt-8">
         <section className="rounded-[2rem] bg-surface-container-low p-8 shadow-[0_18px_44px_rgba(40,53,28,0.08)]">

@@ -104,6 +104,86 @@ function GospelSection({ section, index }) {
   );
 }
 
+const salvationQ2Scriptures = {
+  john524: {
+    book: '約翰福音',
+    reference: 'John 5:24',
+    chinese: '我實實在在的告訴你們，那聽我話、又信差我來者的，就有永生，不至於定罪，是已經出死入生了。',
+    english: 'Very truly, I tell you, anyone who hears my word and believes him who sent me has eternal life, and does not come under judgment, but has passed from death to life.',
+  },
+  john1st511: {
+    book: '約翰一書',
+    reference: '1John 5:11-12',
+    chinese: '這見證，就是神賜給我們永生，這永生也是在他兒子裡面。人有了神的兒子就有生命。沒有神的兒子就沒有生命。',
+    english: 'And this is the testimony: God gave us eternal life, and this life is in his Son. Whoever has the Son has life; whoever does not have the Son of God, does not have life.',
+  },
+  john112: {
+    book: '約翰福音',
+    reference: 'John 1:12',
+    chinese: '凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。',
+    english: 'But to all who received him, who believed in his name, he gave power to become children of God.',
+  },
+};
+
+function SalvationQuestion2Table() {
+  return (
+    <section className="w-full max-w-2xl rounded-[2rem] border border-outline-variant/40 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
+      {/* Question 2 Header / Prompt */}
+      <div className="mb-6 flex items-start gap-3.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+          2
+        </span>
+        <div className="text-[1.08rem] leading-8 text-on-surface">
+          <span className="font-bold text-secondary">哥林多後書 5:17</span>
+          {' 說：「'}
+          <span className="font-semibold text-primary">若有人在基督裏，他就是新造的人。舊事已過，都變成新的了。</span>
+          {'」在你接受耶穌基督救恩的那一刻，你的新生命已經開始了。請記下以下的經文怎樣描寫你的新生命的狀況。'}
+        </div>
+      </div>
+
+      {/* Table Format matching the layout */}
+      <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+        {/* Row 1: 關於你的罪和罪所帶來的結果 */}
+        <div className="grid grid-cols-1 border-b border-outline-variant/70 divide-y divide-outline-variant/70 md:grid-cols-[1fr_1.8fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-surface-container-low/40 p-5">
+            <p className="font-headline text-[1.05rem] font-bold leading-7 text-primary">
+              關於你的罪和罪所帶來的結果
+            </p>
+          </div>
+          <div className="flex flex-col gap-3.5 bg-surface-container-lowest p-5">
+            <ScriptureToggle scripture={salvationQ2Scriptures.john524} />
+            <SavedAnswer
+              storageKey="assurance-q2-sin"
+              placeholder="記下約翰福音 5:24 如何描寫你的新生命狀況..."
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: 關於你與神的關係 */}
+        <div className="grid grid-cols-1 divide-y divide-outline-variant/70 md:grid-cols-[1fr_1.8fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-surface-container-low/40 p-5">
+            <p className="font-headline text-[1.05rem] font-bold leading-7 text-primary">
+              關於你與神的關係
+            </p>
+          </div>
+          <div className="flex flex-col gap-3.5 bg-surface-container-lowest p-5">
+            <ScriptureToggle scripture={salvationQ2Scriptures.john1st511} />
+            <ScriptureToggle scripture={salvationQ2Scriptures.john112} />
+            <SavedAnswer
+              storageKey="assurance-q2-relationship"
+              placeholder="記下約翰一書 5:11-12 及 約翰福音 1:12 如何描寫你與神的關係..."
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function SalvationAssuranceScreen() {
   const { lessonRoutes, assuranceGospelSections } = useAppContent();
   const [showGospelReview, setShowGospelReview] = useState(false);
@@ -140,6 +220,14 @@ export function SalvationAssuranceScreen() {
       <main className="px-6 pb-36 pt-8 flex flex-col items-center">
         <div className="w-full space-y-8 flex flex-col items-center">
           {activeLesson.modules.map((mod) => {
+            // Render Question 2 as unified table
+            if (mod.id === 'salvation-q2-intro' || mod.id === 'salvation-q2') {
+              return <SalvationQuestion2Table key="salvation-q2-table" />;
+            }
+            if (mod.id === 'salvation-q2a' || mod.id === 'salvation-q2b') {
+              return null; // Integrated into SalvationQuestion2Table
+            }
+
             const cardTheme = mod.visual?.accent || 'surface';
             const cardStyle = getCardStyle(cardTheme);
             const sizeClass = mod.visual?.imageStyle || 'max-w-2xl'; // width
@@ -155,14 +243,9 @@ export function SalvationAssuranceScreen() {
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)] pointer-events-none" />
                 )}
 
-                {/* Card Title Header */}
-                {mod.title && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
+                {/* Card Title Header for non-reflection prompts */}
+                {mod.title && mod.kind !== 'reflection-prompt' && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
                   <div className={`flex items-center gap-3 mb-5 ${cardTheme === 'primary' ? 'text-secondary-fixed-dim' : 'text-secondary'}`}>
-                    {mod.kind === 'reflection-prompt' && (
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
-                        {mod.number || 'Q'}
-                      </span>
-                    )}
                     <h3 className={`font-headline text-[1.45rem] leading-tight ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
                       {mod.title}
                     </h3>
@@ -184,15 +267,29 @@ export function SalvationAssuranceScreen() {
                         ))}
                       </div>
                     )}
-                    {(mod.storageKey || mod.id === 'salvation-q2-intro') && (
-                      <SavedAnswer storageKey={mod.storageKey || 'assurance-q2-2cor-5-17'} />
+                    {mod.storageKey && (
+                      <SavedAnswer storageKey={mod.storageKey} />
                     )}
                   </div>
                 )}
 
                 {mod.kind === 'reflection-prompt' && (
                   <div className="relative">
-                    <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
+                    <div className="flex items-start gap-3.5 mb-2">
+                      {mod.number && (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+                          {mod.number}
+                        </span>
+                      )}
+                      <div className="flex-1">
+                        {mod.title && (
+                          <h3 className={`font-headline text-[1.35rem] leading-tight mb-2 ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
+                            {mod.title}
+                          </h3>
+                        )}
+                        <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
+                      </div>
+                    </div>
                     {mod.scriptures && (
                       <div className="mt-5 grid gap-3">
                         {mod.scriptures.map((sc, sIdx) => (
