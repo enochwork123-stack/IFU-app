@@ -375,9 +375,28 @@ export const ProfileScreen: React.FC = () => {
               </div>
             )}
             {syncMessage && (
-              <p className={`text-xs font-medium ${syncMessage.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
-                {syncMessage.text}
-              </p>
+              <div className="space-y-2">
+                <p className={`text-xs font-medium ${syncMessage.type === 'success' ? 'text-green-700' : 'text-amber-800 font-bold'}`}>
+                  {syncMessage.text}
+                </p>
+                {syncMessage.type === 'error' && (
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs space-y-2 text-amber-900">
+                    <p>若提示資料表不存在，請複製以下 SQL 語句並至 Supabase Dashboard -&gt; SQL Editor 貼上執行即可啟用雲端加密資料表：</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sql = `CREATE TABLE IF NOT EXISTS public.user_answers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,\n  storage_key text NOT NULL,\n  encrypted_content text NOT NULL,\n  iv text NOT NULL,\n  updated_at timestamptz DEFAULT now() NOT NULL,\n  UNIQUE (user_id, storage_key)\n);\n\nALTER TABLE public.user_answers ENABLE ROW LEVEL SECURITY;\n\nCREATE POLICY "Users can manage their own answers"\n  ON public.user_answers FOR ALL\n  USING (auth.uid() = user_id)\n  WITH CHECK (auth.uid() = user_id);`;
+                        navigator.clipboard.writeText(sql);
+                        alert('已複製 SQL 語句至剪貼簿！請在 Supabase SQL Editor 中貼上並執行。');
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg bg-amber-800 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-amber-900 cursor-pointer"
+                    >
+                      <Icon name="content_copy" className="text-[13px]" />
+                      複製 user_answers 建表 SQL
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

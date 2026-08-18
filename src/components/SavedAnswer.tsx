@@ -38,13 +38,17 @@ export const SavedAnswer: React.FC<SavedAnswerProps> = ({
     };
 
     // Listen for cloud sync status events
-    const handleCloudSyncStatus = (e: CustomEvent<{ status: string; key: string }>) => {
+    const handleCloudSyncStatus = (e: CustomEvent<{ status: string; key: string; error?: string }>) => {
       if (e.detail?.key === storageName) {
         if (e.detail.status === 'syncing') {
           setSyncStatus('syncing');
         } else if (e.detail.status === 'synced') {
           setSyncStatus('synced');
           setTimeout(() => setSyncStatus('idle'), 3000);
+        } else if (e.detail.status === 'error') {
+          setSyncStatus('error');
+        } else {
+          setSyncStatus('local');
         }
       }
     };
@@ -94,6 +98,11 @@ export const SavedAnswer: React.FC<SavedAnswerProps> = ({
           <span className="inline-flex items-center gap-1 text-green-700">
             <Icon name="lock" className="text-[13px]" />
             已加密儲存於雲端
+          </span>
+        ) : syncStatus === 'error' ? (
+          <span className="inline-flex items-center gap-1 text-amber-700">
+            <Icon name="warning" className="text-[13px]" />
+            已儲存於本機 (雲端連線失敗)
           </span>
         ) : user && isCloudSyncEnabled() ? (
           <span className="inline-flex items-center gap-1">

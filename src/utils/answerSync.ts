@@ -62,6 +62,12 @@ export function syncAnswerToSupabaseDebounced(
   debounceTimers.set(timerKey, timer);
 }
 
+let lastSyncErrorState: { code?: string; message: string } | null = null;
+
+export function getLastSyncError() {
+  return lastSyncErrorState;
+}
+
 /**
  * Immediate single-answer sync to Supabase with AES-GCM encryption
  */
@@ -112,19 +118,24 @@ export async function syncAnswerToSupabaseImmediate(
       if (error) throw error;
     }
 
+    lastSyncErrorState = null;
+
     window.dispatchEvent(
       new CustomEvent('ifu-cloud-sync-status', {
         detail: { status: 'synced', key: storageKey },
       })
     );
   } catch (err: any) {
-    console.error(`[CloudSync] Failed to sync ${storageKey}:`, err);
+    console.warn(`[CloudSync] Sync notice for ${storageKey}:`, err?.message || err);
+    lastSyncErrorState = {
+      code: err?.code,
+      message: err?.message || 'Supabase 連線失敗',
+    };
     window.dispatchEvent(
       new CustomEvent('ifu-cloud-sync-status', {
         detail: { status: 'error', key: storageKey, error: err?.message },
       })
     );
-    throw err;
   }
 }
 
