@@ -106,6 +106,175 @@ function BookTable({ title, rows }) {
   );
 }
 
+const quietTimeQ1Scriptures = {
+  jam48: {
+    book: '雅各書',
+    reference: 'Jam 4:8',
+    chinese: '你們親近神，神就必親近你們。',
+    english: 'Draw near to God, and he will draw near to you.',
+  },
+  isa4031: {
+    book: '以賽亞書',
+    reference: 'Isa 40:31',
+    chinese: '但那等候耶和華的，必從新得力，他們必如鷹展翅上騰，他們奔跑卻不困倦，行走卻不疲乏。',
+    english: 'But those who wait for the Lord shall renew their strength, they shall mount up with wings like eagles, they shall run and not be weary, they shall walk and not faint.',
+  },
+  john155: {
+    book: '約翰福音',
+    reference: 'John 15:5',
+    chinese: '我是葡萄樹，你們是枝子，常在我裡面的，我也常在他裡面，這人就多結果子，因為離了我，你們就不能作甚麼。',
+    english: 'I am the vine, you are the branches. Those who abide in me and I in them bear much fruit, because apart from me you can do nothing.',
+  },
+};
+
+const quietTimeQ3Scripture = {
+  book: '馬可福音',
+  reference: 'Mark 1:35',
+  chinese: '次日早晨，天未亮的時候，耶穌起來，到曠野地方去，在那裡禱告。',
+  english: 'In the morning, while it was still very dark, he got up and went out to a deserted place, and there he prayed.',
+};
+
+function QuietTimeQuestion1Table() {
+  return (
+    <section className="w-full max-w-2xl rounded-[2rem] border border-outline-variant/40 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
+      {/* Top verse & context matching user screenshot */}
+      <div className="space-y-4 mb-6">
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+            1
+          </span>
+          <div className="text-[1.08rem] leading-8 text-on-surface">
+            <span className="font-bold text-secondary">約翰福音 1:12</span>
+            {' 說：'}
+            <span className="font-semibold text-primary">凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。</span>
+          </div>
+        </div>
+        <p className="text-[1.05rem] leading-8 text-on-surface font-normal">
+          藉著接受耶穌基督的救贖，你已成為神的兒女，但對神的認識仍不夠深。神希望你與祂建立深厚的關係,認識祂的真理,活出敬虔的生命。
+        </p>
+        <p className="text-[1.05rem] leading-8 text-on-surface font-normal">
+          從以下經文可見，親近神和遠離神的生活會帶來甚麼不同的結果？
+        </p>
+      </div>
+
+      {/* 2-Column Table matching screenshot */}
+      <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+        {/* Row 1: 雅各書 4:8 */}
+        <div className="grid grid-cols-1 border-b border-outline-variant/70 divide-y divide-outline-variant/70 md:grid-cols-[160px_1fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-white p-4">
+            <span className="font-bold text-primary text-base leading-snug">
+              雅各書 4:8
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 bg-surface-container-low/35 p-4">
+            <ScriptureToggle scripture={quietTimeQ1Scriptures.jam48} />
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q1-jam4-8"
+              placeholder="記下 雅各書 4:8 關於親近神和遠離神的不同結果..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: 以賽亞書 40:31 */}
+        <div className="grid grid-cols-1 border-b border-outline-variant/70 divide-y divide-outline-variant/70 md:grid-cols-[160px_1fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-white p-4">
+            <span className="font-bold text-primary text-base leading-snug">
+              以賽亞書 40:31
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 bg-surface-container-low/35 p-4">
+            <ScriptureToggle scripture={quietTimeQ1Scriptures.isa4031} />
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q1-isa40-31"
+              placeholder="記下 以賽亞書 40:31 關於親近神和遠離神的不同結果..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+
+        {/* Row 3: 約翰福音 15:5 */}
+        <div className="grid grid-cols-1 divide-y divide-outline-variant/70 md:grid-cols-[160px_1fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-white p-4">
+            <span className="font-bold text-primary text-base leading-snug">
+              約翰福音 15:5
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 bg-surface-container-low/35 p-4">
+            <ScriptureToggle scripture={quietTimeQ1Scriptures.john155} />
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q1-john15-5"
+              placeholder="記下 約翰福音 15:5 關於親近神和遠離神的不同結果..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuietTimeQuestion3Table() {
+  return (
+    <section className="w-full max-w-2xl rounded-[2rem] border border-outline-variant/40 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
+      {/* Question 3 Header */}
+      <div className="mb-5 flex items-start gap-3.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+          3
+        </span>
+        <div className="text-[1.08rem] leading-8 text-on-surface">
+          從 <span className="font-bold text-secondary">馬可福音 1:35</span>，可見主耶穌如何親近神：
+        </div>
+      </div>
+
+      {/* Scripture Toggle */}
+      <div className="mb-5">
+        <ScriptureToggle scripture={quietTimeQ3Scripture} />
+      </div>
+
+      {/* 2-Column Table matching user screenshot */}
+      <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+        {/* Row 1: 時間、地方 */}
+        <div className="grid grid-cols-1 border-b border-outline-variant/70 divide-y divide-outline-variant/70 md:grid-cols-[140px_1fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-white p-4">
+            <span className="font-bold text-primary text-base leading-snug">
+              時間、地方
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 bg-surface-container-low/35 p-4">
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q3-time-place"
+              placeholder="記下主耶穌親近神的時間與地方..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: 方式、處境 */}
+        <div className="grid grid-cols-1 divide-y divide-outline-variant/70 md:grid-cols-[140px_1fr] md:divide-x md:divide-y-0">
+          <div className="flex items-center bg-white p-4">
+            <span className="font-bold text-primary text-base leading-snug">
+              方式、處境
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 bg-surface-container-low/35 p-4">
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q3-method-context"
+              placeholder="記下主耶穌親近神的方式與處境..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function QuietTimeScreen() {
   const { lessonRoutes } = useAppContent();
   const [showAppendix, setShowAppendix] = useState(false);
@@ -141,6 +310,16 @@ export function QuietTimeScreen() {
       <main className="px-6 pb-36 pt-8 flex flex-col items-center">
         <div className="w-full space-y-8 flex flex-col items-center">
           {activeLesson.modules.map((mod) => {
+            // Render Question 1 as unified table (referencing SalvationQuestion2Table)
+            if (mod.id === 'quiet-time-q1' || mod.id === 'quiet-time-scripture-study') {
+              return <QuietTimeQuestion1Table key="quiet-time-q1-table" />;
+            }
+
+            // Render Question 3 as unified table (referencing SalvationQuestion2Table)
+            if (mod.id === 'quiet-time-q3' || mod.id === 'quiet-time-prayer-study') {
+              return <QuietTimeQuestion3Table key="quiet-time-q3-table" />;
+            }
+
             const cardTheme = mod.visual?.accent || 'surface';
             const cardStyle = getCardStyle(cardTheme);
             const sizeClass = mod.visual?.imageStyle || 'max-w-2xl';
@@ -156,14 +335,9 @@ export function QuietTimeScreen() {
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)] pointer-events-none" />
                 )}
 
-                {/* Card Title Header */}
-                {mod.title && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
+                {/* Card Title Header for non-reflection prompts */}
+                {mod.title && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && mod.kind !== 'reflection-prompt' && (
                   <div className={`flex items-center gap-3 mb-5 ${cardTheme === 'primary' ? 'text-secondary-fixed-dim' : 'text-secondary'}`}>
-                    {mod.kind === 'reflection-prompt' && (
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
-                        {mod.number || 'Q'}
-                      </span>
-                    )}
                     <h3 className={`font-headline text-[1.45rem] leading-tight ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
                       {mod.title}
                     </h3>
@@ -190,7 +364,22 @@ export function QuietTimeScreen() {
 
                 {mod.kind === 'reflection-prompt' && (
                   <div className="relative">
-                    <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
+                    <div className="flex items-start gap-3.5 mb-2">
+                      {mod.number && (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+                          {mod.number}
+                        </span>
+                      )}
+                      <div className="flex-1">
+                        {mod.title && (
+                          <h3 className={`font-headline text-[1.35rem] leading-tight mb-2 ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
+                            {mod.title}
+                          </h3>
+                        )}
+                        <p className="text-[1.05rem] leading-8 text-on-surface font-normal">{mod.prompt}</p>
+                      </div>
+                    </div>
+
                     {mod.scriptures && (
                       <div className="mt-5 grid gap-3">
                         {mod.scriptures.map((sc, sIdx) => (

@@ -935,7 +935,7 @@ export const lessonRoutes = [
         id: 'prayer-assurance-q5',
         kind: 'reflection-prompt',
         number: '5',
-        prompt: 'ACTS 禱告操練 (讚美 Adoration、認罪 Confession、感謝 Thanksgiving、祈求 Supplication)',
+        prompt: "我們藉禱告向神傾心吐意、倚靠祂、親近祂。你向神禱告的內容可包括 'ACTS' 四方面。請記下你今天在每方面相關的事,並為此向神禱告.",
         scriptures: [
           {
             book: '馬太福音',

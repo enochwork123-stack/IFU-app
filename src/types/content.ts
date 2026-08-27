@@ -142,13 +142,31 @@ export interface ScriptureRevealModule extends StudyModuleBase {
   allowMultipleOpen?: boolean;
 }
 
+export interface VerseInputItem {
+  id?: ContentId;
+  book?: string;
+  reference: string;
+  chinese?: string;
+  english?: string;
+  storageKey: LocalStorageKey;
+  placeholder?: string;
+}
+
 export interface ReflectionPromptModule extends StudyModuleBase {
   kind: 'reflection-prompt';
   prompt: string;
   number?: string;
+  introScripture?: {
+    number?: string;
+    reference?: string;
+    chinese?: string;
+    english?: string;
+  };
+  context?: string;
   scriptures?: readonly ScriptureReference[];
-  storageKey: LocalStorageKey;
-  responseMode?: 'textarea' | 'short-text' | 'checklist';
+  storageKey?: LocalStorageKey;
+  responseMode?: 'textarea' | 'short-text' | 'checklist' | 'verse-table';
+  verseInputs?: readonly VerseInputItem[];
   placeholder?: string;
 }
 

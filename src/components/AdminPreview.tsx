@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useAppContent } from '../context/ContentContext';
 import type { StudyModule, ScriptureReference } from '../types/content';
 
@@ -328,27 +328,60 @@ export const LessonPreview: React.FC<LessonPreviewProps> = ({ lessonId }) => {
 
               {mod.kind === 'reflection-prompt' && (
                 <div className="space-y-3 text-on-surface">
+                  {(mod as any).introScripture && (
+                    <p className="text-xs font-semibold leading-5 text-on-surface">
+                      <span className="font-bold text-on-surface mr-1">{(mod as any).introScripture.number || `${(mod as any).number || '1'}.`}</span>
+                      <span className="font-bold text-primary">{(mod as any).introScripture.chinese || `${(mod as any).introScripture.reference} 說：${(mod as any).introScripture.verse || ''}`}</span>
+                    </p>
+                  )}
+                  {(mod as any).context && (
+                    <p className="text-xs leading-5 text-on-surface-variant">
+                      {(mod as any).context}
+                    </p>
+                  )}
                   <p className="text-xs font-semibold leading-5 text-on-surface">
                     {(mod as any).prompt}
                   </p>
-                  {(mod as any).scriptures && (mod as any).scriptures.length > 0 && (
-                    <div className="space-y-2">
-                      {(mod as any).scriptures.map((sc: ScriptureReference, sIdx: number) => (
-                        <ScriptureToggle key={sIdx} scripture={sc} />
+                  {(mod as any).verseInputs && (mod as any).verseInputs.length > 0 ? (
+                    <div className="mt-2 overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest divide-y divide-outline-variant/50">
+                      {(mod as any).verseInputs.map((vItem: any, vIdx: number) => (
+                        <div key={vIdx} className="flex divide-x divide-outline-variant/50">
+                          <div className="w-28 p-2.5 bg-white/70 flex items-center">
+                            <span className="font-bold text-primary text-xs leading-tight">{vItem.reference}</span>
+                          </div>
+                          <div className="flex-1 bg-surface-container-low/40 p-2">
+                            <textarea
+                              disabled
+                              rows={2}
+                              className="w-full resize-none rounded-lg border border-outline-variant/40 bg-white/60 p-1.5 text-xs text-on-surface-variant outline-none"
+                              placeholder={vItem.placeholder || '輸入答案...'}
+                            />
+                          </div>
+                        </div>
                       ))}
                     </div>
+                  ) : (
+                    <>
+                      {(mod as any).scriptures && (mod as any).scriptures.length > 0 && (
+                        <div className="space-y-2">
+                          {(mod as any).scriptures.map((sc: ScriptureReference, sIdx: number) => (
+                            <ScriptureToggle key={sIdx} scripture={sc} />
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-3">
+                        <textarea
+                          disabled
+                          rows={2}
+                          className="w-full resize-none rounded-xl border border-outline-variant bg-surface-container-low/50 p-2.5 text-xs text-on-surface-variant outline-none"
+                          placeholder="在這裡輸入你的答案... (預覽模式不可輸入)"
+                        />
+                        <span className="mt-1 block text-right text-[9px] font-extrabold text-on-surface-variant/40">
+                          已自動儲存
+                        </span>
+                      </div>
+                    </>
                   )}
-                  <div className="mt-3">
-                    <textarea
-                      disabled
-                      rows={2}
-                      className="w-full resize-none rounded-xl border border-outline-variant bg-surface-container-low/50 p-2.5 text-xs text-on-surface-variant outline-none"
-                      placeholder="在這裡輸入你的答案... (預覽模式不可輸入)"
-                    />
-                    <span className="mt-1 block text-right text-[9px] font-extrabold text-on-surface-variant/40">
-                      已自動儲存
-                    </span>
-                  </div>
                 </div>
               )}
 

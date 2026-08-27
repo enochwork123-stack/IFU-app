@@ -349,7 +349,10 @@ export function PrayerAssuranceScreen() {
           </QuestionCard>
 
 
-          <QuestionCard number="5" title="ACTS 禱告操練">
+          <QuestionCard
+            number="5"
+            title="我們藉禱告向神傾心吐意、倚靠祂、親近祂。你向神禱告的內容可包括 'ACTS' 四方面。請記下你今天在每方面相關的事,並為此向神禱告."
+          >
             <div className="grid gap-4">
               {actsItems.map((item) => (
                 <div

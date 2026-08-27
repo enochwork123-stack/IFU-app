@@ -204,34 +204,52 @@ const enrichDefaultRoutes = (routes: LessonRoute[]): LessonRoute[] => {
             id: 'quiet-time-q1',
             kind: 'reflection-prompt',
             number: '1',
-            prompt: '從以下經文可見，親近神和遠離神的生活會帶來甚麼不同的結果？ (約翰福音 1:12 說 : 凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。)',
+            introScripture: {
+              number: '1.',
+              reference: '約翰福音 1:12',
+              chinese: '約翰福音 1:12 說：凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。',
+              english: 'Yet to all who did receive him, to those who believed in his name, he gave the right to become children of God.'
+            },
+            context: '藉著接受耶穌基督的救贖，你已成為神的兒女，但對神的認識仍不夠深。神希望你與祂建立深厚的關係,認識祂的真理,活出敬虔的生命。',
+            prompt: '從以下經文可見，親近神和遠離神的生活會帶來甚麼不同的結果？',
+            responseMode: 'verse-table',
+            storageKey: 'ifu:quiet-time:q1-jam4-8',
             scriptures: [
               {
                 book: '約翰福音',
                 reference: 'John 1:12',
-                chinese: '凡接待他的，就是信他名的人，他就賜他們權柄， 作神的兒女。'
-              },
-              {
-                book: '雅各書',
-                reference: 'Jam 4:8',
-                chinese: '你們親近神，神就必親近你們。',
-                english: 'Draw near to God, and he will draw near to you.'
-              },
-              {
-                book: '以賽亞',
-                reference: 'Isa 40:31',
-                chinese: '但那等候耶和華的 , 必從新得力，他們必如鷹展翅上騰，他們奔跑卻不困倦，行走卻不疲乏。',
-                english: 'But those who wait for the Lord shall renew their strength, they shall mount up with wings like eagles, they shall run and not be weary, they shall walk and not faint.'
-              },
-              {
-                book: '約翰福音',
-                reference: 'John 15:5',
-                chinese: '我是葡萄樹，你們是枝子，常在我裡面的，我也常在他裡面，這人就多結果子，因為離了我，你們就不能作甚麼。',
-                english: 'I am the vine, you are the branches. Those who abide in me and I in them bear much fruit, because apart from me you can do nothing.'
+                chinese: '凡接待他的，就是信他名的人，他就賜他們權柄，作神的兒女。'
               }
             ],
-            storageKey: 'quiet-time-q1',
-            responseMode: 'textarea',
+            verseInputs: [
+              {
+                id: 'jam-4-8',
+                book: '雅各書',
+                reference: '雅各書 4:8',
+                chinese: '你們親近神，神就必親近你們。',
+                english: 'Draw near to God, and he will draw near to you.',
+                storageKey: 'ifu:quiet-time:q1-jam4-8',
+                placeholder: '在這裡輸入你的答案...'
+              },
+              {
+                id: 'isa-40-31',
+                book: '以賽亞書',
+                reference: '以賽亞書 40:31',
+                chinese: '但那等候耶和華的，必從新得力，他們必如鷹展翅上騰，他們奔跑卻不困倦，行走卻不疲乏。',
+                english: 'But those who wait for the Lord shall renew their strength, they shall mount up with wings like eagles, they shall run and not be weary, they shall walk and not faint.',
+                storageKey: 'ifu:quiet-time:q1-isa40-31',
+                placeholder: '在這裡輸入你的答案...'
+              },
+              {
+                id: 'john-15-5',
+                book: '約翰福音',
+                reference: '約翰福音 15:5',
+                chinese: '我是葡萄樹，你們是枝子，常在我裡面的，我也常在他裡面，這人就多結果子，因為離了我，你們就不能作甚麼。',
+                english: 'I am the vine, you are the branches. Those who abide in me and I in them bear much fruit, because apart from me you can do nothing.',
+                storageKey: 'ifu:quiet-time:q1-john15-5',
+                placeholder: '在這裡輸入你的答案...'
+              }
+            ],
             visual: { accent: 'surface', surface: 'elevated', imageStyle: 'max-w-2xl', eyebrow: 'min-h-auto' }
           },
           {
@@ -277,7 +295,7 @@ const enrichDefaultRoutes = (routes: LessonRoute[]): LessonRoute[] => {
             id: 'quiet-time-q3',
             kind: 'reflection-prompt',
             number: '3',
-            prompt: '從 馬可福音 1:35，可見主耶穌如何親近神 (時間、地方、方式、處境)：',
+            prompt: '從 馬可福音 1:35，可見主耶穌如何親近神：',
             scriptures: [
               {
                 book: '馬可福音',
@@ -286,8 +304,21 @@ const enrichDefaultRoutes = (routes: LessonRoute[]): LessonRoute[] => {
                 english: 'In the morning, while it was still very dark, he got up and went out to a deserted place, and there he prayed.'
               }
             ],
-            storageKey: 'quiet-time-q3-time-place',
-            responseMode: 'textarea',
+            responseMode: 'verse-table',
+            verseInputs: [
+              {
+                id: 'qt-time-place',
+                reference: '時間、地方',
+                storageKey: 'ifu:quiet-time:q3-time-place',
+                placeholder: '記下主耶穌親近神的時間與地方...'
+              },
+              {
+                id: 'qt-method-context',
+                reference: '方式、處境',
+                storageKey: 'ifu:quiet-time:q3-method-context',
+                placeholder: '記下主耶穌親近神的方式與處境...'
+              }
+            ],
             visual: { accent: 'surface', surface: 'elevated', imageStyle: 'max-w-2xl', eyebrow: 'min-h-auto' }
           },
           {
@@ -384,7 +415,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           quietTimeStudyItems: parsed.quietTimeStudyItems || defaultQuietTimeStudyItems,
           quietTimeEntries: parsed.quietTimeEntries || defaultQuietTimeEntries,
           lessonRoutes: (parsed.lessonRoutes && parsed.lessonRoutes.length >= defaultEnrichedLessonRoutes.length)
-            ? parsed.lessonRoutes
+            ? enrichDefaultRoutes(parsed.lessonRoutes)
             : defaultEnrichedLessonRoutes,
           customScreenTexts: { ...DEFAULT_CUSTOM_TEXTS, ...(parsed.customScreenTexts || {}) },
         };
