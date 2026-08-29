@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>祈禱的運作 | How Prayer Works</title>
+  <meta name="description" content="互動演示：祈禱向神傾訴、神必垂聽與四種神聖回應方式。" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+            serif: ['Noto Serif TC', 'serif'],
+            display: ['Space Grotesk', 'Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #040718;
+      color: #f8fafc;
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* Subtle space grid background */
+    .bg-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(59, 130, 246, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(59, 130, 246, 0.06) 1px, transparent 1px);
+    }
+
+    .glass-card {
+      background: rgba(10, 16, 44, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(99, 140, 255, 0.22);
+    }
+
+    /* Glowing Text */
+    .glow-gold {
+      text-shadow: 0 0 14px rgba(251, 191, 36, 0.8), 0 0 28px rgba(251, 191, 36, 0.4);
+    }
+    .glow-cyan {
+      text-shadow: 0 0 14px rgba(0, 242, 254, 0.8), 0 0 28px rgba(0, 242, 254, 0.4);
+    }
+    .glow-emerald {
+      text-shadow: 0 0 14px rgba(52, 211, 153, 0.8), 0 0 28px rgba(52, 211, 153, 0.4);
+    }
+
+    /* Animated Flows */
+    @keyframes flowUp {
+      0% { stroke-dashoffset: 60; opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 0.2; }
+    }
+    @keyframes flowDown {
+      0% { stroke-dashoffset: -60; opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 0.2; }
+    }
+    .beam-up-active {
+      stroke-dasharray: 8, 8;
+      animation: flowUp 1s linear infinite;
+    }
+    .beam-down-active {
+      stroke-dasharray: 8, 8;
+      animation: flowDown 1s linear infinite;
+    }
+
+    /* Pulse Halo */
+    @keyframes pulseAura {
+      0%, 100% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.08); opacity: 0.3; }
+    }
+    .aura-god {
+      animation: pulseAura 3s ease-in-out infinite;
+    }
+
+    /* WhatsApp Chat Styles */
+    .wa-container {
+      background-color: #0b141a;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+      background-size: 20px 20px;
+    }
+    
+    .wa-bubble-incoming {
+      background: #202c33;
+      border-radius: 0px 14px 14px 14px;
+      position: relative;
+    }
+    .wa-bubble-incoming::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid #202c33;
+      border-left: 10px solid transparent;
+    }
+
+    /* Modal Animation */
+    @keyframes waModalIn {
+      from { opacity: 0; transform: scale(0.92) translateY(16px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .wa-modal-anim {
+      animation: waModalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="relative w-full h-full flex flex-col justify-between overflow-x-hidden bg-grid">
+
+  <!-- Ambient Light Orbs -->
+  <div class="fixed top-6 left-1/2 -translate-x-1/2 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+  <div class="fixed bottom-10 left-1/4 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+  <!-- TOP COMPACT HEADER -->
+  <header class="relative z-30 w-full px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-slate-800/70 bg-[#040718]/80 backdrop-blur-md shrink-0">
+    <div class="min-w-0">
+      <h1 class="text-xs sm:text-base font-black font-display tracking-wider text-white truncate flex items-center gap-1.5" id="hdr-title">
+        祈禱的運作
+      </h1>
+      <p class="text-[10px] sm:text-xs text-slate-400 truncate" id="hdr-sub">
+        點擊下方「向神傾訴」按鈕，體驗雙向交流與神的回應
+      </p>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button id="btn-lang" class="glass-card px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold text-slate-200 hover:text-cyan-300 hover:border-cyan-400/50 transition flex items-center gap-1">
+        <i data-lucide="languages" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span id="txt-lang">English</span>
+      </button>
+
+      <button id="btn-reset" onclick="resetPrayerFlow()" class="glass-card px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:text-amber-300 transition flex items-center gap-1">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+        <span id="txt-reset">重置</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN INTERACTIVE STAGE -->
+  <main class="relative z-10 flex-1 w-full max-w-2xl mx-auto px-4 py-3 sm:py-5 flex flex-col items-center justify-between min-h-0">
+    
+    <!-- 1. TOP NODE: GOD -->
+    <div class="flex flex-col items-center relative z-20">
+      <div id="god-node" class="relative transition-all duration-500">
+        <!-- Celestial Aura Rings -->
+        <div id="god-aura" class="absolute -inset-3 rounded-full border-2 border-amber-400/30 opacity-0 transition-opacity duration-500 aura-god"></div>
+        
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-b from-amber-400/25 to-amber-600/10 border-2 border-amber-400/60 flex flex-col items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(251,191,36,0.35)] transition-all duration-300">
+          <span id="god-name" class="font-serif font-black text-3xl sm:text-4xl text-amber-100 glow-gold">神</span>
+          <span id="god-subtext" class="text-[9px] font-black tracking-widest text-amber-300 font-display uppercase">至高掌權</span>
+        </div>
+      </div>
+      <span id="god-label" class="text-[10px] sm:text-xs font-bold text-amber-300/80 mt-1 opacity-80">
+        天父全知全能・留心聽禱告
+      </span>
+    </div>
+
+    <!-- 2. MIDDLE INTERACTIVE FLOW PIPELINE -->
+    <div class="relative w-full max-w-sm h-40 sm:h-48 flex items-center justify-center my-1">
+      
+      <!-- SVG Connecting Beams -->
+      <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 160" fill="none">
+        
+        <!-- Left Downward Path: 回應 (God Responds) -->
+        <path id="path-down" d="M 65 20 L 65 140" stroke="#34d399" stroke-width="3.5" stroke-linecap="round" class="opacity-20 transition-all duration-300" />
+        <polygon id="arrow-down" points="65,146 58,134 72,134" fill="#34d399" class="opacity-20 transition-opacity duration-300" />
+
+        <!-- Right Upward Path: 垂聽 (God Hears) -->
+        <path id="path-up" d="M 135 140 L 135 20" stroke="#00f2fe" stroke-width="3.5" stroke-linecap="round" class="opacity-20 transition-all duration-300" />
+        <polygon id="arrow-up" points="135,14 128,26 142,26" fill="#00f2fe" class="opacity-20 transition-opacity duration-300" />
+      </svg>
+
+      <!-- Center Flow Badges Overlay -->
+      <div class="relative z-20 w-full flex items-center justify-around px-4 pointer-events-none">
+        
+        <!-- (A) Downward Badge: 回應 -->
+        <div id="badge-respond" class="opacity-0 translate-y-3 transition-all duration-500 pointer-events-auto cursor-pointer" onclick="openOutcomeModal(0)">
+          <div class="px-3.5 py-1.5 rounded-xl bg-emerald-950/90 border border-emerald-400/80 text-emerald-300 text-xs font-black tracking-wide shadow-[0_0_15px_rgba(52,211,153,0.4)] flex items-center gap-1.5 animate-bounce">
+            <i data-lucide="arrow-down" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span id="txt-badge-respond">回應</span>
+          </div>
+        </div>
+
+        <!-- (B) Upward Badge: 垂聽 -->
+        <div id="badge-hear" class="opacity-0 -translate-y-3 transition-all duration-500 pointer-events-auto">
+          <div class="px-3.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/80 text-cyan-300 text-xs font-black tracking-wide shadow-[0_0_15px_rgba(0,242,254,0.4)] flex items-center gap-1.5">
+            <i data-lucide="arrow-up" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="txt-badge-hear">垂聽</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 3. BOTTOM NODE: BELIEVER / PRAY BUTTON -->
+    <div class="flex flex-col items-center relative z-20 w-full max-w-sm">
+      
+      <!-- Interactive Main Pray Button -->
+      <button id="btn-pray" onclick="startPrayerAction()" class="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-500 border-2 border-cyan-300 text-white font-black text-sm sm:text-base tracking-wider shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2.5 cursor-pointer">
+        <span class="text-xl">🙏</span>
+        <span id="txt-btn-pray">向神傾訴</span>
+        <i data-lucide="send" class="w-4 h-4 text-cyan-200"></i>
+      </button>
+
+      <!-- Subtitle Scripture Link -->
+      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-2 text-center" id="txt-pray-sub">
+        祈禱 = 向神傾訴（約翰福音 16:24；詩篇 62:8）
+      </p>
+
+    </div>
+
+    <!-- 4. REVEALED 4 RESPONSE OUTCOMES SECTION -->
+    <div id="section-outcomes" class="w-full max-w-xl mt-3 transition-all duration-500 opacity-0 pointer-events-none translate-y-4">
+      
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-black text-amber-300 flex items-center gap-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span id="txt-outcomes-title">神的回應可包括（點擊查看）：</span>
+        </span>
+        <span class="text-[10px] text-slate-400 font-bold" id="txt-outcomes-badge">4 種途徑</span>
+      </div>
+
+      <!-- 4 Quick Responsive Outcome Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        
+        <!-- 1. 賜你平安 -->
+        <button onclick="openOutcomeModal(0)" class="p-2.5 rounded-xl bg-[#091133]/90 border border-emerald-400/60 hover:border-emerald-300 hover:bg-emerald-950/40 text-left transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow">
+          <span class="text-lg">🕊️</span>
+          <div class="min-w-0">
+            <h4 class="text-xs font-bold text-emerald-300 truncate" id="out-0-title">1. 賜你心裏平安</h4>
+            <span class="text-[9px] text-slate-400 font-mono" id="out-0-ref">腓立比書 4:6-7</span>
+          </div>
+        </button>
+
+        <!-- 2. 給你指引 -->
+        <button onclick="openOutcomeModal(1)" class="p-2.5 rounded-xl bg-[#091133]/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-950/40 text-left transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow">
+          <span class="text-lg">🧭</span>
+          <div class="min-w-0">
+            <h4 class="text-xs font-bold text-cyan-300 truncate" id="out-1-title">2. 給你指引與啟示</h4>
+            <span class="text-[9px] text-slate-400 font-mono" id="out-1-ref">耶利米書 33:3</span>
+          </div>
+        </button>
+
+        <!-- 3. 賜你所需 -->
+        <button onclick="openOutcomeModal(2)" class="p-2.5 rounded-xl bg-[#091133]/90 border border-amber-400/60 hover:border-amber-300 hover:bg-amber-950/40 text-left transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow">
+          <span class="text-lg">🤲</span>
+          <div class="min-w-0">
+            <h4 class="text-xs font-bold text-amber-300 truncate" id="out-2-title">3. 按旨意賜你所需</h4>
+            <span class="text-[9px] text-slate-400 font-mono" id="out-2-ref">約翰一書 5:14-15</span>
+          </div>
+        </button>
+
+        <!-- 4. 其他安排 (NO SCRIPTURE) -->
+        <button onclick="openOutcomeModal(3)" class="p-2.5 rounded-xl bg-[#091133]/90 border border-purple-400/60 hover:border-purple-300 hover:bg-purple-950/40 text-left transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow">
+          <span class="text-lg">⏳</span>
+          <div class="min-w-0">
+            <h4 class="text-xs font-bold text-purple-300 truncate" id="out-3-title">4. 作其他安排</h4>
+            <span class="text-[9px] text-slate-400 font-sans" id="out-3-sub">如改變環境或等待</span>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 5. INTERACTIVE WHATSAPP-STYLE MESSAGE POPUP MODAL -->
+  <div id="modal-outcome" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-[24px] overflow-hidden shadow-2xl border border-emerald-500/40 wa-container wa-modal-anim flex flex-col">
+      
+      <!-- WhatsApp Header Bar -->
+      <div class="px-4 py-3 bg-[#1f2c34] flex items-center justify-between border-b border-[#2a3942] text-white">
+        <div class="flex items-center gap-3">
+          <!-- God Profile Avatar with Online Dot -->
+          <div class="relative">
+            <div id="wa-avatar-text" class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center text-slate-950 font-black text-sm shadow">
+              神
+            </div>
+            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#1f2c34]"></div>
+          </div>
+          <div>
+            <h3 class="text-xs sm:text-sm font-bold text-white leading-tight flex items-center gap-1.5">
+              <span id="wa-sender-name">天父</span>
+              <span class="text-[10px] text-emerald-400 font-mono">✓</span>
+            </h3>
+            <!-- Removed 'now' / '即時' as God answers in His own time -->
+            <span class="text-[10px] text-slate-400 font-sans" id="wa-online-status">在線・垂聽與回應中...</span>
+          </div>
+        </div>
+
+        <button onclick="closeOutcomeModal()" class="w-7 h-7 rounded-full bg-[#111b21] hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- WhatsApp Chat Area -->
+      <div class="p-4 flex flex-col gap-3 max-h-[380px] overflow-y-auto">
+        
+        <!-- Date Badge -->
+        <div class="self-center px-2.5 py-0.5 rounded-md bg-[#182229] text-[10px] text-slate-400 font-medium" id="wa-date-badge">
+          今天
+        </div>
+
+        <!-- Incoming WhatsApp Bubble from God -->
+        <div class="flex items-start gap-2 max-w-[94%]">
+          <div class="wa-bubble-incoming p-3 shadow-md flex flex-col gap-2">
+            
+            <!-- Message Title/Category -->
+            <div class="flex items-center gap-1.5 pb-1 border-b border-white/10">
+              <span id="wa-icon" class="text-base">🕊️</span>
+              <span id="wa-title" class="text-xs font-bold text-amber-300">
+                1. 賜你心裏平安
+              </span>
+            </div>
+
+            <!-- Message Main Body -->
+            <p id="wa-text" class="text-xs text-slate-100 leading-relaxed font-sans">
+              孩子，將你的憂慮告訴我。我必賜你出人意外的平安，保護你的心思意念。
+            </p>
+
+            <!-- Scripture Attachment Card (Shown only for 1, 2, 3; Hidden for 4) -->
+            <div id="wa-verse-card" class="p-2.5 rounded-lg bg-[#111b21]/90 border-l-4 border-emerald-400 text-left">
+              <span id="wa-verse-ref" class="text-[10px] font-bold text-emerald-300 font-mono block mb-0.5">
+                腓立比書 4:6-7
+              </span>
+              <p id="wa-verse-text" class="text-[11px] font-serif text-slate-200 italic leading-snug">
+                「應當一無挂慮，只要凡事藉著禱告、祈求，和感謝，將你們所要的告訴神。神所賜、出人意外的平安必在基督耶穌裡保守你們的心懷意念。」
+              </p>
+            </div>
+
+            <!-- Timestamp & Blue Ticks -->
+            <div class="self-end flex items-center gap-1 text-[9px] text-slate-400 mt-0.5">
+              <span id="wa-time">剛剛</span>
+              <span class="text-cyan-400 font-bold">✓✓</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- WhatsApp Quick Action Bottom Bar -->
+      <div class="px-3.5 py-2.5 bg-[#1f2c34] border-t border-[#2a3942] flex items-center justify-between gap-2">
+        <span class="text-[10px] text-slate-400" id="wa-footer-hint">點擊下方按鈕回復：</span>
+        <button onclick="closeOutcomeModal()" class="px-4 py-1.5 rounded-full bg-[#00a884] hover:bg-[#008f72] text-slate-950 font-black text-xs transition flex items-center gap-1 shadow">
+          <span id="wa-ack-btn">阿們・明白！</span>
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const i18n = {
+      zh: {
+        hdrTitle: "祈禱的運作",
+        hdrSub: "點擊下方「向神傾訴」按鈕，體驗雙向交流與神的回應",
+        langBtn: "English",
+        resetBtn: "重置",
+        godName: "神",
+        godSubtext: "至高掌權",
+        godLabel: "天父全知全能・留心聽禱告",
+        badgeHear: "垂聽",
+        badgeRespond: "回應",
+        btnPray: "向神傾訴",
+        praySub: "祈禱 = 向神傾訴（約翰福音 16:24；詩篇 62:8）",
+        outcomesTitle: "神的回應可包括（點擊查看）：",
+        outcomesBadge: "4 種途徑",
+        out3Sub: "如改變環境或等待",
+        waAvatarText: "神",
+        waSenderName: "天父",
+        waOnline: "在線・垂聽與回應中...",
+        waDateBadge: "今天",
+        waFooterHint: "點擊下方按鈕回復：",
+        waAckBtn: "阿們・明白！",
+        timeNow: "剛剛",
+        outcomes: [
+          {
+            icon: "🕊️",
+            title: "1. 賜你心裏平安，保護你的心思",
+            ref: "腓立比書 4:6-7",
+            desc: "孩子，將你的憂慮全交給我。我必賜你出人意外的平安，在基督耶穌裡時刻保護你的心思意念。",
+            verse: "「應當一無挂慮，只要凡事藉著禱告、祈求，和感謝，將你們所要的告訴神。神所賜、出人意外的平安必在基督耶穌裡保守你們的心懷意念。」",
+            hasScripture: true
+          },
+          {
+            icon: "🧭",
+            title: "2. 給你指引與啟示",
+            ref: "耶利米書 33:3",
+            desc: "你求告我，我就應允你。我會為你照亮當行的路，指示你所不知道又大又難的事。",
+            verse: "「你求告我，我就應允你，並將你所不知道、又大又難的事指示你。」",
+            hasScripture: true
+          },
+          {
+            icon: "🤲",
+            title: "3. 按祂所鑑察賜你所需所求",
+            ref: "約翰一書 5:14-15",
+            desc: "我知道你的一切需要。只要照著我的旨意求，我必按最美好的心意與時間成全你所需。",
+            verse: "「我們若照他的旨意求甚麼，他就聽我們，這是我們向他所存坦然無懼的心。既然知道他聽我們一切所求的，就知道我們所求於他的，無不得著。」",
+            hasScripture: true
+          },
+          {
+            icon: "⏳",
+            title: "4. 作其他安排（如改變環境、讓你等待等）",
+            ref: "",
+            desc: "我正在為你作最好的安排。這可能需要改變你周圍的環境，或需要你耐心等候我的時間。請放心倚靠我，我所作的盡都美好。",
+            verse: "",
+            hasScripture: false
+          }
+        ]
+      },
+      en: {
+        hdrTitle: "HOW PRAYER WORKS",
+        hdrSub: "Tap 'Pour Out Heart' below to experience two-way prayer and God's responses",
+        langBtn: "繁體中文",
+        resetBtn: "Reset",
+        godName: "GOD",
+        godSubtext: "SOVEREIGN",
+        godLabel: "The Father is All-Knowing • Attentive to Prayer",
+        badgeHear: "Hears",
+        badgeRespond: "Responds",
+        btnPray: "Pour Out Heart",
+        praySub: "Prayer = Pouring Out Heart to God (John 16:24; Psalm 62:8)",
+        outcomesTitle: "God's Responses May Include (Tap to inspect):",
+        outcomesBadge: "4 Ways",
+        out3Sub: "e.g. Change Environment or Wait",
+        waAvatarText: "God",
+        waSenderName: "Heavenly Father",
+        waOnline: "Online • Listening & Responding...",
+        waDateBadge: "Today",
+        waFooterHint: "Tap below to reply:",
+        waAckBtn: "Amen, Understood!",
+        timeNow: "Just now",
+        outcomes: [
+          {
+            icon: "🕊️",
+            title: "1. Inner Peace & Guarding Your Mind",
+            ref: "Philippians 4:6-7",
+            desc: "My child, bring all your worries to Me. My supernatural peace will guard your heart and mind in Christ Jesus.",
+            verse: "“Do not be anxious about anything, but in every situation, by prayer and petition, present your requests to God. And the peace of God will guard your hearts and minds in Christ Jesus.”",
+            hasScripture: true
+          },
+          {
+            icon: "🧭",
+            title: "2. Divine Guidance & Wisdom",
+            ref: "Jeremiah 33:3",
+            desc: "Call upon Me, and I will answer you, showing you wise guidance and unsearchable paths for your journey.",
+            verse: "“Call to me and I will answer you and tell you great and unsearchable things you do not know.”",
+            hasScripture: true
+          },
+          {
+            icon: "🤲",
+            title: "3. Provision According to His Will",
+            ref: "1 John 5:14-15",
+            desc: "I know all your needs. When you pray aligned with My heart, I faithfully supply grace and provision in My perfect timing.",
+            verse: "“This is the confidence we have in approaching God: that if we ask anything according to his will, he hears us. And if we know that he hears us—whatever we ask—we know that we have what we asked of him.”",
+            hasScripture: true
+          },
+          {
+            icon: "⏳",
+            title: "4. Other Arrangements (Shift Environment / Waiting)",
+            ref: "",
+            desc: "I am working out the best outcome for you. This may involve shifting your circumstances or cultivating patient waiting. Rest in My perfect timing.",
+            verse: "",
+            hasScripture: false
+          }
+        ]
+      }
+    };
+
+    let currentLang = 'zh';
+    let step = 0; // 0: initial, 1: prayer sent/hears, 2: responded
+
+    function startPrayerAction() {
+      if (step >= 1) return;
+      step = 1;
+
+      // 1. Believer Glow Pulse
+      const btnPray = document.getElementById('btn-pray');
+      btnPray.classList.add('scale-105', 'brightness-125');
+
+      // 2. Animate Upward Beam & Pop Up 'Hears' Badge
+      const pathUp = document.getElementById('path-up');
+      const arrowUp = document.getElementById('arrow-up');
+      pathUp.classList.remove('opacity-20');
+      pathUp.classList.add('beam-up-active', 'opacity-100');
+      arrowUp.classList.remove('opacity-20');
+      arrowUp.classList.add('opacity-100');
+
+      const badgeHear = document.getElementById('badge-hear');
+      badgeHear.classList.remove('opacity-0', '-translate-y-3');
+      badgeHear.classList.add('opacity-100', 'translate-y-0');
+
+      // 3. God Receives Pulse after 700ms
+      setTimeout(() => {
+        const godAura = document.getElementById('god-aura');
+        godAura.classList.remove('opacity-0');
+        godAura.classList.add('opacity-100');
+
+        // 4. God Responds after another 600ms
+        setTimeout(() => {
+          step = 2;
+          const pathDown = document.getElementById('path-down');
+          const arrowDown = document.getElementById('arrow-down');
+          pathDown.classList.remove('opacity-20');
+          pathDown.classList.add('beam-down-active', 'opacity-100');
+          arrowDown.classList.remove('opacity-20');
+          arrowDown.classList.add('opacity-100');
+
+          const badgeRespond = document.getElementById('badge-respond');
+          badgeRespond.classList.remove('opacity-0', 'translate-y-3');
+          badgeRespond.classList.add('opacity-100', 'translate-y-0');
+
+          // Reveal the 4 Outcome Buttons
+          const outcomesSection = document.getElementById('section-outcomes');
+          outcomesSection.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+          outcomesSection.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+
+          // Auto open first outcome WhatsApp message preview
+          openOutcomeModal(0);
+        }, 700);
+      }, 700);
+    }
+
+    function resetPrayerFlow() {
+      step = 0;
+
+      // Reset Button
+      const btnPray = document.getElementById('btn-pray');
+      btnPray.classList.remove('scale-105', 'brightness-125');
+
+      // Reset God Aura
+      document.getElementById('god-aura').classList.remove('opacity-100');
+      document.getElementById('god-aura').classList.add('opacity-0');
+
+      // Reset Beams
+      const pathUp = document.getElementById('path-up');
+      const arrowUp = document.getElementById('arrow-up');
+      pathUp.className = 'opacity-20 transition-all duration-300';
+      arrowUp.className = 'opacity-20 transition-opacity duration-300';
+
+      const pathDown = document.getElementById('path-down');
+      const arrowDown = document.getElementById('arrow-down');
+      pathDown.className = 'opacity-20 transition-all duration-300';
+      arrowDown.className = 'opacity-20 transition-opacity duration-300';
+
+      // Reset Badges
+      const badgeHear = document.getElementById('badge-hear');
+      badgeHear.className = 'opacity-0 -translate-y-3 transition-all duration-500 pointer-events-auto';
+
+      const badgeRespond = document.getElementById('badge-respond');
+      badgeRespond.className = 'opacity-0 translate-y-3 transition-all duration-500 pointer-events-auto cursor-pointer';
+
+      // Reset Outcomes
+      const outcomesSection = document.getElementById('section-outcomes');
+      outcomesSection.className = 'w-full max-w-xl mt-3 transition-all duration-500 opacity-0 pointer-events-none translate-y-4';
+
+      closeOutcomeModal();
+    }
+
+    function openOutcomeModal(idx) {
+      const data = i18n[currentLang].outcomes[idx];
+      if (!data) return;
+
+      document.getElementById('wa-icon').innerText = data.icon;
+      document.getElementById('wa-title').innerText = data.title;
+      document.getElementById('wa-text').innerText = data.desc;
+
+      const verseCard = document.getElementById('wa-verse-card');
+      if (data.hasScripture) {
+        verseCard.style.display = 'block';
+        document.getElementById('wa-verse-ref').innerText = data.ref;
+        document.getElementById('wa-verse-text').innerText = data.verse;
+      } else {
+        // No scripture for option 4
+        verseCard.style.display = 'none';
+      }
+
+      // Update current time in WA message
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('wa-time').innerText = `${hours}:${mins}`;
+
+      const modal = document.getElementById('modal-outcome');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeOutcomeModal() {
+      const modal = document.getElementById('modal-outcome');
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+    }
+
+    function updateLanguage() {
+      const t = i18n[currentLang];
+      document.getElementById('hdr-title').innerText = t.hdrTitle;
+      document.getElementById('hdr-sub').innerText = t.hdrSub;
+      document.getElementById('txt-lang').innerText = t.langBtn;
+      document.getElementById('txt-reset').innerText = t.resetBtn;
+      document.getElementById('god-name').innerText = t.godName;
+      document.getElementById('god-subtext').innerText = t.godSubtext;
+      document.getElementById('god-label').innerText = t.godLabel;
+      document.getElementById('txt-badge-hear').innerText = t.badgeHear;
+      document.getElementById('txt-badge-respond').innerText = t.badgeRespond;
+      document.getElementById('txt-btn-pray').innerText = t.btnPray;
+      document.getElementById('txt-pray-sub').innerText = t.praySub;
+      document.getElementById('txt-outcomes-title').innerText = t.outcomesTitle;
+      document.getElementById('txt-outcomes-badge').innerText = t.outcomesBadge;
+      document.getElementById('out-3-sub').innerText = t.out3Sub;
+      document.getElementById('wa-avatar-text').innerText = t.waAvatarText;
+      document.getElementById('wa-sender-name').innerText = t.waSenderName;
+      document.getElementById('wa-online-status').innerText = t.waOnline;
+      document.getElementById('wa-date-badge').innerText = t.waDateBadge;
+      document.getElementById('wa-footer-hint').innerText = t.waFooterHint;
+      document.getElementById('wa-ack-btn').innerText = t.waAckBtn;
+
+      t.outcomes.forEach((item, idx) => {
+        const el = document.getElementById(`out-${idx}-title`);
+        if (el) el.innerText = item.title;
+        const refEl = document.getElementById(`out-${idx}-ref`);
+        if (refEl) refEl.innerText = item.ref;
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      document.getElementById('btn-lang').addEventListener('click', () => {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        updateLanguage();
+      });
+
+      updateLanguage();
+    });
+  </script>
+</body>
+</html>

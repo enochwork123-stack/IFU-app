@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiet Time Sandwich 靈修三文治</title>
+  <meta name="description" content="Quiet Time is Prayer + Bible Reading + Reflection + Prayer." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=Noto+Sans+TC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+            display: ['Space Grotesk', 'Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #060a22;
+      color: #f8fafc;
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+      user-select: none;
+    }
+
+    .space-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(59, 130, 246, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(59, 130, 246, 0.07) 1px, transparent 1px);
+    }
+
+    /* Neon Text Glows */
+    .neon-orange {
+      color: #ff9d42;
+      text-shadow: 0 0 8px rgba(255, 157, 66, 0.8), 0 0 16px rgba(255, 157, 66, 0.4);
+    }
+    .neon-green {
+      color: #38ef7d;
+      text-shadow: 0 0 8px rgba(56, 239, 125, 0.8), 0 0 16px rgba(56, 239, 125, 0.4);
+    }
+    .neon-red {
+      color: #ff4365;
+      text-shadow: 0 0 8px rgba(255, 67, 101, 0.8), 0 0 16px rgba(255, 67, 101, 0.4);
+    }
+    .neon-cyan {
+      color: #00f2fe;
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.8), 0 0 16px rgba(0, 242, 254, 0.4);
+    }
+
+    .glass-card {
+      background: rgba(11, 18, 48, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(99, 140, 255, 0.25);
+    }
+
+    /* Custom Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(59, 130, 246, 0.35);
+      height: 5px;
+      border-radius: 3px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00f2fe;
+      box-shadow: 0 0 10px #00f2fe;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .callout-badge {
+      transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+      will-change: transform, top, left;
+    }
+  </style>
+</head>
+<body class="relative w-full h-full flex flex-col justify-between overflow-hidden">
+
+  <!-- Background Grids and Soft Glows -->
+  <div class="absolute inset-0 space-grid pointer-events-none opacity-50 z-0"></div>
+  <div class="absolute top-10 left-1/3 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+  <div class="absolute bottom-10 right-1/4 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+  <!-- HEADER (Compact & clean) -->
+  <header class="relative z-30 w-full px-3 sm:px-5 py-2 flex items-center justify-between pointer-events-auto border-b border-slate-800/80 bg-[#060a22]/80 backdrop-blur-md shrink-0">
+    <div class="min-w-0 pr-2">
+      <h1 class="text-xs sm:text-base font-black font-display tracking-wide uppercase text-white drop-shadow-md truncate">
+        <span id="title-main">MAKE A QUIET TIME SANDWICH:</span>
+      </h1>
+      <p class="text-[9px] sm:text-[11px] font-semibold tracking-wider text-cyan-300/90 truncate" id="subtitle-formula">
+        Quiet Time = Prayer + Bible Reading + Reflection + Prayer
+      </p>
+    </div>
+
+    <!-- Controls (Language, Auto-Rotate, Reset Camera) -->
+    <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+      <!-- Language Button -->
+      <button id="lang-btn" class="glass-card px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold text-slate-200 hover:text-cyan-300 hover:border-cyan-400/50 transition flex items-center gap-1 shadow-sm">
+        <i data-lucide="languages" class="w-3 h-3 text-cyan-400"></i>
+        <span id="lang-text">English</span>
+      </button>
+
+      <!-- Auto Rotate Toggle -->
+      <button id="rotate-btn" class="glass-card px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-semibold text-slate-200 hover:text-cyan-300 transition flex items-center gap-1 shadow-sm" title="Toggle Auto-Rotation">
+        <i data-lucide="orbit" class="w-3 h-3 text-cyan-400"></i>
+        <span class="hidden sm:inline" id="rotate-label">旋轉</span>
+      </button>
+
+      <!-- Reset View Button -->
+      <button id="reset-btn" class="glass-card p-1 rounded-lg text-slate-300 hover:text-cyan-300 transition shadow-sm" title="Reset View">
+        <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 3D VIEWPORT & DYNAMIC ANCHOR LABELS -->
+  <main class="relative z-10 flex-1 w-full min-h-0 overflow-hidden">
+    <!-- 3D Canvas Mount Point -->
+    <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+    <!-- SVG Connecting Lines Layer -->
+    <svg id="connector-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
+
+    <!-- Dynamic 3D Projected Callout Labels -->
+    <div id="callout-overlay" class="absolute inset-0 pointer-events-none z-20">
+      <!-- 1. Top Prayer -->
+      <div id="callout-top_prayer" onclick="selectLayer('top_prayer')" class="callout-badge absolute pointer-events-auto cursor-pointer flex items-center gap-1">
+        <div class="px-2 py-0.5 rounded-lg bg-[#090f2b]/95 border border-amber-400/70 text-amber-300 font-display font-black text-[10px] sm:text-xs tracking-wider neon-orange flex items-center gap-1 shadow-[0_0_10px_rgba(255,157,66,0.3)]">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block"></span>
+          <span class="label-p1">PRAYER</span>
+          <span class="text-[9px] text-amber-200/80 font-sans font-medium hidden sm:inline">(禱告)</span>
+        </div>
+      </div>
+
+      <!-- 2. Bible Reading -->
+      <div id="callout-bible_reading" onclick="selectLayer('bible_reading')" class="callout-badge absolute pointer-events-auto cursor-pointer flex items-center gap-1">
+        <div class="px-2 py-0.5 rounded-lg bg-[#090f2b]/95 border border-emerald-400/70 text-emerald-300 font-display font-black text-[10px] sm:text-xs tracking-wider neon-green flex items-center gap-1 shadow-[0_0_10px_rgba(56,239,125,0.3)]">
+          <span class="label-b">BIBLE READING,</span>
+          <span class="text-[9px] text-emerald-200/80 font-sans font-medium hidden sm:inline">(讀經)</span>
+        </div>
+      </div>
+
+      <!-- 3. Reflection -->
+      <div id="callout-reflection" onclick="selectLayer('reflection')" class="callout-badge absolute pointer-events-auto cursor-pointer flex items-center gap-1">
+        <div class="px-2 py-0.5 rounded-lg bg-[#090f2b]/95 border border-rose-400/70 text-rose-300 font-display font-black text-[10px] sm:text-xs tracking-wider neon-red flex items-center gap-1 shadow-[0_0_10px_rgba(255,67,101,0.3)]">
+          <span class="label-r">REFLECTION,</span>
+          <span class="text-[9px] text-rose-200/80 font-sans font-medium hidden sm:inline">(默想)</span>
+        </div>
+      </div>
+
+      <!-- 4. Bottom Prayer -->
+      <div id="callout-bottom_prayer" onclick="selectLayer('bottom_prayer')" class="callout-badge absolute pointer-events-auto cursor-pointer flex items-center gap-1">
+        <div class="px-2 py-0.5 rounded-lg bg-[#090f2b]/95 border border-amber-400/70 text-amber-300 font-display font-black text-[10px] sm:text-xs tracking-wider neon-orange flex items-center gap-1 shadow-[0_0_10px_rgba(255,157,66,0.3)]">
+          <span class="label-p2">PRAYER</span>
+          <span class="text-[9px] text-amber-200/80 font-sans font-medium hidden sm:inline">(禱告)</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- LOWER SECTION: COMPACT EXPLANATION CARD & INTEGRATED FOOTER -->
+  <div class="relative z-30 w-full shrink-0 flex flex-col pointer-events-auto bg-[#040718]/95 border-t border-slate-800/80">
+    <!-- Active Layer Simple Explanation Card -->
+    <div class="w-full px-3 sm:px-4 pt-2 pb-1.5">
+      <div id="info-card" class="glass-card rounded-xl p-2 sm:p-2.5 shadow-lg transition-all duration-200 border-amber-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 max-w-2xl mx-auto">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+            <span id="card-tag" class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
+              TOP BUN
+            </span>
+            <span id="card-symbol" class="text-xs">🍞</span>
+            <span id="card-step" class="text-[10px] font-bold text-amber-400">Step 1</span>
+            <h3 id="card-title" class="text-[11px] sm:text-xs font-black font-display text-white truncate">
+              PRAYER (起始禱告)
+            </h3>
+          </div>
+          <p id="card-desc" class="text-[10px] sm:text-[11px] text-slate-200 leading-snug font-sans">
+            在打開聖經前先安靜心靈，放下掛慮，求聖靈開通心眼，向我們說話。
+          </p>
+        </div>
+
+        <!-- 4-Layer Quick Switcher Buttons -->
+        <div class="grid grid-cols-4 gap-1 shrink-0 self-stretch sm:self-center">
+          <button onclick="selectLayer('top_prayer')" class="px-1.5 py-1 rounded-md text-[9px] sm:text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">1. 禱告</button>
+          <button onclick="selectLayer('bible_reading')" class="px-1.5 py-1 rounded-md text-[9px] sm:text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 transition">2. 讀經</button>
+          <button onclick="selectLayer('reflection')" class="px-1.5 py-1 rounded-md text-[9px] sm:text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition">3. 默想</button>
+          <button onclick="selectLayer('bottom_prayer')" class="px-1.5 py-1 rounded-md text-[9px] sm:text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">4. 禱告</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Footer Bar -->
+    <footer class="w-full px-3 sm:px-4 pb-2 pt-1 flex flex-col sm:flex-row items-center justify-between gap-1.5 max-w-2xl mx-auto">
+      <!-- Explode Slider -->
+      <div class="flex items-center gap-2 w-full sm:w-56">
+        <span class="text-[10px] sm:text-[11px] font-bold text-slate-300 flex items-center gap-1 shrink-0">
+          <i data-lucide="layers" class="w-3 h-3 text-cyan-400"></i>
+          <span id="label-explode">展開:</span>
+        </span>
+        <input id="explode-slider" type="range" min="0" max="100" value="70" class="w-full cursor-pointer" />
+        <span id="explode-val" class="text-[10px] sm:text-[11px] font-mono font-bold text-cyan-300 w-7 text-right">70%</span>
+      </div>
+
+      <!-- Quick preset buttons & gesture hint -->
+      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto text-[10px] sm:text-[11px] text-slate-400 font-medium">
+        <div class="flex items-center gap-1">
+          <button id="btn-compact" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] transition">
+            <span id="btn-stack-text">緊湊合成</span>
+          </button>
+          <button id="btn-explode-all" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] transition">
+            <span id="btn-explode-text">透視分解</span>
+          </button>
+        </div>
+        <span class="hidden md:inline-block text-slate-600">|</span>
+        <span class="hidden md:inline-block text-[10px] text-slate-400" id="hint-drag">
+          拖曳 360° 旋轉・滾輪縮放
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const i18n = {
+      zh: {
+        titleMain: "MAKE A QUIET TIME SANDWICH:",
+        subtitleFormula: "靈修 = 禱告 (Prayer) + 讀經 (Bible) + 默想 (Reflection) + 禱告 (Prayer)",
+        langBtn: "English",
+        rotateLabel: "旋轉",
+        labelExplode: "展開:",
+        btnStack: "緊湊合成",
+        btnExplode: "透視分解",
+        hintDrag: "拖曳 360° 旋轉・滾輪縮放",
+        layers: {
+          top_prayer: {
+            step: "步驟 1",
+            tag: "頂層麵包",
+            symbol: "🍞",
+            title: "PRAYER (起始禱告)",
+            desc: "在打開聖經前先安靜心靈，放下掛慮，求聖靈開通心眼，向我們說話。",
+            color: "border-amber-400/60"
+          },
+          bible_reading: {
+            step: "步驟 2",
+            tag: "生菜與番茄",
+            symbol: "🥬",
+            title: "BIBLE READING (讀經聆聽)",
+            desc: "細讀經文，吸收神話語的新鮮靈糧，觀察神的心意與吩咐。",
+            color: "border-emerald-400/60"
+          },
+          reflection: {
+            step: "步驟 3",
+            tag: "肉排與芝士",
+            symbol: "🥩",
+            title: "REFLECTION (深思默想)",
+            desc: "深思咀嚼真理：這段經文對我的生活、心思或決定有何提醒與挑戰？",
+            color: "border-rose-400/60"
+          },
+          bottom_prayer: {
+            step: "步驟 4",
+            tag: "底層麵包",
+            symbol: "🍞",
+            title: "PRAYER (回應禱告)",
+            desc: "將所領受的亮光化作感謝與祈求，立志在今天的生活中具體遵行。",
+            color: "border-amber-400/60"
+          }
+        }
+      },
+      en: {
+        titleMain: "MAKE A QUIET TIME SANDWICH:",
+        subtitleFormula: "Quiet Time = Prayer + Bible Reading + Reflection + Prayer",
+        langBtn: "繁體中文",
+        rotateLabel: "Rotate",
+        labelExplode: "Explode:",
+        btnStack: "Assemble",
+        btnExplode: "Explode",
+        hintDrag: "Drag to rotate 360° • Scroll to zoom",
+        layers: {
+          top_prayer: {
+            step: "Step 1",
+            tag: "Top Bun",
+            symbol: "🍞",
+            title: "PRAYER (Opening)",
+            desc: "Quiet your heart, disconnect from distractions, and ask the Holy Spirit to guide your understanding.",
+            color: "border-amber-400/60"
+          },
+          bible_reading: {
+            step: "Step 2",
+            tag: "Greens & Tomatoes",
+            symbol: "🥬",
+            title: "BIBLE READING",
+            desc: "Read God's Word attentively. Nourish your soul and listen to what God is communicating.",
+            color: "border-emerald-400/60"
+          },
+          reflection: {
+            step: "Step 3",
+            tag: "Patty & Cheese",
+            symbol: "🥩",
+            title: "REFLECTION (Meditation)",
+            desc: "Chew on the truth: What does this mean for my attitude, relationships, and decisions today?",
+            color: "border-rose-400/60"
+          },
+          bottom_prayer: {
+            step: "Step 4",
+            tag: "Bottom Bun",
+            symbol: "🍞",
+            title: "PRAYER (Closing & Action)",
+            desc: "Seal the meal with thanksgiving, surrender, and a concrete commitment to obey His Word today.",
+            color: "border-amber-400/60"
+          }
+        }
+      }
+    };
+
+    let currentLang = 'zh';
+
+    let scene, camera, renderer, controls;
+    let sandwichGroup;
+    let layerMeshes = {};
+    let explodeDistance = 0.70;
+    let autoRotate = true;
+    let selectedLayerKey = 'top_prayer';
+
+    function init3D() {
+      const container = document.getElementById('canvas-container');
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || (window.innerHeight - 140);
+
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x060a22, 0.035);
+
+      camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+      camera.position.set(7.5, 3.5, 8.5);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.maxDistance = 22;
+      controls.minDistance = 4.5;
+      controls.maxPolarAngle = Math.PI / 2 + 0.1;
+      controls.target.set(0.6, 0.3, 0);
+
+      const ambientLight = new THREE.AmbientLight(0x223366, 1.8);
+      scene.add(ambientLight);
+
+      const topLight = new THREE.PointLight(0xffaa44, 2.5, 20);
+      topLight.position.set(2, 8, 4);
+      scene.add(topLight);
+
+      const greenLight = new THREE.PointLight(0x38ef7d, 2.0, 15);
+      greenLight.position.set(-4, 2, 2);
+      scene.add(greenLight);
+
+      const redLight = new THREE.PointLight(0xff4365, 2.0, 15);
+      redLight.position.set(4, 0, -2);
+      scene.add(redLight);
+
+      const bottomLight = new THREE.PointLight(0xff9d42, 2.0, 15);
+      bottomLight.position.set(0, -6, 2);
+      scene.add(bottomLight);
+
+      buildSandwich();
+      createParticles();
+
+      window.addEventListener('resize', onWindowResize);
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerdown', onPointerDown);
+
+      animate();
+    }
+
+    function createNeonLayer(geometry, faceColor, wireColor, opacity = 0.5) {
+      const group = new THREE.Group();
+
+      const faceMat = new THREE.MeshPhysicalMaterial({
+        color: faceColor,
+        emissive: faceColor,
+        emissiveIntensity: 0.28,
+        transparent: true,
+        opacity: opacity,
+        roughness: 0.2,
+        metalness: 0.1,
+        clearcoat: 0.8,
+        side: THREE.DoubleSide
+      });
+      const mesh = new THREE.Mesh(geometry, faceMat);
+      group.add(mesh);
+
+      const wireGeo = new THREE.WireframeGeometry(geometry);
+      const wireMat = new THREE.LineBasicMaterial({
+        color: wireColor,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.95
+      });
+      const wireframe = new THREE.LineSegments(wireGeo, wireMat);
+      group.add(wireframe);
+
+      group.userData = { mesh, wireframe, faceMat, wireMat, faceColor, wireColor };
+      return group;
+    }
+
+    function buildSandwich() {
+      sandwichGroup = new THREE.Group();
+
+      // 1. TOP BUN
+      const topBunGeo = new THREE.BoxGeometry(4.2, 0.7, 4.2, 4, 2, 4);
+      const pos = topBunGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i);
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        if (y > 0) {
+          const dist = Math.sqrt(x * x + z * z);
+          pos.setY(i, y + Math.max(0, 0.45 - dist * 0.12));
+        }
+      }
+      topBunGeo.computeVertexNormals();
+      const topBun = createNeonLayer(topBunGeo, 0xff9d42, 0xffbb44, 0.55);
+      topBun.userData.layerKey = 'top_prayer';
+      sandwichGroup.add(topBun);
+      layerMeshes['top_prayer'] = topBun;
+
+      // 2. GREENS / LETTUCE
+      const lettuceGeo = new THREE.PlaneGeometry(5.2, 5.2, 12, 12);
+      const lPos = lettuceGeo.attributes.position;
+      for (let i = 0; i < lPos.count; i++) {
+        const u = lPos.getX(i);
+        const v = lPos.getY(i);
+        lPos.setZ(i, Math.sin(u * 2.5) * 0.22 + Math.cos(v * 2.5) * 0.22);
+      }
+      lettuceGeo.rotateX(-Math.PI / 2);
+      lettuceGeo.computeVertexNormals();
+      const lettuce = createNeonLayer(lettuceGeo, 0x38ef7d, 0x77ffaa, 0.5);
+      lettuce.userData.layerKey = 'bible_reading';
+      sandwichGroup.add(lettuce);
+      layerMeshes['bible_reading'] = lettuce;
+
+      // 2B. TOMATOES & CUCUMBERS
+      const tomatoGroup = new THREE.Group();
+      const tomatoGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.22, 16);
+      
+      const tomato1 = createNeonLayer(tomatoGeo, 0xff4365, 0xff7799, 0.6);
+      tomato1.position.set(-1.2, 0, -0.6);
+      tomato1.rotation.z = 0.08;
+      tomatoGroup.add(tomato1);
+
+      const tomato2 = createNeonLayer(tomatoGeo, 0xff4365, 0xff7799, 0.6);
+      tomato2.position.set(1.1, 0, 0.7);
+      tomato2.rotation.x = -0.06;
+      tomatoGroup.add(tomato2);
+
+      const pickleGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.15, 12);
+      pickle1 = createNeonLayer(pickleGeo, 0x38ef7d, 0xaaffcc, 0.5);
+      pickle1.position.set(-0.8, 0.1, 1.3);
+      tomatoGroup.add(pickle1);
+
+      const pickle2 = createNeonLayer(pickleGeo, 0x38ef7d, 0xaaffcc, 0.5);
+      pickle2.position.set(1.3, 0.1, -1.1);
+      tomatoGroup.add(pickle2);
+
+      tomatoGroup.userData = { layerKey: 'bible_reading' };
+      sandwichGroup.add(tomatoGroup);
+      layerMeshes['bible_tomatoes'] = tomatoGroup;
+
+      // 3. MEAT PATTY
+      const pattyGeo = new THREE.CylinderGeometry(2.3, 2.3, 0.55, 24);
+      const patty = createNeonLayer(pattyGeo, 0xa63a2c, 0xff5533, 0.65);
+      patty.userData.layerKey = 'reflection';
+      sandwichGroup.add(patty);
+      layerMeshes['reflection'] = patty;
+
+      // 3B. CHEESE SHEET
+      const cheeseGeo = new THREE.BoxGeometry(3.6, 0.08, 3.6);
+      const cheese = createNeonLayer(cheeseGeo, 0xffd700, 0xffea55, 0.65);
+      cheese.rotation.y = Math.PI / 4;
+      cheese.userData.layerKey = 'reflection';
+      sandwichGroup.add(cheese);
+      layerMeshes['reflection_cheese'] = cheese;
+
+      // 4. BOTTOM BUN
+      const bottomBunGeo = new THREE.BoxGeometry(4.2, 0.6, 4.2, 4, 2, 4);
+      const bottomBun = createNeonLayer(bottomBunGeo, 0xff9d42, 0xffbb44, 0.55);
+      bottomBun.userData.layerKey = 'bottom_prayer';
+      sandwichGroup.add(bottomBun);
+      layerMeshes['bottom_prayer'] = bottomBun;
+
+      scene.add(sandwichGroup);
+      updateExplode();
+    }
+
+    function createParticles() {
+      const count = 90;
+      const geom = new THREE.BufferGeometry();
+      const pos = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+
+      const colorPalette = [
+        new THREE.Color(0xff9d42),
+        new THREE.Color(0x38ef7d),
+        new THREE.Color(0x00f2fe),
+        new THREE.Color(0xff4365)
+      ];
+
+      for (let i = 0; i < count; i++) {
+        pos[i * 3] = (Math.random() - 0.5) * 22;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 16;
+        pos[i * 3 + 2] = (Math.random() - 0.5) * 22;
+
+        const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+      }
+
+      geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.12,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.7
+      });
+
+      scene.add(new THREE.Points(geom, mat));
+    }
+
+    function updateExplode() {
+      const scale = explodeDistance;
+      const targets = {
+        top_prayer: 0.55 + 1.8 * scale,
+        bible_reading: 0.25 + 1.0 * scale,
+        bible_tomatoes: 0.1 + 0.55 * scale,
+        reflection: -0.05 + 0.05 * scale,
+        reflection_cheese: -0.25 - 0.4 * scale,
+        bottom_prayer: -0.55 - 1.25 * scale
+      };
+
+      for (const [key, yPos] of Object.entries(targets)) {
+        if (layerMeshes[key]) {
+          layerMeshes[key].position.y = yPos;
+        }
+      }
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('canvas-container');
+      if (!container || !renderer || !camera) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function getLayerUnderCursor(e) {
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(sandwichGroup.children, true);
+
+      if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj && !obj.userData.layerKey && obj.parent !== sandwichGroup && obj.parent !== scene) {
+          obj = obj.parent;
+        }
+        return obj ? obj.userData.layerKey : null;
+      }
+      return null;
+    }
+
+    function onPointerMove(e) {
+      const layerKey = getLayerUnderCursor(e);
+      const container = document.getElementById('canvas-container');
+      container.style.cursor = layerKey ? 'pointer' : 'grab';
+    }
+
+    function onPointerDown(e) {
+      const layerKey = getLayerUnderCursor(e);
+      if (layerKey) selectLayer(layerKey);
+    }
+
+    // Update 3D-to-2D projected annotations & connector lines
+    const tempVec = new THREE.Vector3();
+    function updateCalloutPositions() {
+      const container = document.getElementById('canvas-container');
+      if (!container || !camera || !sandwichGroup) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      const layerTargets = [
+        { key: 'top_prayer', mesh: layerMeshes['top_prayer'], color: '#ff9d42' },
+        { key: 'bible_reading', mesh: layerMeshes['bible_reading'], color: '#38ef7d' },
+        { key: 'reflection', mesh: layerMeshes['reflection'], color: '#ff4365' },
+        { key: 'bottom_prayer', mesh: layerMeshes['bottom_prayer'], color: '#ff9d42' }
+      ];
+
+      const svg = document.getElementById('connector-svg');
+      let svgHtml = '';
+
+      layerTargets.forEach(target => {
+        if (!target.mesh) return;
+        target.mesh.getWorldPosition(tempVec);
+        tempVec.x -= 1.6;
+        tempVec.project(camera);
+
+        const screenX = (tempVec.x * 0.5 + 0.5) * width;
+        const screenY = (-(tempVec.y * 0.5) + 0.5) * height;
+
+        const callout = document.getElementById(`callout-${target.key}`);
+        if (callout) {
+          const labelLeft = width < 480 ? 10 : 20;
+          const labelTop = Math.max(8, Math.min(height - 36, screenY - 14));
+
+          callout.style.left = `${labelLeft}px`;
+          callout.style.top = `${labelTop}px`;
+
+          const labelWidth = callout.offsetWidth || 100;
+          const startX = labelLeft + labelWidth + 4;
+          const startY = labelTop + 14;
+          const endX = Math.max(startX + 8, screenX);
+          const endY = screenY;
+
+          const isSelected = selectedLayerKey === target.key;
+          const strokeOpacity = isSelected ? '0.85' : '0.4';
+          const strokeWidth = isSelected ? '2' : '1.2';
+
+          svgHtml += `
+            <path d="M ${startX} ${startY} L ${startX + 16} ${startY} L ${endX} ${endY}" 
+                  fill="none" 
+                  stroke="${target.color}" 
+                  stroke-width="${strokeWidth}" 
+                  stroke-opacity="${strokeOpacity}" 
+                  stroke-dasharray="${isSelected ? 'none' : '3,3'}" />
+            <circle cx="${endX}" cy="${endY}" r="${isSelected ? 3.5 : 2}" fill="${target.color}" opacity="${strokeOpacity}" />
+          `;
+        }
+      });
+
+      svg.innerHTML = svgHtml;
+    }
+
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      if (sandwichGroup) {
+        sandwichGroup.position.y = Math.sin(elapsed * 1.5) * 0.08;
+        if (autoRotate) {
+          sandwichGroup.rotation.y += 0.005;
+        }
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+      updateCalloutPositions();
+    }
+
+    function selectLayer(layerKey) {
+      selectedLayerKey = layerKey;
+
+      for (const [key, meshGroup] of Object.entries(layerMeshes)) {
+        const isMatch = (key === layerKey || (layerKey === 'bible_reading' && key === 'bible_tomatoes') || (layerKey === 'reflection' && key === 'reflection_cheese'));
+        if (meshGroup.userData && meshGroup.userData.wireMat) {
+          meshGroup.userData.wireMat.opacity = isMatch ? 1.0 : 0.65;
+          meshGroup.userData.faceMat.opacity = isMatch ? 0.75 : 0.35;
+        }
+      }
+
+      document.querySelectorAll('.callout-badge').forEach(item => {
+        item.classList.remove('scale-105', 'brightness-125');
+      });
+      const activeCallout = document.getElementById(`callout-${layerKey}`);
+      if (activeCallout) activeCallout.classList.add('scale-105', 'brightness-125');
+
+      renderCard(layerKey);
+    }
+
+    function renderCard(layerKey) {
+      const data = i18n[currentLang].layers[layerKey] || i18n[currentLang].layers['top_prayer'];
+      const card = document.getElementById('info-card');
+      
+      document.getElementById('card-tag').innerText = data.tag;
+      document.getElementById('card-symbol').innerText = data.symbol;
+      document.getElementById('card-step').innerText = data.step;
+      document.getElementById('card-title').innerText = data.title;
+      document.getElementById('card-desc').innerText = data.desc;
+
+      card.className = `glass-card rounded-xl p-2 sm:p-2.5 shadow-lg transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 max-w-2xl mx-auto ${data.color}`;
+    }
+
+    function updateLanguage() {
+      const t = i18n[currentLang];
+      document.getElementById('title-main').innerText = t.titleMain;
+      document.getElementById('subtitle-formula').innerText = t.subtitleFormula;
+      document.getElementById('lang-text').innerText = t.langBtn;
+      document.getElementById('rotate-label').innerText = t.rotateLabel;
+      document.getElementById('label-explode').innerText = t.labelExplode;
+      document.getElementById('btn-stack-text').innerText = t.btnStack;
+      document.getElementById('btn-explode-text').innerText = t.btnExplode;
+      document.getElementById('hint-drag').innerText = t.hintDrag;
+
+      renderCard(selectedLayerKey);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      init3D();
+      lucide.createIcons();
+
+      const slider = document.getElementById('explode-slider');
+      slider.addEventListener('input', (e) => {
+        explodeDistance = e.target.value / 100;
+        document.getElementById('explode-val').innerText = `${e.target.value}%`;
+        updateExplode();
+      });
+
+      document.getElementById('btn-compact').addEventListener('click', () => {
+        slider.value = 0;
+        explodeDistance = 0;
+        document.getElementById('explode-val').innerText = '0%';
+        updateExplode();
+      });
+
+      document.getElementById('btn-explode-all').addEventListener('click', () => {
+        slider.value = 100;
+        explodeDistance = 1;
+        document.getElementById('explode-val').innerText = '100%';
+        updateExplode();
+      });
+
+      document.getElementById('rotate-btn').addEventListener('click', () => {
+        autoRotate = !autoRotate;
+        document.getElementById('rotate-btn').classList.toggle('text-cyan-300', autoRotate);
+      });
+
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        camera.position.set(7.5, 3.5, 8.5);
+        controls.target.set(0.6, 0.3, 0);
+      });
+
+      document.getElementById('lang-btn').addEventListener('click', () => {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        updateLanguage();
+      });
+
+      updateLanguage();
+      selectLayer('top_prayer');
+    });
+  </script>
+</body>
+</html>

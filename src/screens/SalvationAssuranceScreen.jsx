@@ -127,22 +127,25 @@ const salvationQ2Scriptures = {
 
 function SalvationQuestion2Table() {
   return (
-    <section className="w-full max-w-2xl rounded-[2rem] border border-outline-variant/40 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
+    <article className="rounded-[2rem] border border-outline-variant/30 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
       {/* Question 2 Header / Prompt */}
-      <div className="mb-6 flex items-start gap-3.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+      <div className="flex items-center gap-3 text-secondary">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
           2
         </span>
-        <div className="text-[1.08rem] leading-8 text-on-surface">
-          <span className="font-bold text-secondary">哥林多後書 5:17</span>
-          {' 說：「'}
-          <span className="font-semibold text-primary">若有人在基督裏，他就是新造的人。舊事已過，都變成新的了。</span>
-          {'」在你接受耶穌基督救恩的那一刻，你的新生命已經開始了。請記下以下的經文怎樣描寫你的新生命的狀況。'}
-        </div>
+        <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+          問題 2
+        </p>
       </div>
+      <h3 className="mt-5 font-headline text-[1.45rem] leading-tight text-primary">
+        <span className="font-bold text-secondary">哥林多後書 5:17</span>
+        {' 說：「'}
+        <span className="font-semibold text-primary">若有人在基督裏，他就是新造的人。舊事已過，都變成新的了。</span>
+        {'」在你接受耶穌基督救恩的那一刻，你的新生命已經開始了。請記下以下的經文怎樣描寫你的新生命的狀況。'}
+      </h3>
 
       {/* Table Format matching the layout */}
-      <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+      <div className="mt-6 overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
         {/* Row 1: 關於你的罪和罪所帶來的結果 */}
         <div className="grid grid-cols-1 border-b border-outline-variant/70 divide-y divide-outline-variant/70 md:grid-cols-[1fr_1.8fr] md:divide-x md:divide-y-0">
           <div className="flex items-center bg-surface-container-low/40 p-5">
@@ -180,193 +183,128 @@ function SalvationQuestion2Table() {
           </div>
         </div>
       </div>
-    </section>
+    </article>
   );
 }
 
 export function SalvationAssuranceScreen() {
-  const { lessonRoutes, assuranceGospelSections } = useAppContent();
+  const { assuranceGospelSections } = useAppContent();
   const [showGospelReview, setShowGospelReview] = useState(false);
-
-  const activeLesson = lessonRoutes.find((r) => r.id === 'lesson-salvation-assurance');
-
-  if (!activeLesson) {
-    return (
-      <div className="p-12 text-center text-on-surface-variant font-bold">
-        加載中或無此課程...
-      </div>
-    );
-  }
-
-  // Helper to map card styling from presets
-  const getCardStyle = (accent) => {
-    if (accent === 'primary') {
-      return 'bg-primary text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)] p-8 rounded-[2.35rem] relative overflow-hidden';
-    }
-    if (accent === 'secondary') {
-      return 'bg-secondary text-white shadow-[0_28px_72px_rgba(121,89,0,0.22)] p-8 rounded-[2.35rem] relative overflow-hidden';
-    }
-    if (accent === 'tertiary') {
-      return 'bg-surface-container-low p-6 rounded-[2rem] text-primary border border-outline-variant/50 shadow-[0_18px_42px_rgba(40,53,28,0.08)]';
-    }
-    // Default surface/white theme
-    return 'bg-surface-container-lowest p-6 rounded-[2rem] text-primary border border-outline-variant/30 shadow-[0_18px_42px_rgba(40,53,28,0.08)]';
-  };
 
   return (
     <>
-      <PageHeader title={activeLesson.title} backTo="/journey" />
+      <PageHeader title="得救的確據" backTo="/journey" />
 
-      <main className="px-6 pb-36 pt-8 flex flex-col items-center">
-        <div className="w-full space-y-8 flex flex-col items-center">
-          {activeLesson.modules.map((mod) => {
-            // Render Question 2 as unified table
-            if (mod.id === 'salvation-q2-intro' || mod.id === 'salvation-q2') {
-              return <SalvationQuestion2Table key="salvation-q2-table" />;
-            }
-            if (mod.id === 'salvation-q2a' || mod.id === 'salvation-q2b') {
-              return null; // Integrated into SalvationQuestion2Table
-            }
+      <main className="px-6 pb-36 pt-8">
+        {/* Standard Chapter Hero Banner matching chapters 3, 4, 5 */}
+        <section className="relative overflow-hidden rounded-[2.35rem] bg-primary p-8 text-white shadow-[0_28px_72px_rgba(40,53,28,0.22)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)]" />
+          <div className="relative">
+            <div className="mb-7 inline-flex rounded-full bg-secondary-fixed px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-on-secondary-fixed">
+              新生命栽培 : (1)
+            </div>
+            <h2 className="font-headline text-[2.4rem] leading-tight">
+              得救的確據
+            </h2>
+            <p className="mt-2 font-medium text-secondary-fixed font-body">Assurance of Salvation</p>
+            <p className="mt-5 text-[1.08rem] leading-8 text-on-primary-container">
+              當你真心相信並接受耶穌基督作你個人的救主時，你就已經得到永生，成為神的兒女。神的話語賜給我們清晰而不可動搖的確據。
+            </p>
+          </div>
+        </section>
 
-            const cardTheme = mod.visual?.accent || 'surface';
-            const cardStyle = getCardStyle(cardTheme);
-            const sizeClass = mod.visual?.imageStyle || 'max-w-2xl'; // width
-            const heightClass = mod.visual?.eyebrow || 'min-h-auto'; // height
+        <section className="mt-8 grid gap-5">
+          {/* Question 1 */}
+          <article className="rounded-[2rem] border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+            <div className="flex items-center gap-3 text-secondary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+                1
+              </span>
+              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                問題 1
+              </p>
+            </div>
+            <h3 className="mt-5 font-headline text-[1.45rem] leading-tight text-primary">
+              根據約翰福音 1:12，怎樣的人可以成為神的兒女？
+            </h3>
+            <div className="mt-5 space-y-4">
+              <ScriptureToggle scripture={salvationQ2Scriptures.john112} />
+              <SavedAnswer storageKey="ifu:salvation-assurance:john-1-12" />
+            </div>
+          </article>
 
-            return (
-              <section
-                key={mod.id}
-                className={`w-full ${sizeClass} ${heightClass} ${cardStyle}`}
-              >
-                {/* Visual ambient gradients for primary green cards */}
-                {cardTheme === 'primary' && (
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,223,160,0.18),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_transparent_55%)] pointer-events-none" />
-                )}
+          {/* Appendix A Card */}
+          <section className="rounded-[2rem] border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+            <div className="flex items-center gap-3 text-secondary">
+              <Icon name="article" className="text-[22px]" />
+              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                附件
+              </p>
+            </div>
+            <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
+              附件A : 與神和好的褔音
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowGospelReview(true)}
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95 cursor-pointer"
+            >
+              查看附件
+              <Icon name="open_in_full" className="text-[18px]" />
+            </button>
+          </section>
 
-                {/* Card Title Header for non-reflection prompts */}
-                {mod.title && mod.kind !== 'reflection-prompt' && mod.kind !== 'extension-card' && mod.kind !== 'appendix' && (
-                  <div className={`flex items-center gap-3 mb-5 ${cardTheme === 'primary' ? 'text-secondary-fixed-dim' : 'text-secondary'}`}>
-                    <h3 className={`font-headline text-[1.45rem] leading-tight ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
-                      {mod.title}
-                    </h3>
-                  </div>
-                )}
+          {/* Question 2 Table */}
+          <SalvationQuestion2Table />
 
-                {/* Render different kinds of study modules */}
-                {mod.kind === 'content-section' && (
-                  <div className="relative">
-                    {mod.body && (
-                      <p className={`text-[1.08rem] leading-8 ${cardTheme === 'primary' ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>
-                        {mod.body}
-                      </p>
-                    )}
-                    {mod.scriptures && (
-                      <div className="mt-5 grid gap-3">
-                        {mod.scriptures.map((sc, sIdx) => (
-                          <ScriptureToggle key={sIdx} scripture={sc} />
-                        ))}
-                      </div>
-                    )}
-                    {mod.storageKey && (
-                      <SavedAnswer storageKey={mod.storageKey} />
-                    )}
-                  </div>
-                )}
+          {/* Extension Card A */}
+          <section className="rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+            <div className="flex items-center gap-3 text-secondary">
+              <Icon name="extension" className="text-[22px]" />
+              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                延伸學習 (A)
+              </p>
+            </div>
+            <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
+              你到底得救了嗎？
+            </h3>
+            <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
+              延伸學習得救確據的反思、引文與教導架構。
+            </p>
+            <Link
+              to="/journey/salvation-assurance/are-you-saved"
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
+            >
+              開始延伸學習
+              <Icon name="arrow_forward" className="text-[18px]" />
+            </Link>
+          </section>
 
-                {mod.kind === 'reflection-prompt' && (
-                  <div className="relative">
-                    <div className="flex items-start gap-3.5 mb-2">
-                      {mod.number && (
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
-                          {mod.number}
-                        </span>
-                      )}
-                      <div className="flex-1">
-                        {mod.title && (
-                          <h3 className={`font-headline text-[1.35rem] leading-tight mb-2 ${cardTheme === 'primary' ? 'text-white font-black' : 'text-primary'}`}>
-                            {mod.title}
-                          </h3>
-                        )}
-                        <p className="text-[1.05rem] leading-8 text-on-surface">{mod.prompt}</p>
-                      </div>
-                    </div>
-                    {mod.scriptures && (
-                      <div className="mt-5 grid gap-3">
-                        {mod.scriptures.map((sc, sIdx) => (
-                          <ScriptureToggle key={sIdx} scripture={sc} />
-                        ))}
-                      </div>
-                    )}
-                    <SavedAnswer storageKey={mod.storageKey} />
-                  </div>
-                )}
+          {/* Extension Card B */}
+          <section className="rounded-[2rem] bg-surface-container-low p-6 shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+            <div className="flex items-center gap-3 text-secondary">
+              <Icon name="extension" className="text-[22px]" />
+              <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+                延伸學習 (B)
+              </p>
+            </div>
+            <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
+              確信 vs 迷信
+            </h3>
+            <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
+              延伸學習信心、確據與迷信之間的分辨。
+            </p>
+            <Link
+              to="/journey/salvation-assurance/faith-vs-superstition"
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
+            >
+              開始延伸學習
+              <Icon name="arrow_forward" className="text-[18px]" />
+            </Link>
+          </section>
+        </section>
 
-                {mod.kind === 'prayer' && (
-                  <div className="relative">
-                    <p className={`font-headline text-[1.08rem] leading-8 ${cardTheme === 'primary' ? 'text-white' : 'text-primary'}`}>
-                      {mod.body}
-                    </p>
-                  </div>
-                )}
-
-                {mod.kind === 'appendix' && (
-                  <div className="relative">
-                    <div className="flex items-center gap-3 text-secondary">
-                      <Icon name="article" className="text-[22px]" />
-                      <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                        {mod.title || '附件'}
-                      </p>
-                    </div>
-                    <h2 className="mt-4 font-headline text-[1.8rem] text-primary">
-                      {mod.title || '附件'}
-                    </h2>
-                    {mod.body && (
-                      <p className="mt-4 leading-7 text-on-surface-variant">
-                        {mod.body}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setShowGospelReview(true)}
-                      className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95 cursor-pointer"
-                    >
-                      查看附件
-                      <Icon name="open_in_full" className="text-[18px]" />
-                    </button>
-                  </div>
-                )}
-
-                {mod.kind === 'extension-card' && (
-                  <div className="relative">
-                    <div className="flex items-center gap-3 text-secondary">
-                      <Icon name="extension" className="text-[22px]" />
-                      <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
-                        延伸學習
-                      </p>
-                    </div>
-                    <h3 className="mt-4 font-headline text-[1.55rem] leading-tight text-primary">
-                      {mod.title}
-                    </h3>
-                    {mod.description && (
-                      <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
-                        {mod.description}
-                      </p>
-                    )}
-                    <Link
-                      to={mod.route}
-                      className="mt-6 inline-flex items-center gap-3 rounded-full bg-secondary px-6 py-3 text-sm font-extrabold tracking-[0.12em] text-white shadow-[0_14px_34px_rgba(121,89,0,0.22)] transition-all hover:brightness-105 active:scale-95"
-                    >
-                      開始延伸學習
-                      <Icon name="arrow_forward" className="text-[18px]" />
-                    </Link>
-                  </div>
-                )}
-              </section>
-            );
-          })}
-        </div>
-
-        <section className="mt-8 w-full max-w-2xl">
+        <section className="mt-8">
           <JourneyPager next={{ to: '/journey/quiet-time', label: '靈修' }} />
         </section>
       </main>

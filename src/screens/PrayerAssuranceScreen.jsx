@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { JourneyPager } from '../components/JourneyPager';
 import { PageHeader } from '../components/PageHeader';
 import { SavedAnswer } from '../components/SavedAnswer';
+import { assetPath } from '../utils/assets';
 
 const prayerScriptures = {
   psalm628: {
@@ -254,6 +255,21 @@ function NoteAside({ title, children }) {
   );
 }
 
+function PrayerHowItWorksSection() {
+  return (
+    <section className="w-full overflow-hidden rounded-[2rem] border border-outline-variant/40 bg-[#040718] shadow-[0_18px_42px_rgba(40,53,28,0.08)]">
+      <div className="relative h-[480px] sm:h-[520px] w-full">
+        <iframe
+          src={assetPath('how_prayer_works.html')}
+          title="How Prayer Works Interactive Infographic"
+          className="h-full w-full border-0"
+          loading="lazy"
+        />
+      </div>
+    </section>
+  );
+}
+
 export function PrayerAssuranceScreen() {
   return (
     <>
@@ -370,6 +386,9 @@ export function PrayerAssuranceScreen() {
               ))}
             </div>
           </QuestionCard>
+
+          {/* Interactive How Prayer Works Section */}
+          <PrayerHowItWorksSection />
 
           <ExtensionCard
             title="《禱告的確據》延伸學習 (A) : 向神傾心吐意"
