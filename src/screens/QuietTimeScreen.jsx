@@ -128,6 +128,27 @@ const quietTimeQ1Scriptures = {
   },
 };
 
+const quietTimeQ2Scriptures = {
+  tim31617: {
+    book: '提摩太後書',
+    reference: '2Tim 3:16-17',
+    chinese: '聖經都是神所默示的，於教訓、督責、使人歸正、教導人學義，都是有益的，叫屬神的人得以完全，預備行各樣的善事。',
+    english: 'All scripture is inspired by God and is useful for teaching, for reproof, for correction, and for training in righteousness, so that everyone who belongs to God may be proficient, equipped for every good work.',
+  },
+  john1624: {
+    book: '約翰福音',
+    reference: 'John 16:24',
+    chinese: '向來你們沒有奉我的名求甚麼，如今你們求就必得著，叫你們的喜樂可以滿足。',
+    english: 'Until now you have not asked for anything in my name. Ask and you will receive, so that your joy may be complete.',
+  },
+  phil467: {
+    book: '腓立比書',
+    reference: 'Phil 4:6-7',
+    chinese: '應當一無掛慮，只要凡事藉著禱告、祈求、和感謝，將你們所要的告訴神。神所賜出人意外的平安，必在基督耶穌裡保守你們的心懷意念。',
+    english: 'Do not worry about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus.',
+  },
+};
+
 const quietTimeQ3Scripture = {
   book: '馬可福音',
   reference: 'Mark 1:35',
@@ -220,6 +241,75 @@ function QuietTimeQuestion1Table() {
             <SavedAnswer
               storageKey="ifu:quiet-time:q1-john15-5"
               placeholder="記下 約翰福音 15:5 關於親近神和遠離神的不同結果..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function QuietTimeQuestion2Card() {
+  return (
+    <article className="rounded-[2rem] border border-outline-variant/30 bg-surface-container-lowest p-6 text-primary shadow-[0_18px_42px_rgba(40,53,28,0.08)] md:p-8">
+      {/* Question 2 Header */}
+      <div className="flex items-center gap-3 text-secondary mb-5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed font-body text-sm font-extrabold text-on-secondary-fixed">
+          2
+        </span>
+        <p className="font-body text-[11px] font-extrabold tracking-[0.2em]">
+          問題 2
+        </p>
+      </div>
+
+      <div className="text-[1.08rem] font-bold leading-8 text-primary mb-6">
+        你可以透過讀聖經和禱告來親近神：
+      </div>
+
+      <div className="space-y-6">
+        {/* Sub-question (a) */}
+        <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-surface-container-low/60 px-4 py-3 border-b border-outline-variant/40">
+            <div className="font-bold text-primary text-base leading-snug">
+              <span className="text-secondary font-extrabold mr-1.5">(a)</span>
+              聖經記載了甚麼？研讀聖經能給你甚麼幫助？
+            </div>
+            <span className="text-xs font-bold text-secondary font-mono">
+              提摩太後書 3:16-17
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 p-4 bg-surface-container-lowest">
+            <ScriptureToggle scripture={quietTimeQ2Scriptures.tim31617} />
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q2a"
+              placeholder="記下研讀聖經能給你的幫助..."
+              rows={3}
+              className="mt-0"
+            />
+          </div>
+        </div>
+
+        {/* Sub-question (b) */}
+        <div className="overflow-hidden rounded-2xl border-2 border-outline-variant/80 bg-surface-container-lowest shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-surface-container-low/60 px-4 py-3 border-b border-outline-variant/40">
+            <div className="font-bold text-primary text-base leading-snug">
+              <span className="text-secondary font-extrabold mr-1.5">(b)</span>
+              甚麼是禱告？你為什麼要向神禱告？
+            </div>
+            <span className="text-xs font-bold text-secondary font-mono">
+              約翰福音 16:24 ; 腓立比書 4:6-7
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 p-4 bg-surface-container-lowest">
+            <div className="grid gap-3">
+              <ScriptureToggle scripture={quietTimeQ2Scriptures.john1624} />
+              <ScriptureToggle scripture={quietTimeQ2Scriptures.phil467} />
+            </div>
+            <SavedAnswer
+              storageKey="ifu:quiet-time:q2b"
+              placeholder="記下甚麼是禱告以及你向神禱告的原因..."
               rows={3}
               className="mt-0"
             />
@@ -340,6 +430,9 @@ export function QuietTimeScreen() {
         <section className="mt-8 grid gap-5">
           {/* Question 1 Table */}
           <QuietTimeQuestion1Table />
+
+          {/* Question 2 Card */}
+          <QuietTimeQuestion2Card />
 
           {/* Question 3 Table */}
           <QuietTimeQuestion3Table />
